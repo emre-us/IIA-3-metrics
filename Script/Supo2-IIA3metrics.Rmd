@@ -650,7 +650,121 @@ The t-statistic is therefore:
 \[
 t_{\hat{\rho}} = \frac{\hat{\rho} - \rho^0}{\mathit{se}(\hat{\rho})} = \frac{0.9981586 - 0}{0.008254527} = 120.9226
 \]
+as desired. Since it is way more than 1.96 we can reject the null hypothesis.
+\end{description}
+
+
+
+
+
+
+
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
+
+### (iv) Test the hypothesis that $\beta$ is zero again, now using the following expression for the F-statistic:
+\begin{equation}
+F = \frac{\dfrac{(RSS_R - RSS_U)}{df}}{\dfrac{RSS_U}{df}}
+\end{equation}
+
+where $RSS_R$ and $RSS_U$ are the residual sum of squares of the restricted and unrestricted equation respectively and $df$ are degrees of freedom.
+
+(\textbf{Note:} when testing the same hypothesis, the F-statistic is equal to the t-statistic squared - use this to check your answers to (iii) and (iv)).
+
+
+\begin{description}
+\item[Answer:] Notice that we are only restricting $\beta$ so the numerator degrees of freedom is $q = df_R - df_U = 1$ and the denominator degrees of freedom is $n-k-1 = 56-1-1 = 54.$
+
+Now we just need to find the $RSS$ for unrestricted and restricted. For unrestricted, this is our usual:
+\[
+RSS_U = \sum_{t=1}^ne_t^2 = \sum_{t=1}^n(c_t-\bar{c})^2
+\]
+
+For the restricted one, the model is $c_t = \alpha + \epsilon_t$ thus it only depends on the error. Accordingly,
+\[
+RSS_R = \sum_{t=1}^ne_t^2
+\]
+Therefore, the F-test is:
+\[
+F = \frac{\dfrac{(RSS_R - RSS_U)}{df}}{\dfrac{RSS_U}{df}} = \frac{\dfrac{\left(\displaystyle\sum_{t=1}^n(c_t-\bar{c})^2 - \displaystyle\sum_{t=1}^ne_t^2\right)}{1}}{\dfrac{\displaystyle\sum_{t=1}^ne_t^2}{54}} = \frac{\dfrac{1154516 - 4247.843}{1}}{\dfrac{4247.843}{54}} = 14622.59
+\]
+To verify, if we take the squareroot of this:
+\[
+\sqrt{14622.59} = 120.9239
+\]
 as desired.
 
+\end{description}
+
+
+
+
+
+
+
+
+
+
+
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
+
+## QUESTION 2
+
+\textbf{In the linear regression model } $y_t = a + bt + e_t$ \textbf{where } $t=1,\dots,T$ \textbf{ ( i.e. } $t$ \textbf{ is a linear trend, and so non-stochastic) and } $e_t$ \textbf{ is an independently distributed random variable with zero mean and constant variance } $\sigma^2$, \textbf{ show that the estimator } $b^*$ \textbf{ defined by } $b^* = \frac{(y_T-y_1)}{T-1}$ \textbf{ is or is not, an unbiased estimator of } $b.$ \textbf{ Use this result to comment on the claim that } $b^*$ \textbf{ has a lower variance that the Ordinary Least Squares estimator. Explain your answer. Calculate the variance of } $b^*.$ \textbf{(Optional question: for what values of T would the estimators have the same variance?)}    
+
+\begin{description}
+\item[Answer:] Lets start with obtaining an expression for the estimator $b^*$:
+\[
+b^* = \frac{(Y_T - y_1)}{T-1} = \frac{(a + bT + e_T) - (a + b1 +e_1)}{T-1} = \frac{b(T-1) + e_T - e_1}{T-1}
+\]
+So, $b^*$ can only be unbiased if $e_T=e_1=0$. Then, $\mathbb{E}(b^*)=b.$
+
+Next we will look at the variance of $b^*$:
+\[
+Var(b^*) = Var\left( \frac{y_T-y_1}{T-1} \right) = \left( \frac{1}{T-1}  \right)^2 Var(y_T-y_1) = \frac{2\sigma_e^2}{(1-T)^2}
+\]
+Lets compare this to OLS estimator's variance:
+\[
+Var(\hat{\beta}) = \frac{\sigma_e^2}{\displaystyle\sum_{t=1}^n (t-\bar{t})^2}
+\]
+where
+\begin{align*}
+\sum_{t=1}^n (t-\bar{t})^2 
+    &= \sum_{t=1}^T \left( t-\frac{T(T+1)}{2T} \right)^2 \ \ \ \ \ \text{ since } \sum_{t=1}^T t = \frac{T(T+1)}{2} \\[4pt]
+    &= \frac{1}{4}\sum_{t=1}^T\Big( 2t - (T+1) \Big)^2 \\[4pt]
+    &= \frac{1}{4}\sum_{t=1}^T\Big( 4t^2 + (T+1)^2 - 4t(T+1) \Big) \\[4pt]
+    &= \frac{1}{4}\left( 4\sum_{t=1}^Tt^2 + (T+1)^2 - 4\sum_{t=1}^Tt(T+1) \right) \\[4pt]
+    &= \frac{1}{4}\left( 4\sum_{t=1}^Tt^2 + (T+1)^2 - 4\frac{T(T+1)}{2}(T+1) \right) \\[4pt]
+    &= \frac{1}{4}\left( 4\sum_{t=1}^Tt^2 + (T+1)^2 - 2T(T+1)^2 \right) \\[4pt]
+    &= \frac{1}{4}\left( 4\frac{T(T+1)(2T+1)}{6} + (T+1)^2 - 2T(T+1)^2  \right) \ \ \ \ \ \text{ since } \sum_{t=1}^T t^2 = \frac{T(T+1)(2T+1)}{6} \\[4pt]
+    &= \left( \frac{T(T+1)(2T+1)}{6} + \frac{(T+1)^2 - 2T(T+1)^2}{4}  \right) \\[4pt] 
+    &= \left( \frac{2T(T+1)(2T+1) + 3(T+1)^2 - 6T(T+1)^2}{12}  \right) \\[4pt]
+    &= \left( \frac{-2T^3 - 3T^2 + 2T +3}{12} \right) \\[4pt]
+    &= \left( \frac{(T+1)(1-T)(2T+3)}{12} \right)
+\end{align*}
+
+So, plugging this back in to the variance expression:
+\[
+Var(\hat{\beta}) = \frac{12\sigma_e^2}{(T+1)(1-T)(2T+3)}
+\]
+Thus, $Var(\hat{\beta}) < Var(b^*)$. The two can be equal if $\frac{2\sigma_e^2}{(1-T)^2} = \frac{12\sigma_e^2}{(t+1)(t-1)(-2t-3)}$ which can happen only if
+
+\begin{align*}
+(1-T)^2 &= (T+1)(1-T)(2T+3) \\
+(1-T) &= (T+1)(2T+3) \\
+0 &= (T+1)(2T+3)+T-1 \\
+0 &= 2T^2 + 6T + 2 \\
+0 &= T^2 + 3T + 1.
+\end{align*}
+
+So $T= \dfrac{\sqrt{5}-3}{2}$ since $T=\frac{-3 \pm \sqrt{3^2-4(1)(1)}}{2\times 1}$
 
 \end{description}
+
+
+
