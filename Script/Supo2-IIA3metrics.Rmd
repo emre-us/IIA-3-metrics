@@ -634,25 +634,23 @@ This means, $\beta$ can also be expressed as:
 \beta = \sqrt{\frac{\rho^2Var(c_t)}{Var(y_t)}} = \rho\frac{\sigma_{c_t}}{\sigma_{y_t}}
 \]
 
-Now recall that the standard error of $\beta$ was:
-\[
-\mathit{se}(\hat{\beta}) = \sqrt{ \dfrac{ \hat{\sigma}_{\epsilon}^2 }{ \displaystyle\sum_{t=1}^n (y_t-\bar{y})^2 } } = \sqrt{ \dfrac{ \dfrac{\displaystyle\sum_{t=1}^n e_t^2}{n-2} }{ \displaystyle\sum_{t=1}^n (y_t-\bar{y})^2 } } = \sqrt{ \dfrac{ \displaystyle\sum_{t=1}^n e_t^2 }{ (n-2)\displaystyle\sum_{t=1}^n (y_t-\bar{y})^2 } } 
-\]
-Since
-\[
-R^2 = 1 - \dfrac{ \displaystyle\sum_{t=1}^n e_t^2 }{\displaystyle\sum_{t=1}^n (c_t-\bar{c})^2 }
-\]
-the standard error of $beta$ becomes:
-\[
-\mathit{se}(\hat{\beta}) = \sqrt{ \dfrac{ 1-\bigg{(}R^2\displaystyle\sum_{t=1}^n (c_t-\bar{c})^2 \bigg{)}}{ (n-2)\displaystyle\sum_{t=1}^n (y_t-\bar{y})^2 } }
-\]
-since $R^2$ is the estimate of $\rho$, or $\hat{\rho}$.
+Therefore we can rewrite our model as:
 
-The test statistic for $\rho$ is therefore:
+\begin{align*}
+c_t & = \alpha + \beta y_t + \epsilon_t \\
+    &= \left( \bar{c} - \rho\frac{\sigma_{c_t}}{\sigma_{y_t}}\bar{y} \right) + \left( \rho\frac{\sigma_{c_t}}{\sigma_{y_t}} \right)y_t
+\end{align*}
+
+The standard error of $\rho$ was first derived by Pearson using maximum likelihood. 
 \[
-t_{\hat{\rho}} = t_{\hat{\beta}} = \frac{\hat{\rho} - \rho^0}{\sqrt{ (n-2)(1-\hat{\rho}^2) }} = \frac{0.9981586}{\sqrt{54 \times (1-0.9981586^2)}} = 120.9226.
+\mathit{se}(\hat{\rho}) = \sqrt{\frac{1-\hat{\rho}^2}{n-2}} = \sqrt{\frac{1-0.9981586^2}{54}} = 0.008254527
 \]
 
+The t-statistic is therefore:
+\[
+t_{\hat{\rho}} = \frac{\hat{\rho} - \rho^0}{\mathit{se}(\hat{\rho})} = \frac{0.9981586 - 0}{0.008254527} = 120.9226
+\]
+as desired.
 
 
 \end{description}
