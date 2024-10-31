@@ -726,40 +726,36 @@ So, $b^*$ can only be unbiased if $e_T=e_1=0$. Then, $\mathbb{E}(b^*)=b.$
 
 Next we will look at the variance of $b^*$:
 \[
-Var(b^*) = Var\left( \frac{y_T-y_1}{T-1} \right) = \left( \frac{1}{T-1}  \right)^2 Var(y_T-y_1) = \frac{2\sigma_e^2}{(1-T)^2}
+Var(b^*) = Var\left( \frac{y_T-y_1}{T-1} \right) = \left( \frac{1}{T-1}  \right)^2 Var(y_T-y_1) = \frac{2\sigma_e^2}{(T-1)^2}
 \]
 Lets compare this to OLS estimator's variance:
 \[
 Var(\hat{\beta}) = \frac{\sigma_e^2}{\displaystyle\sum_{t=1}^n (t-\bar{t})^2}
 \]
 where
+\[
 \begin{align*}
-\sum_{t=1}^n (t-\bar{t})^2 
-    &= \sum_{t=1}^T \left( t-\frac{T(T+1)}{2T} \right)^2 \ \ \ \ \ \text{ since } \sum_{t=1}^T t = \frac{T(T+1)}{2} \\[4pt]
-    &= \frac{1}{4}\sum_{t=1}^T\Big( 2t - (T+1) \Big)^2 \\[4pt]
-    &= \frac{1}{4}\sum_{t=1}^T\Big( 4t^2 + (T+1)^2 - 4t(T+1) \Big) \\[4pt]
-    &= \frac{1}{4}\left( 4\sum_{t=1}^Tt^2 + (T+1)^2 - 4\sum_{t=1}^Tt(T+1) \right) \\[4pt]
-    &= \frac{1}{4}\left( 4\sum_{t=1}^Tt^2 + (T+1)^2 - 4\frac{T(T+1)}{2}(T+1) \right) \\[4pt]
-    &= \frac{1}{4}\left( 4\sum_{t=1}^Tt^2 + (T+1)^2 - 2T(T+1)^2 \right) \\[4pt]
-    &= \frac{1}{4}\left( 4\frac{T(T+1)(2T+1)}{6} + (T+1)^2 - 2T(T+1)^2  \right) \ \ \ \ \ \text{ since } \sum_{t=1}^T t^2 = \frac{T(T+1)(2T+1)}{6} \\[4pt]
-    &= \left( \frac{T(T+1)(2T+1)}{6} + \frac{(T+1)^2 - 2T(T+1)^2}{4}  \right) \\[4pt] 
-    &= \left( \frac{2T(T+1)(2T+1) + 3(T+1)^2 - 6T(T+1)^2}{12}  \right) \\[4pt]
-    &= \left( \frac{-2T^3 - 3T^2 + 2T +3}{12} \right) \\[4pt]
-    &= \left( \frac{(T+1)(1-T)(2T+3)}{12} \right)
+\sum_{t=1}^T (t-\bar{t})^2
+  &= \sum_{t=1}^T (t-\bar{t})(t-\bar{t}) \\[6pt]
+  &= \sum_{t=1}^T (t-\bar{t})t \\[6pt] 
+  &= \sum_{t=1}^Tt^2 - \bar{t}\sum_{t=1}^Tt \\[6pt]
+  &= \frac{T(T+1)(2T+1)}{6} - \left( \frac{T(T+1)}{2T}  \right)\left( \frac{T(T+1)}{2} \right)  \ \ \ \ \ \text{ since } \sum t^2 = \frac{T(T+1)(2T+1)}{6} \text{ and } \sum t = \frac{T(T+1)}{2} \\[6pt]
+  &= \frac{2T(T+1)(2T+1)-3T(T+1)^2}{12} \\[6pt]
+  &= \frac{T(T+1)(T-1)}{12}
 \end{align*}
-
+\]
 So, plugging this back in to the variance expression:
 \[
-Var(\hat{\beta}) = \frac{12\sigma_e^2}{(T+1)(1-T)(2T+3)}
+Var(\hat{\beta}) = \frac{12\sigma_e^2}{T(T+1)(T-1)}
 \]
-Thus, $Var(\hat{\beta}) < Var(b^*)$. The two can be equal if $\frac{2\sigma_e^2}{(1-T)^2} = \frac{12\sigma_e^2}{(t+1)(t-1)(-2t-3)}$ which can happen only if
+Thus, $Var(\hat{\beta}) < Var(b^*)$. The two can be equal if $\frac{2\sigma_e^2}{(T-1)^2} = \frac{12\sigma_e^2}{T(T+1)(T-1)}$ which can happen only if
 
 \begin{align*}
-(1-T)^2 &= (T+1)(1-T)(2T+3) \\
-(1-T) &= (T+1)(2T+3) \\
-0 &= (T+1)(2T+3)+T-1 \\
-0 &= 2T^2 + 6T + 2 \\
-0 &= T^2 + 3T + 1.
+\frac{1}{T-1} &= \frac{6}{T(T+1)} \\[4pt]
+T(T+1) &= 6(T-1) \\[4pt]
+T^2 - 5T + 6 &= 0 \\[4pt]
+(T-2)(T-3) &= 0 \\[4pt]
+T = 2 \text{ or } T=3.
 \end{align*}
 
 So $T= \dfrac{\sqrt{5}-3}{2}$ since $T=\frac{-3 \pm \sqrt{3^2-4(1)(1)}}{2\times 1}$
@@ -768,3 +764,27 @@ So $T= \dfrac{\sqrt{5}-3}{2}$ since $T=\frac{-3 \pm \sqrt{3^2-4(1)(1)}}{2\times 
 
 
 
+
+
+
+
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
+
+## QUESTION 3
+
+\textbf{Briefly discuss the 'ceteris paribus' and 'partialling out' interpretations of the coefficients estimated using multiple regression analysis.}
+
+\begin{description}
+\item[Answer:] Consider the case of an \textit{estimated equation} with $k=2$ independent variables: $\hat{Y}=\hat{\beta}_0 + \hat(\beta)_1X_1 + \hat{\beta}_2X_2.$
+
+\textbf{Ceteris paribus:} The estimates $\hat{\beta}_1$ and $\hat{\beta}_2$ have partial effect interpretations. From our estimated equation we have $\Delta\hat{Y} = \hat{\beta}_1\Delta X_1 + \hat{\beta}_2\Delta X_2$ which tells us that we can obtain the predicted change in $Y$ given the changes in $X_1$ and $X_2$. Notice we do not have the intercept here, since intercept is the predicted value of $Y$ when both $X_1$ and $X_2$ are zero. The coefficient on $X_1$ measures the change in $\hat{Y}$ due to a one unit change in $X_1$, holding all other independent variables fixed: $\Delta\hat{Y} = \hat{\beta}_1\Delta X_1$ holding $X_2$ fixed - i.e. $\Delta X_2=0$. The case with $k > 2$ is similar. This way, we have \textit{controlled for} the variables $X_2, \dots, X_k$ when estimating the effect of $X_1$ on $Y$. The other coefficients have a similar interpretation.
+
+Another way of thinking about this is to look back how we derived $\hat{\beta}_1$ before. We took the partial derivative of of $Y$ with respect to $X_1$, $\hat{\beta}_1=\frac{\partial{Y}}{\partial{X_1}}$. This tells us the rate of change of $Y$ with respect to $X_1$ holding $X_2$ constant.
+
+\textbf{Partialling Out:} 
+
+
+\end{description}
