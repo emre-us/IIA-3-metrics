@@ -1589,8 +1589,32 @@ Solving these for <span class="math inline">\(\hat{\beta}_0\)</span> and <span c
 \text{and} \\[4pt]
 \hat{\beta}_1
 = \frac{\dfrac{1}{n}\displaystyle\sum_{i=1}^nX_iY_i-\bar{X}\bar{Y}}{\dfrac{1}{n}\displaystyle\sum_{i=1}^nX_i^2-\bar{X}^2}
-= \frac{\displaystyle\sum_{i=1}^n(X_i-\bar{X})(Y_i-\bar{Y})}{\displaystyle\sum_{i=1}^n(X_i-\bar{X})^2}.
+= \frac{\displaystyle\sum_{i=1}^n(X_i-\bar{X})(Y_i-\bar{Y})}{\displaystyle\sum_{i=1}^n(X_i-\bar{X})^2} = \frac{\displaystyle\sum_{i=1}^nX_i(Y_i-\bar{Y})}{\displaystyle\sum_{i=1}^n(X_i-\bar{X})^2} = \frac{\displaystyle\sum_{i=1}^n(X_i-\bar{X})Y_i}{\displaystyle\sum_{i=1}^n(X_i-\bar{X})^2}.
 \]</span></p>
+<p>The last two equalities are due to the following algebraic property:
+<span class="math display">\[
+\begin{align}
+\sum (X_i-\bar{X})(Y_i-\bar{Y})
+  &amp;= \sum(Y_iX_i - X_i\bar{Y} - \bar{X}Y_i + \bar{X}\bar{Y}) \\
+  &amp;= \sum Y_iX_i - \sum X_i\bar{Y} - \sum\bar{X}Y_i + \sum\bar{X}\bar{Y} \\
+  &amp;= \sum Y_iX_i - \bar{Y}\sum X_i - \bar{X}\sum Y_i + n\bar{X}\bar{Y} \\
+  &amp;= \sum Y_iX_i - n\bar{Y}\bar{X} - n\bar{X}\bar{Y} + n\bar{X}\bar{Y} \\
+  &amp;= \sum Y_iX_i - n\bar{Y}\bar{X} \\
+  &amp;= \sum Y_iX_i - \bar{Y}\sum X_i \\
+  &amp;= \sum (Y_iX_i - \bar{Y}X_i) \\
+  &amp;= \sum (Y_i - \bar{Y})X_i.
+\end{align}
+\]</span>
+We can also get the same result with:
+<span class="math display">\[
+\begin{align}
+\sum (X_i-\bar{X})Y_i
+  &amp;= \sum(X_iY_i - \bar{X}Y_i) \\
+  &amp;= \sum X_iY_i - \bar{X}\sum Y_i \\
+  &amp;= \sum X_iY_i - n\bar{X}\bar{Y}.
+\end{align}
+\]</span></p>
+<p>In other words, when we have <span class="math inline">\(\sum(X_i - \bar{X}){Y_i-\bar{Y}}\)</span> type of equation, we can always drop one of the means and still obtain the same result.</p>
 <div style="background-color:rgba(237, 231, 225, 1); text-align:left; vertical-align: middle; padding:0px; margin-top:10px; margin-bottom:20px">
 <blockquote>
 <h4 id="olsdecomposition" class="unnumbered"><em>Decomposition of OLS Estimators</em></h4>
@@ -1929,6 +1953,16 @@ Note that there is a distinction between the <ins>error</ins> <span class="math 
 <p>Using the residual vector we also have <span class="math inline">\(\mathbf{X}^T\hat{\vec{u}}=0\)</span> since <span class="math inline">\(\sum X_i\hat{u}_i=0.\)</span></p>
 </blockquote>
 </div>
+<p>There is also another way of expressing <span class="math inline">\(\hat{\beta}_1\)</span> that incorporates partialling out interpretation of OLS. Called Frisch, Waugh, Lovell Theorem, this approach helps us deal with the unwieldiness of deriving estimators in multiple regression. It consists of a seqence of shorter regressions to compute the OLS estimator. Denote <span class="math inline">\(\hat{r}_{ij}\)</span> as the residual observation <span class="math inline">\(i\)</span> from a regression of <span class="math inline">\(X_j\)</span> on all other regressors. Notice that we are regressing one regressor <span class="math inline">\(X\)</span> on all other <span class="math inline">\(X\)</span>s. So for <span class="math inline">\(X_1\)</span> we have <span class="math inline">\(\X_i1=\hat{\alpha}_0 + \hat{\alpha}_1X_{i2} + \dots + \hat{\alpha}_kX_{ik} + \hat{r}_{i1}\)</span> or <span class="math inline">\(\hat{r}_{i1} = X_{i1} - \hat{X}_{i1}\)</span> where <span class="math inline">\(\hat{X}_{i1}\)</span> is the fitted value.</p>
+<p>The second step is to regress <span class="math inline">\(Y_i\)</span> against this residual: <span class="math inline">\(Y_i = \gamma_0 + \gamma_1\hat{r}_{i1}+{\epsilon}_i.\)</span> Then <span class="math inline">\(\hat{\gamma}_1\)</span> in this equation is obtained by:
+<span class="math display">\[
+\begin{align}
+\hat{\gamma}_1
+  &amp;= \frac{\displaystyle\sum_{i=1}^n(Y_i - \bar{Y})(\hat{r}_{i1} - \bar{\hat{r}}_{i1})}{\displaystyle\sum_{i=1}^n(\hat{r}_{i1} - \bar{\hat{r}}_{i1})^2} \\[6pt]
+  &amp;= \frac{\displaystyle\sum_{i=1}^nY_i(\hat{r}_{i1} - \bar{\hat{r}}_{i1})}{\displaystyle\sum_{i=1}^n(\hat{r}_{i1} - \bar{\hat{r}}_{i1})^2} \\[6pt]
+  &amp;= \frac{\displaystyle\sum_{i=1}^nY_i\hat{r}_{i1}}{\displaystyle\sum_{i=1}^n\hat{r}_{i1}^2} \ \ \ \ \ \text{ since } \bar{\hat{r}}_{i1} \text{ is residual, } \bar{\hat{r}}_{i1}=0.
+\end{align}
+\]</span></p>
 <p>Just as we did for the single regression, we can also derive the standard errors of the estimators. For <span class="math inline">\(k=2\)</span>, we have
 <span class="math display">\[
 \begin{align}
