@@ -129,7 +129,9 @@ Solving these for $\hat{\beta}_0$ and $\hat{\beta}_1$ gives:
 \text{and} \\[4pt]
 \hat{\beta}_1
 = \frac{\dfrac{1}{n}\displaystyle\sum_{i=1}^nX_iY_i-\bar{X}\bar{Y}}{\dfrac{1}{n}\displaystyle\sum_{i=1}^nX_i^2-\bar{X}^2} 
-= \frac{\displaystyle\sum_{i=1}^n(X_i-\bar{X})(Y_i-\bar{Y})}{\displaystyle\sum_{i=1}^n(X_i-\bar{X})^2} = \frac{\displaystyle\sum_{i=1}^nX_i(Y_i-\bar{Y})}{\displaystyle\sum_{i=1}^n(X_i-\bar{X})^2} = \frac{\displaystyle\sum_{i=1}^n(X_i-\bar{X})Y_i}{\displaystyle\sum_{i=1}^n(X_i-\bar{X})^2}.
+= \frac{\displaystyle\sum_{i=1}^n(X_i-\bar{X})(Y_i-\bar{Y})}{\displaystyle\sum_{i=1}^n(X_i-\bar{X})^2} 
+= \frac{\displaystyle\sum_{i=1}^nX_i(Y_i-\bar{Y})}{\displaystyle\sum_{i=1}^n(X_i-\bar{X})^2} 
+= \frac{\displaystyle\sum_{i=1}^n(X_i-\bar{X})Y_i}{\displaystyle\sum_{i=1}^n(X_i-\bar{X})^2}.
 \]
 
 The last two equalities are due to the following algebraic property:
@@ -157,6 +159,24 @@ We can also get the same result with:
 \]
 
 In other words, when we have $\sum(X_i - \bar{X}){Y_i-\bar{Y}}$ type of equation, we can always drop one of the means and still obtain the same result.
+
+Also notice that
+\[
+\begin{align}
+\sum(X_i - \bar{X})^2 
+  &= \sum(X_i-\bar{X})(X_i-\bar{X}) \\
+  &= \sum(X_i-\bar{X})X_i \\
+  &= \sum X_i^2 - \bar{X}\sum{X_i} \\
+  &= \sum X_i^2 - n\bar{X}.
+\end{align}
+\]
+
+Thus, we can also express $\hat{\beta}_1$ as
+\[
+\hat{\beta}_1 
+= \frac{\displaystyle\sum_{i=1}^n(X_i-\bar{X})Y_i}{\displaystyle\sum_{i=1}^nX_i^2 - n\bar{X}}
+= \frac{\displaystyle\sum_{i=1}^nX_i(Y_i-\bar{Y})}{\displaystyle\sum_{i=1}^nX_i^2 - n\bar{X}}
+\]
 
 <div style="background-color:rgba(237, 231, 225, 1); text-align:left; vertical-align: middle; padding:0px; margin-top:10px; margin-bottom:20px">
 
@@ -530,7 +550,9 @@ Using the residual vector we also have $\mathbf{X}^T\hat{\vec{u}}=0$ since $\sum
 
 </div>
 
-There is also another way of expressing $\hat{\beta}_1$ that incorporates partialling out interpretation of OLS. Called Frisch, Waugh, Lovell Theorem, this approach helps us deal with the unwieldiness of deriving estimators in multiple regression. It consists of a seqence of shorter regressions to compute the OLS estimator. Denote $\hat{r}_{ij}$ as the residual observation $i$ from a regression of $X_j$ on all other regressors. Notice that we are regressing one regressor $X$ on all other $X$s. So for $X_1$ we have $\X_i1=\hat{\alpha}_0 + \hat{\alpha}_1X_{i2} + \dots + \hat{\alpha}_kX_{ik} + \hat{r}_{i1}$ or $\hat{r}_{i1} = X_{i1} - \hat{X}_{i1}$ where $\hat{X}_{i1}$ is the fitted value. 
+There is also another way of expressing $\hat{\beta}_1$ that incorporates partialling out interpretation of OLS. Called Frisch, Waugh, Lovell Theorem, this approach helps us deal with the unwieldiness of deriving estimators in multiple regression. It consists of a seqence of shorter regressions to compute the OLS estimator. 
+
+First, denote $\hat{r}_{ij}$ as the residual observation $i$ from a regression of $X_j$ on all other regressors. Notice that we are regressing one regressor $X$ on all other $X$s. So for $X_1$ we have $X_{i1}=\hat{\alpha}_0 + \hat{\alpha}_1X_{i2} + \dots + \hat{\alpha}_kX_{ik} + \hat{r}_{i1}$, or, $\hat{r}_{i1} = X_{i1} - \hat{X}_{i1}$ where $\hat{X}_{i1}$ is the fitted value. 
 
 The second step is to regress $Y_i$ against this residual: $Y_i = \gamma_0 + \gamma_1\hat{r}_{i1}+{\epsilon}_i.$ Then $\hat{\gamma}_1$ in this equation is obtained by:
 \[
@@ -542,49 +564,17 @@ The second step is to regress $Y_i$ against this residual: $Y_i = \gamma_0 + \ga
 \end{align}
 \]
 
+What Frisch, Waugh, Lovell Theorem says is that this expression equals to $\hat{\beta}_1$. That is:
+\[
+\hat{\beta}_1 = \frac{\displaystyle\sum_{i=1}^nY_i\hat{r}_{i1}}{\displaystyle\sum_{i=1}^n\hat{r}_{i1}^2}
+\]
+which can be easier to obtain than the FOC approach above.
 
+Hwoever, notice that, $\hat{\gamma}_0 \neq \hat{\beta}_0$. This is because $\hat{\gamma}_0 = \bar{Y}-\hat{\gamma}_1\bar{\hat{r}}_{i1}$ and since $\hat{r}_{i1}$ is residual, its mean is $0$. Therefore, $\hat{\gamma}_0 = \bar{Y}.$
 
+One way to think about this expression for $\hat{\beta}_1$ is that it measures the effect of $X_1$ on $Y$ after $X_2,\dots,X_k$ are \textit{partialled out}, or \textit{netted out}. In other words, $\hat{\beta}_1$ is the covariance between $Y$ and variation in $X_1$ that can't be explained by its relation to other $X$s. This Theorem has many uses in theoretical and applied econometrics, and we will discuss it again in time series regressions. 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-Just as we did for the single regression, we can also derive the standard errors of the estimators. For $k=2$, we have
+Now, just as we did for the single regression, we can also derive the standard errors of the estimators. For $k=2$, we have
 \[
 \begin{align}
 Var(\hat{\beta}_0) 

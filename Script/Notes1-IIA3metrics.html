@@ -1589,7 +1589,9 @@ Solving these for <span class="math inline">\(\hat{\beta}_0\)</span> and <span c
 \text{and} \\[4pt]
 \hat{\beta}_1
 = \frac{\dfrac{1}{n}\displaystyle\sum_{i=1}^nX_iY_i-\bar{X}\bar{Y}}{\dfrac{1}{n}\displaystyle\sum_{i=1}^nX_i^2-\bar{X}^2}
-= \frac{\displaystyle\sum_{i=1}^n(X_i-\bar{X})(Y_i-\bar{Y})}{\displaystyle\sum_{i=1}^n(X_i-\bar{X})^2} = \frac{\displaystyle\sum_{i=1}^nX_i(Y_i-\bar{Y})}{\displaystyle\sum_{i=1}^n(X_i-\bar{X})^2} = \frac{\displaystyle\sum_{i=1}^n(X_i-\bar{X})Y_i}{\displaystyle\sum_{i=1}^n(X_i-\bar{X})^2}.
+= \frac{\displaystyle\sum_{i=1}^n(X_i-\bar{X})(Y_i-\bar{Y})}{\displaystyle\sum_{i=1}^n(X_i-\bar{X})^2}
+= \frac{\displaystyle\sum_{i=1}^nX_i(Y_i-\bar{Y})}{\displaystyle\sum_{i=1}^n(X_i-\bar{X})^2}
+= \frac{\displaystyle\sum_{i=1}^n(X_i-\bar{X})Y_i}{\displaystyle\sum_{i=1}^n(X_i-\bar{X})^2}.
 \]</span></p>
 <p>The last two equalities are due to the following algebraic property:
 <span class="math display">\[
@@ -1615,6 +1617,22 @@ We can also get the same result with:
 \end{align}
 \]</span></p>
 <p>In other words, when we have <span class="math inline">\(\sum(X_i - \bar{X}){Y_i-\bar{Y}}\)</span> type of equation, we can always drop one of the means and still obtain the same result.</p>
+<p>Also notice that
+<span class="math display">\[
+\begin{align}
+\sum(X_i - \bar{X})^2
+  &amp;= \sum(X_i-\bar{X})(X_i-\bar{X}) \\
+  &amp;= \sum(X_i-\bar{X})X_i \\
+  &amp;= \sum X_i^2 - \bar{X}\sum{X_i} \\
+  &amp;= \sum X_i^2 - n\bar{X}.
+\end{align}
+\]</span></p>
+<p>Thus, we can also express <span class="math inline">\(\hat{\beta}_1\)</span> as
+<span class="math display">\[
+\hat{\beta}_1
+= \frac{\displaystyle\sum_{i=1}^n(X_i-\bar{X})Y_i}{\displaystyle\sum_{i=1}^nX_i^2 - n\bar{X}}
+= \frac{\displaystyle\sum_{i=1}^nX_i(Y_i-\bar{Y})}{\displaystyle\sum_{i=1}^nX_i^2 - n\bar{X}}
+\]</span></p>
 <div style="background-color:rgba(237, 231, 225, 1); text-align:left; vertical-align: middle; padding:0px; margin-top:10px; margin-bottom:20px">
 <blockquote>
 <h4 id="olsdecomposition" class="unnumbered"><em>Decomposition of OLS Estimators</em></h4>
@@ -1953,7 +1971,8 @@ Note that there is a distinction between the <ins>error</ins> <span class="math 
 <p>Using the residual vector we also have <span class="math inline">\(\mathbf{X}^T\hat{\vec{u}}=0\)</span> since <span class="math inline">\(\sum X_i\hat{u}_i=0.\)</span></p>
 </blockquote>
 </div>
-<p>There is also another way of expressing <span class="math inline">\(\hat{\beta}_1\)</span> that incorporates partialling out interpretation of OLS. Called Frisch, Waugh, Lovell Theorem, this approach helps us deal with the unwieldiness of deriving estimators in multiple regression. It consists of a seqence of shorter regressions to compute the OLS estimator. Denote <span class="math inline">\(\hat{r}_{ij}\)</span> as the residual observation <span class="math inline">\(i\)</span> from a regression of <span class="math inline">\(X_j\)</span> on all other regressors. Notice that we are regressing one regressor <span class="math inline">\(X\)</span> on all other <span class="math inline">\(X\)</span>s. So for <span class="math inline">\(X_1\)</span> we have <span class="math inline">\(\X_i1=\hat{\alpha}_0 + \hat{\alpha}_1X_{i2} + \dots + \hat{\alpha}_kX_{ik} + \hat{r}_{i1}\)</span> or <span class="math inline">\(\hat{r}_{i1} = X_{i1} - \hat{X}_{i1}\)</span> where <span class="math inline">\(\hat{X}_{i1}\)</span> is the fitted value.</p>
+<p>There is also another way of expressing <span class="math inline">\(\hat{\beta}_1\)</span> that incorporates partialling out interpretation of OLS. Called Frisch, Waugh, Lovell Theorem, this approach helps us deal with the unwieldiness of deriving estimators in multiple regression. It consists of a seqence of shorter regressions to compute the OLS estimator.</p>
+<p>First, denote <span class="math inline">\(\hat{r}_{ij}\)</span> as the residual observation <span class="math inline">\(i\)</span> from a regression of <span class="math inline">\(X_j\)</span> on all other regressors. Notice that we are regressing one regressor <span class="math inline">\(X\)</span> on all other <span class="math inline">\(X\)</span>s. So for <span class="math inline">\(X_1\)</span> we have <span class="math inline">\(X_{i1}=\hat{\alpha}_0 + \hat{\alpha}_1X_{i2} + \dots + \hat{\alpha}_kX_{ik} + \hat{r}_{i1}\)</span>, or, <span class="math inline">\(\hat{r}_{i1} = X_{i1} - \hat{X}_{i1}\)</span> where <span class="math inline">\(\hat{X}_{i1}\)</span> is the fitted value.</p>
 <p>The second step is to regress <span class="math inline">\(Y_i\)</span> against this residual: <span class="math inline">\(Y_i = \gamma_0 + \gamma_1\hat{r}_{i1}+{\epsilon}_i.\)</span> Then <span class="math inline">\(\hat{\gamma}_1\)</span> in this equation is obtained by:
 <span class="math display">\[
 \begin{align}
@@ -1963,7 +1982,14 @@ Note that there is a distinction between the <ins>error</ins> <span class="math 
   &amp;= \frac{\displaystyle\sum_{i=1}^nY_i\hat{r}_{i1}}{\displaystyle\sum_{i=1}^n\hat{r}_{i1}^2} \ \ \ \ \ \text{ since } \bar{\hat{r}}_{i1} \text{ is residual, } \bar{\hat{r}}_{i1}=0.
 \end{align}
 \]</span></p>
-<p>Just as we did for the single regression, we can also derive the standard errors of the estimators. For <span class="math inline">\(k=2\)</span>, we have
+<p>What Frisch, Waugh, Lovell Theorem says is that this expression equals to <span class="math inline">\(\hat{\beta}_1\)</span>. That is:
+<span class="math display">\[
+\hat{\beta}_1 = \frac{\displaystyle\sum_{i=1}^nY_i\hat{r}_{i1}}{\displaystyle\sum_{i=1}^n\hat{r}_{i1}^2}
+\]</span>
+which can be easier to obtain than the FOC approach above.</p>
+<p>Hwoever, notice that, <span class="math inline">\(\hat{\gamma}_0 \neq \hat{\beta}_0\)</span>. This is because <span class="math inline">\(\hat{\gamma}_0 = \bar{Y}-\hat{\gamma}_1\bar{\hat{r}}_{i1}\)</span> and since <span class="math inline">\(\hat{r}_{i1}\)</span> is residual, its mean is <span class="math inline">\(0\)</span>. Therefore, <span class="math inline">\(\hat{\gamma}_0 = \bar{Y}.\)</span></p>
+<p>One way to think about this expression for <span class="math inline">\(\hat{\beta}_1\)</span> is that it measures the effect of <span class="math inline">\(X_1\)</span> on <span class="math inline">\(Y\)</span> after <span class="math inline">\(X_2,\dots,X_k\)</span> are , or . In other words, <span class="math inline">\(\hat{\beta}_1\)</span> is the covariance between <span class="math inline">\(Y\)</span> and variation in <span class="math inline">\(X_1\)</span> that can’t be explained by its relation to other <span class="math inline">\(X\)</span>s. This Theorem has many uses in theoretical and applied econometrics, and we will discuss it again in time series regressions.</p>
+<p>Now, just as we did for the single regression, we can also derive the standard errors of the estimators. For <span class="math inline">\(k=2\)</span>, we have
 <span class="math display">\[
 \begin{align}
 Var(\hat{\beta}_0)
