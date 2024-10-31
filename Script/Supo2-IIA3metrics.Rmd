@@ -733,17 +733,17 @@ Lets compare this to OLS estimator's variance:
 Var(\hat{\beta}) = \frac{\sigma_e^2}{\displaystyle\sum_{t=1}^n (t-\bar{t})^2}
 \]
 where
-\[
+
 \begin{align*}
 \sum_{t=1}^T (t-\bar{t})^2
   &= \sum_{t=1}^T (t-\bar{t})(t-\bar{t}) \\[6pt]
   &= \sum_{t=1}^T (t-\bar{t})t \\[6pt] 
-  &= \sum_{t=1}^Tt^2 - \bar{t}\sum_{t=1}^Tt \\[6pt]
-  &= \frac{T(T+1)(2T+1)}{6} - \left( \frac{T(T+1)}{2T}  \right)\left( \frac{T(T+1)}{2} \right)  \ \ \ \ \ \text{ since } \sum t^2 = \frac{T(T+1)(2T+1)}{6} \text{ and } \sum t = \frac{T(T+1)}{2} \\[6pt]
+  &= \sum_{t=1}^Tt^2 - \bar{t}\sum_{t=1}^Tt \ \ \ \ \ \text{ and since } \sum t^2 = \frac{T(T+1)(2T+1)}{6} \text{ and } \sum t = \frac{T(T+1)}{2} \\[6pt]
+  &= \frac{T(T+1)(2T+1)}{6} - \left( \frac{T(T+1)}{2T}  \right)\left( \frac{T(T+1)}{2} \right) \\[6pt]
   &= \frac{2T(T+1)(2T+1)-3T(T+1)^2}{12} \\[6pt]
   &= \frac{T(T+1)(T-1)}{12}
 \end{align*}
-\]
+
 So, plugging this back in to the variance expression:
 \[
 Var(\hat{\beta}) = \frac{12\sigma_e^2}{T(T+1)(T-1)}
@@ -757,8 +757,6 @@ T^2 - 5T + 6 &= 0 \\[4pt]
 (T-2)(T-3) &= 0 \\[4pt]
 T = 2 \text{ or } T=3.
 \end{align*}
-
-So $T= \dfrac{\sqrt{5}-3}{2}$ since $T=\frac{-3 \pm \sqrt{3^2-4(1)(1)}}{2\times 1}$
 
 \end{description}
 
