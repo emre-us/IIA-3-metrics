@@ -1634,10 +1634,10 @@ where the sample variance <span class="math inline">\(\hat{\sigma}^2 = (n-1)^{-1
 \hat{Y}_i
 &amp;= \hat{\beta}_0 + \hat{\beta}_1X_i \ , \ \text{for} \ i=1,\dots,n \\[4pt]
 &amp;=\left(\bar{Y}-\hat{\beta}_1\bar{X}\right) + \hat{\beta}_1X_i \\[4pt]
-&amp;= \bar{Y} - \hat{\beta}_1\left(X_i - \bar{X}\right) \\[4pt]
-&amp;= \bar{Y} - \left( \beta_1 + \sum_{i=1}^n\left(\frac{(X_i-\bar{X})}{\displaystyle\sum_{j=1}^n(X_i-\bar{X})^2}\right)u_i \right)\left(X_i - \bar{X}\right) \\[4pt]
-&amp;= \bar{Y} - \left( \frac{\displaystyle\sum_{i=1}^n(X_i-\bar{X})(Y_i-\bar{Y})}{\displaystyle\sum_{i=1}^n(X_i-\bar{X})^2} \right)\left(X_i - \bar{X}\right) \\[4pt]
-&amp;=\bar{Y} - \left( \frac{\hat{\sigma}_{XY}}{\hat{\sigma}_X^2} \right)\left(X_i - \bar{X}\right).
+&amp;= \bar{Y} + \hat{\beta}_1\left(X_i - \bar{X}\right) \\[4pt]
+&amp;= \bar{Y} + \left( \beta_1 + \sum_{i=1}^n\left(\frac{(X_i-\bar{X})}{\displaystyle\sum_{j=1}^n(X_i-\bar{X})^2}\right)u_i \right)\left(X_i - \bar{X}\right) \\[4pt]
+&amp;= \bar{Y} + \left( \frac{\displaystyle\sum_{i=1}^n(X_i-\bar{X})(Y_i-\bar{Y})}{\displaystyle\sum_{i=1}^n(X_i-\bar{X})^2} \right)\left(X_i - \bar{X}\right) \\[4pt]
+&amp;=\bar{Y} + \left( \frac{\hat{\sigma}_{XY}}{\hat{\sigma}_X^2} \right)\left(X_i - \bar{X}\right).
 \end{align}
 \]</span>
 The difference between <span class="math inline">\(Y_i\)</span> and its predicted value <span class="math inline">\(\hat{Y}_i\)</span> is then the <em>residual</em> for the <span class="math inline">\(i^{th}\)</span> observation:
@@ -1646,8 +1646,8 @@ The difference between <span class="math inline">\(Y_i\)</span> and its predicte
 \hat{u}_i
 &amp;= Y_i-\hat{Y}_i \\[4pt]
 &amp;= Y_i - \hat{\beta}_0-\hat{\beta}_1X_i \\[4pt]
-&amp;= Y_i - \left(\bar{Y}-\frac{\hat{\sigma}_{XY}}{\hat{\sigma}_X^2}(X_i - \bar{X})\right) \\[4pt]
-&amp;= Y_i - \bar{Y} + \frac{\hat{\sigma}_{XY}}{\hat{\sigma}_X^2}(X_i - \bar{X})  \ , \ \text{for} \ i=1,\dots,n.
+&amp;= Y_i - \left(\bar{Y}+\frac{\hat{\sigma}_{XY}}{\hat{\sigma}_X^2}(X_i - \bar{X})\right) \\[4pt]
+&amp;= Y_i - \bar{Y} - \frac{\hat{\sigma}_{XY}}{\hat{\sigma}_X^2}(X_i - \bar{X})  \ , \ \text{for} \ i=1,\dots,n.
 \end{align}
 \]</span>
 The intercept <span class="math inline">\(\hat{\beta}_0\)</span>, slope <span class="math inline">\(\hat{\beta}_1\)</span>, and residual <span class="math inline">\(\hat{u}_i\)</span> are estimated from a sample of <span class="math inline">\(n\)</span> observations of <span class="math inline">\(X_i\)</span> and <span class="math inline">\(Y_i\)</span>. These are estimates of the <em>unknown</em> true population intercept <span class="math inline">\(\beta_0\)</span>, slope <span class="math inline">\(\beta_1\)</span>, and error term <span class="math inline">\(u_i\)</span>.</p>

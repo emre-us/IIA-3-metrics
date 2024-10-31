@@ -180,10 +180,10 @@ So, the OLS predicted values $\hat{Y}_i$ can be written in the following ways:
 \hat{Y}_i 
 &= \hat{\beta}_0 + \hat{\beta}_1X_i \ , \ \text{for} \ i=1,\dots,n \\[4pt]
 &=\left(\bar{Y}-\hat{\beta}_1\bar{X}\right) + \hat{\beta}_1X_i \\[4pt]
-&= \bar{Y} - \hat{\beta}_1\left(X_i - \bar{X}\right) \\[4pt]
-&= \bar{Y} - \left( \beta_1 + \sum_{i=1}^n\left(\frac{(X_i-\bar{X})}{\displaystyle\sum_{j=1}^n(X_i-\bar{X})^2}\right)u_i \right)\left(X_i - \bar{X}\right) \\[4pt]
-&= \bar{Y} - \left( \frac{\displaystyle\sum_{i=1}^n(X_i-\bar{X})(Y_i-\bar{Y})}{\displaystyle\sum_{i=1}^n(X_i-\bar{X})^2} \right)\left(X_i - \bar{X}\right) \\[4pt]
-&=\bar{Y} - \left( \frac{\hat{\sigma}_{XY}}{\hat{\sigma}_X^2} \right)\left(X_i - \bar{X}\right).
+&= \bar{Y} + \hat{\beta}_1\left(X_i - \bar{X}\right) \\[4pt]
+&= \bar{Y} + \left( \beta_1 + \sum_{i=1}^n\left(\frac{(X_i-\bar{X})}{\displaystyle\sum_{j=1}^n(X_i-\bar{X})^2}\right)u_i \right)\left(X_i - \bar{X}\right) \\[4pt]
+&= \bar{Y} + \left( \frac{\displaystyle\sum_{i=1}^n(X_i-\bar{X})(Y_i-\bar{Y})}{\displaystyle\sum_{i=1}^n(X_i-\bar{X})^2} \right)\left(X_i - \bar{X}\right) \\[4pt]
+&=\bar{Y} + \left( \frac{\hat{\sigma}_{XY}}{\hat{\sigma}_X^2} \right)\left(X_i - \bar{X}\right).
 \end{align}
 \]
 The difference between $Y_i$ and its predicted value $\hat{Y}_i$ is then the *residual* for the $i^{th}$ observation:
@@ -192,8 +192,8 @@ The difference between $Y_i$ and its predicted value $\hat{Y}_i$ is then the *re
 \hat{u}_i
 &= Y_i-\hat{Y}_i \\[4pt]
 &= Y_i - \hat{\beta}_0-\hat{\beta}_1X_i \\[4pt]
-&= Y_i - \left(\bar{Y}-\frac{\hat{\sigma}_{XY}}{\hat{\sigma}_X^2}(X_i - \bar{X})\right) \\[4pt]
-&= Y_i - \bar{Y} + \frac{\hat{\sigma}_{XY}}{\hat{\sigma}_X^2}(X_i - \bar{X})  \ , \ \text{for} \ i=1,\dots,n.
+&= Y_i - \left(\bar{Y}+\frac{\hat{\sigma}_{XY}}{\hat{\sigma}_X^2}(X_i - \bar{X})\right) \\[4pt]
+&= Y_i - \bar{Y} - \frac{\hat{\sigma}_{XY}}{\hat{\sigma}_X^2}(X_i - \bar{X})  \ , \ \text{for} \ i=1,\dots,n.
 \end{align}
 \]
 The intercept $\hat{\beta}_0$, slope $\hat{\beta}_1$, and residual $\hat{u}_i$ are estimated from a sample of $n$ observations of $X_i$ and $Y_i$. These are estimates of the *unknown* true population intercept $\beta_0$, slope $\beta_1$, and error term $u_i$.
