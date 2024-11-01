@@ -782,7 +782,22 @@ T = 2 \text{ or } T=3.
 
 Another way of thinking about this is to look back how we derived $\hat{\beta}_1$ before. We took the partial derivative of of $Y$ with respect to $X_1$, $\hat{\beta}_1=\frac{\partial{Y}}{\partial{X_1}}$. This tells us the rate of change of $Y$ with respect to $X_1$ holding $X_2$ constant.
 
-\textbf{Partialling Out:} 
-
+\textbf{Partialling Out:} This is another representation of the partial effect interpretation of $\hat{\beta}_1$. For this approach, we partial out, or partial out the effect of $X_2$ by first regressing $X_1$ on $X_2$ using the model $X_1 = \alpha_0 + \alpha_1X_2 + r_1$. Here, the residual $r_1$ represents all the influences on $X_1$ not related to $X_2$. If we then regress $Y$ on this residual using the model $Y = \gamma_0 + \gamma_1r_1 + v$, then Frisch, Waugh, Lovell Theorem tells us that $\hat{\gamma}_1 = \hat{\beta}_1$. That is, $\hat{\beta}_1 = \frac{Cov(Y,v)}{Var{v}}.$ Thus, this shows that $\hat{\beta}_1$ is estimating the effect of $X_1$ on $Y$ after the effect of $X_2$ has been partialled out.
 
 \end{description}
+
+
+
+
+
+
+
+
+
+
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
+
+## QUESTION 4
