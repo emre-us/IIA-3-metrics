@@ -5,14 +5,16 @@ author: "Emre Usenmez"
 date: "`r Sys.Date()`"
 output: pdf_document
 header-includes: 
-  - \usepackage{tcolorbox, xcolor, changepage, float}
+  - \usepackage{tcolorbox, xcolor, changepage, float, dashrule}
   - \tcbuselibrary{listings,most}
 ---
 
+\tiny{Very grateful to Dr Oleg Kitov and Dr Clive Lawson for the very informative stylized answers to previous iterations of the supervision questions.}
+\normalsize
+
+
 # FACULTY QUESTIONS
 
-\tiny{Very grateful to Dr Oleg Kitov for the very informative stylized answers to previous iterations of the supervision questions.}
-\normalsize
 
 <!-- This comment will not be displayed in the output. Below change to CSS style is to ensure the blocktexts are in the same form size as the rest of the text.-->
 
@@ -709,9 +711,9 @@ as desired.
 
 
 
-\bigskip\bigskip
-***
-\bigskip\bigskip
+\bigskip\bigskip\bigskip
+\hdashrule[0.5ex]{\textwidth}{1pt}{3mm}
+\bigskip\bigskip\bigskip
 
 ## QUESTION 2
 
@@ -767,9 +769,9 @@ T = 2 \text{ or } T=3.
 
 
 
-\bigskip\bigskip
-***
-\bigskip\bigskip
+\bigskip\bigskip\bigskip
+\hdashrule[0.5ex]{\textwidth}{1pt}{3mm}
+\bigskip\bigskip\bigskip
 
 ## QUESTION 3
 
@@ -796,9 +798,9 @@ Another way of thinking about this is to look back how we derived $\hat{\beta}_1
 
 
 
-\bigskip\bigskip
-***
-\bigskip\bigskip
+\bigskip\bigskip\bigskip
+\hdashrule[0.5ex]{\textwidth}{1pt}{3mm}
+\bigskip\bigskip\bigskip
 
 ## QUESTION 4
 
@@ -851,7 +853,7 @@ t_{\beta_2} = \frac{\hat{\beta_2}}{\sqrt{Var({\hat{\beta}_2})}} = \frac{0.4162}{
 \]
 
 
-Since neither of them exceed the critical value we cannot reject the null hypothesis.
+Since neither of them exceed the absolute value of the critical value we cannot reject the null hypothesis.
 \end{description}
 
 
@@ -867,7 +869,7 @@ Since neither of them exceed the critical value we cannot reject the null hypoth
 \begin{equation} \label{eq:3}
 F = \frac{\dfrac{(R_U^2-R_R^2)}{df}}{\dfrac{1-R_U^2}{df}}.
 \end{equation}
-\textbf{Under what conditions can equation} ref{eq:2} \textbf{not be rearranged this way?}
+\textbf{Under what conditions can equation} \ref{eq:2} \textbf{not be rearranged this way?}
 
 \begin{description}
 \item[Answer:] $F$ is defined in equation \ref{eq:2} $F$ as:
@@ -892,11 +894,188 @@ Even though $R^2$-form of the $F$ statistic is convenient for testing exclusion 
 \]
 We therefore have one exclusion restriction and $\beta_1=1$ is not. To test the hypothesis using $F$ statistic, we first estimate the unrestricted model and then impose the restrictions in the hypothesis to obtain the restricted model. 
 
-Here, however, the second step can be a bit tricky. The restricted model is $y_t = \alpha + 1x_{t1} + \varepsilon.$ Now, to impose restriction that the coefficient on $x_{t1}$ is unity, we need to estimate the following model:
+Here, however, the second step can be a bit tricky. The restricted model is $y_t = \alpha + 1x_{t1} + 0\beta_2x_{t2} + \varepsilon.$ To impose restriction that the coefficient on $x_{t1}$ is unity, we need to estimate the following model:
 \[
 y_t - x_{t1} = \alpha + \varepsilon
 \]
 which is a model with just an intercept but with a different dependent variable than the unrestricted model. Because of this difference in the dependent variable between unrestricted and restricted models, we cannot in this case use $R^2$ form of the $F$ statistic. As a result, the $TSS_U$ and $TSS_R$ would no longer be equal and thus the $R$-squared form of F statistic is not equal to its $RSS$ form.
 
 In general, the $RSS$ form of F statistic should be used if different dependent variable is needed in running the restricted regression.
+\end{description}
+
+
+
+
+
+
+
+
+\bigskip\bigskip
+
+***
+\bigskip\bigskip
+
+#### (c) If an eqaution is restricted such that all slope coefficiencts are zero, what is the coefficient of determination in $R^2$ of that equation?
+
+\begin{description}
+\item[Answer:] Recall the definition of $R^2$:
+\[
+R^2 = 1 - \frac{RSS}{TSS} = 1 - \frac{\displaystyle\sum_{t=1}^n \hat{\varepsilon}_t^2}{\displaystyle\sum_{t=1}^n(y_t - \bar{y})^2} = 1 - \frac{\displaystyle\sum_{t=1}^n(y_t - \hat{y}_t)^2}{\displaystyle\sum_{t=1}^n(y_t - \bar{y})^2}.
+\]
+If all the slope coefficients are zero, then the restricted model is just the intercept, so both the numerator and denominator becomes the variance of dependent variable. Accordingly, $R^2 = 1-1 =0.$
+
+Intuitively, having an intercept-only model means we have a horizontal line equal to $\alpha$. Since $R^2$ quantifies how well $x$ is associated with $y$, then this means knowing $x$ does not help in understanding $y$. Therefore, the best prediction of $y$ is the mean of all $y_t$ irrespective of $x$. Since $x$ has no useful information in understanding $y$, the $R^2$ would be zero.
+
+\end{description}
+
+
+
+
+
+
+
+
+\bigskip\bigskip
+
+***
+\bigskip\bigskip
+
+#### (d) Using equation \ref{eq:3} and your answer to part (c) above, test the joint hypothesis at the $.05$ level
+\[
+\mathbb{H}_3: \beta_1=\beta_2=0 
+\]
+
+\begin{description}
+\item[Answer:] Since it is a joint hypothesis we will use the $F$ test by plugging in the values. We know from the question $R_U^2 = 0.5910$ and from part (c) $R_R^2=0$. 
+We then just need to determine the degrees of freedom. The numerator $df$ is the difference between the number of explanatory variables in the unrestricted and the restricted models which, in this case, is $2-0 = 2$.
+
+The denominator $df$ is the difference between the sample size and the degrees of freedom used up, which, in this case, is $38-2=36$. Therefore,
+\[
+F = \frac{\dfrac{(R_U^2-R_R^2)}{df}}{\dfrac{1-R_U^2}{df}} = \frac{\dfrac{(0.5910 - 0)}{2}}{\dfrac{1-0.5910^2}{36}} = 16.348
+\]
+\end{description}
+
+The critical value is: $F_{(0.05, 2, 36)} = 3.25945$. Since F-statistic is higher than the critical value, we can reject the null hypothesis at $0.05$.
+
+
+
+
+
+
+
+
+
+\bigskip\bigskip
+
+***
+\bigskip\bigskip
+
+#### (e) Show that $Var(\hat{\beta}_1 + \hat{\beta}_2) = Var(\hat{\beta}_1) + Var(\hat{\beta}_2) + 2Cov(\hat{\beta}_1,\hat{\beta}_2)$, and use this result to test the hypothesis that $\beta_1 + \beta_2 = 1$ using the $t$-distribution (your test statistic here should be roughly $1.896$).
+
+\begin{description}
+\item[Answer:] Since $Var(X) = \mathbb{E}\bigg(X-\mathbb{E}(X))^2\bigg)$ we can derive variance of the sum of two $\beta$s as follows:
+
+\begin{align*}
+Var(\hat{\beta}_1 + \hat{\beta}_2)
+  &= \mathbb{E}\bigg( \left( (\hat{\beta}_1 + \hat{\beta}_2) - \mathbb{E}(\hat{\beta}_1 + \hat{\beta}_2) \right)^2 \bigg) \\
+  &= \mathbb{E}\bigg( \left( \left[\hat{\beta}_1 - \mathbb{E}(\hat{\beta}_1) \right] + \left[\hat{\beta}_2 - \mathbb{E}(\hat{\beta}_2) \right] \right)^2  \bigg) \\
+  &= \mathbb{E}\bigg( \left[\hat{\beta}_1 - \mathbb{E}(\hat{\beta}_1) \right]^2 + \left[\hat{\beta}_2 - \mathbb{E}(\hat{\beta}_2) \right]^2 + 2\left[\hat{\beta}_1 - \mathbb{E}(\hat{\beta}_1) \right] \left[\hat{\beta}_2 - \mathbb{E}(\hat{\beta}_2) \right]  \bigg) \\
+  &= \mathbb{E}\bigg( \left[\hat{\beta}_1 - \mathbb{E}(\hat{\beta}_1) \right]^2 \bigg) + \mathbb{E}\bigg(\left[\hat{\beta}_2 - \mathbb{E}(\hat{\beta}_2) \right]^2 \bigg) + 2\mathbb{E}\bigg( \left[\hat{\beta}_1 - \mathbb{E}(\hat{\beta}_1) \right] \left[\hat{\beta}_2 - \mathbb{E}(\hat{\beta}_2) \right]  \bigg) \\
+  &= Var(\hat{\beta}_1) + Var(\hat{\beta}_2) + 2Cov(\hat{\beta}_1,\hat{\beta}_2).
+\end{align*}
+
+Our hypothesis is:
+\begin{align*}
+\mathbb{H}_4:& \beta_1+\beta_2=1 \\
+\mathbb{H}_A:& \beta_1+\beta_2\neq 1.
+\end{align*}
+
+which means we will use 2-tailed t-test. The critical values are $t_{0.025, 36} = -2.0281$ and $t_{0.975, 36} = 2.0281$, and the $t$-statistic is:
+
+\begin{align*}
+t 
+  &= \frac{\text{our estimate - hypothesized value}}{\text{standard error}} = \frac{\hat{\beta}_1+\hat{\beta}_2 - 1}{\sqrt{Var(\hat{\beta}_1) + Var(\hat{\beta}_2) + 2Cov(\hat{\beta}_1,\hat{\beta}_2)}} \\[6pt]
+  &= \frac{(1.4100 + 0.4162) - 1}{\sqrt{0.7820 + 0.2549 + 2(-0.4235)}} = 1.895932.
+\end{align*}
+
+ Since the $t$-statistic $= 1.8956 < 2.0281 =$ critical value, we cannot reject the null hypothesis.
+
+\end{description}
+
+
+
+
+
+
+
+
+
+
+
+\bigskip\bigskip
+
+***
+\bigskip\bigskip
+
+#### (f) Interpret the above results. In particular, how do you interpret the result in part (e) abouve and how do you explain the differences in your results to parts (a) and (d)?
+
+\begin{description}
+\item[Answer:] In part (a) we tested whether $\beta_1$ or $\beta_2$ are separately equal to $0$ using $t$-test and could not reject either of the nulls at $0.05$ level. In part (d) we tested a third hypothesis of whether both $\beta$s are jointly equal to $0$ using $F$ test and rejected this null at $0.05$ level. Finally, in part (e) we tested if the $\beta$s add up to 1, and could not reject the null.
+
+So in part (d) $F$ statistic is significant and in part (a) the $t$ statistics are not. This can happen if the explanatory variables are \textit{highly correlated} and the model is subject to strong or severe multicollinearity. If this happens, the standard errors of the slope coefficients could all be so large that none of the $t$-statistics is significant. Yet, if the model is correctly specified and $R^2$ is high then it is likely the $F$ statistic is significant. In this situation, we'd know that our model has high explanatory power, but we wouldn't be in a position to isolate the contributions made by the explanatory variables individually.
+
+Also, since $\beta_1 + \beta_2 = 1$ cannot be rejected, we can interpret it as a \textit{constant returns to scale}. That is, the proportional increase in the output and the inputs is the same.
+
+\end{description}
+
+
+
+
+
+
+
+
+
+
+
+\bigskip\bigskip\bigskip
+\hdashrule[0.5ex]{\textwidth}{1pt}{3mm}
+\bigskip\bigskip\bigskip
+
+## QUESTION 5
+
+\textbf{An economist wishes to estimate the following model from aggregate time series:}
+\begin{equation*} \label{eq:4}
+q = a_0 + a_1y + a_2p_1 +a_3p_2 + a_4n _ u
+\end{equation*}
+\textbf{where $q$ is the volume of food consumption, $y$ real disposable income, $p_1$ an index of the price of food, $p_2$ an index of all other prices and $n$ population. All variables are in logarithms.}
+
+\textbf{The correlation between $p_1$ and $p_2$ is found to be $0.95$ and that between $y$ and $n$ is found to be $0.93$. The economist assumes that the equation suffers from the problem of multicollinearity and asks colleague for advice.}
+
+\begin{itemize}
+\item[(A)] \textbf{suggests dropping all variables with $t$-statistics less than 2.}
+\item[(B)] \textbf{says that multicollinearity results from too little data variation and suggests pooling the aggregate time series data with a cross-section budget survey on food consumption.}
+\item[(C)] \textbf{suggets that the amount being asked of the data could be reduced by imposing the restrictions $a_2+a_3=0$ and $1-a_1-a_4=0$ which are suggested by economic theory.}
+\item[(D)] \textbf{says multicollinearity will be reduced by replacing equation \ref{eq:4}} with equation \ref{eq:5} below:
+\begin{equation*} \label{eq:5}
+Z_i = \beta_0 + \beta_1Z_2 + \beta_2Z_3 + \beta_3Z_4 + u
+\end{equation*}
+\textbf{where $Z_i=q-n, Z_2 = y-n, Z_3=p_1-p_2, Z_4=p_1$, because in equation \ref{eq:5} the correlations between the right hand side variables are lower.}
+\item[(E)] \textbf{says that adding lagged values of $q$ to the equation will reduce multicollinearity since it is know that it has a significant effect on food consumption.}
+\end{itemize}
+
+
+
+
+
+
+\bigskip\bigskip
+
+***
+\bigskip\bigskip
+
+#### (i) State exactly what you understand by the term multicollinearity and suggest ways in which it might be possible to detect whether multicollinearity, understood in this way, can be detected.
+
+\begin{description}
+\item[Answer:]
 \end{description}
