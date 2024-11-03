@@ -504,15 +504,15 @@ $\hookrightarrow$
 
 ## QUESTION 1
 
-Using the information given below:
+\textbf{Using the information given below:}
 
 ### (i) Compute an estimated population correlation coefficient $\rho$, and the Ordinary Least Squares (OLS) estimates of $\alpha$ and $\beta$ in the regression of $c_t=$ real consumption expenditure, on $y_t=$ real disposable income, over the period 1948-2003 (dates are inclusive).
 
-\begin{equation}
-c_t = \alpha + \beta y_t + \epsilon_t, \ \ \ \ t = 1,2,\dots
+\begin{equation} \label{eq:1}
+c_t = \alpha + \beta y_t + \varepsilon_t, \ \ \ \ t = 1,2,\dots
 \end{equation}
 
-where
+\textbf{where}
 
 \begin{table}[htpb]
   \centering
@@ -589,13 +589,13 @@ as desired. We can plug-in the values to obtain:
 \]
 To apply this to each of $\alpha$, $\beta$, and $\rho$, we need to first find their standard errors. For that, we need to find their variances. We derived these in class notes under the discussion of "Precision of OLS Estimators: Standard Errors".
 \[
-\mathit{se}(\hat{\beta}) = \sqrt{ \dfrac{ \hat{\sigma}_{\epsilon}^2 }{ \displaystyle\sum_{t=1}^n (y-\bar{y})^2 } } = \sqrt{ \dfrac{ \hat{\sigma}_{\epsilon}^2 }{ 1491806 } }
+\mathit{se}(\hat{\beta}) = \sqrt{ \dfrac{ \hat{\sigma}_{\varepsilon}^2 }{ \displaystyle\sum_{t=1}^n (y-\bar{y})^2 } } = \sqrt{ \dfrac{ \hat{\sigma}_{\varepsilon}^2 }{ 1491806 } }
 \ \ \ \ \ \ \ \text{ , } \ \ \ \ \ \ \ 
-\mathit{se}(\hat{\alpha}) = \sqrt{ \dfrac{ \hat{\sigma}_{\epsilon}^2 \displaystyle\sum_{t=1}^n y_t^2 }{ n \displaystyle\sum_{t=1}^n(y-\bar{y})^2 } } = \sqrt{ \dfrac{ \hat{\sigma}_{\epsilon}^2 \times 9128478 }{ 56 \times 1491806 } } \\
+\mathit{se}(\hat{\alpha}) = \sqrt{ \dfrac{ \hat{\sigma}_{\varepsilon}^2 \displaystyle\sum_{t=1}^n y_t^2 }{ n \displaystyle\sum_{t=1}^n(y-\bar{y})^2 } } = \sqrt{ \dfrac{ \hat{\sigma}_{\varepsilon}^2 \times 9128478 }{ 56 \times 1491806 } } \\
 \]
 so we will need to find the variance of the residuals next:
 \[
-\hat{\sigma}_{\epsilon}^2 = \frac{\displaystyle\sum_{t=1}^n e_t^2}{n-2} = \frac{4247.843}{54} = 78.66376
+\hat{\sigma}_{\varepsilon}^2 = \frac{\displaystyle\sum_{t=1}^n e_t^2}{n-2} = \frac{4247.843}{54} = 78.66376
 \]
 
 
@@ -615,11 +615,11 @@ t_{\hat{\beta}}
 
 for both we can then reject the null hypothesis that they are individually equal to zero.
 
-To understand $\rho$, recall that $\epsilon_t = c_t - \hat{c}_t$ where $\hat{c}_t = \hat{\alpha} + \hat{\beta}y_t.$ That is, the randomness in $c_t$ comes from two sources: $y_t$ and $\epsilon_t$. That is, the variance of the dependent variable is:
+To understand $\rho$, recall that $\varepsilon_t = c_t - \hat{c}_t$ where $\hat{c}_t = \hat{\alpha} + \hat{\beta}y_t.$ That is, the randomness in $c_t$ comes from two sources: $y_t$ and $\varepsilon_t$. That is, the variance of the dependent variable is:
 \[
-Var(c_t) = \beta^2Var(y_t)+Var(\epsilon_t),
+Var(c_t) = \beta^2Var(y_t)+Var(\varepsilon_t),
 \]
-This means the total variation in $c_t$ can be divided into two parts. The first part, $\beta^2Var(y_t)$ is the variation due to $y_t$, while the second part, $Var(\epsilon_t)$, is the variance of error, which is the variance remaining after knowing $y_t$. 
+This means the total variation in $c_t$ can be divided into two parts. The first part, $\beta^2Var(y_t)$ is the variation due to $y_t$, while the second part, $Var(\varepsilon_t)$, is the variance of error, which is the variance remaining after knowing $y_t$. 
 
 What we are then looking for is the proportion of variance of $c_t$ that is explained by variation in $y_t$, which is the definition of covariance between $c_t$ and $y_t$. That is, the closer both covary, the more $c_t$ can be approximated by a linear function of $y_t$: i.e. $c_t \approx \hat{c_t} = \alpha + \beta y_t$:
 \[
@@ -637,7 +637,7 @@ This means, $\beta$ can also be expressed as:
 Therefore we can rewrite our model as:
 
 \begin{align*}
-c_t & = \alpha + \beta y_t + \epsilon_t \\
+c_t & = \alpha + \beta y_t + \varepsilon_t \\
     &= \left( \bar{c} - \rho\frac{\sigma_{c_t}}{\sigma_{y_t}}\bar{y} \right) + \left( \rho\frac{\sigma_{c_t}}{\sigma_{y_t}} \right)y_t
 \end{align*}
 
@@ -665,7 +665,7 @@ as desired. Since it is way more than 1.96 we can reject the null hypothesis.
 \bigskip\bigskip
 
 ### (iv) Test the hypothesis that $\beta$ is zero again, now using the following expression for the F-statistic:
-\begin{equation}
+\begin{equation} \label{eq:2}
 F = \frac{\dfrac{(RSS_R - RSS_U)}{df}}{\dfrac{RSS_U}{df}}
 \end{equation}
 
@@ -682,7 +682,7 @@ Now we just need to find the $RSS$ for unrestricted and restricted. For unrestri
 RSS_U = \sum_{t=1}^ne_t^2 = \sum_{t=1}^n(c_t-\bar{c})^2
 \]
 
-For the restricted one, the model is $c_t = \alpha + \epsilon_t$ thus it only depends on the error. Accordingly,
+For the restricted one, the model is $c_t = \alpha + \varepsilon_t$ thus it only depends on the error. Accordingly,
 \[
 RSS_R = \sum_{t=1}^ne_t^2
 \]
@@ -801,3 +801,102 @@ Another way of thinking about this is to look back how we derived $\hat{\beta}_1
 \bigskip\bigskip
 
 ## QUESTION 4
+
+\textbf{Consider the model}
+\[
+y_t = \alpha + \beta_1X_{t1} + \beta_2X_{t2} + \varepsilon_t \ \ \ , \ \ \ t = 1, 2, 3, \dots, n
+\]
+\textbf{where:} $y_t =$ \textbf{logarithm of output, } $x_{t1} =$ \textbf{logarithm of labor input, and } $x_{t2} =$ \textbf{logarithm of capital input.}
+
+\textbf{The latter two are the exogenous variabes and the } $\varepsilon_t$ \textbf{are independently } $N(0, \sigma^2)$. \textbf{The estimated equation (using the OLS method) based on the data over the period 1929 - 1967 (inclusive) is}
+\[
+\hat{y}_t = 3.38466 + 1.4100x_{t1} + 0.4162x_{t2} \ \ \ , \ \ \ \text{ where } R^2 = 0.5910.
+\]
+
+\textbf{The variance-covariance matrix of the least squares estimates of } $\beta_1$ and $\beta_2$ is estimated to be:
+\[
+\begin{bmatrix}
+0.7820 & -0.4235 \\
+-0.4235 & 0.2549
+\end{bmatrix}
+\]
+i.e. $Var(\hat{\beta}_1)=0.7820 , Var(\hat{\beta}_2) = 0.2549 , Cov(\hat{\beta}_1,\hat{\beta}_2) = -0.4235.$
+
+
+
+
+
+\bigskip\bigskip
+
+***
+\bigskip\bigskip
+
+#### (a) Test the following hypothesis separately, each at 0.05 level:
+\[
+\mathbb{H}_1:\beta_1 = 0 \ \ \ \ \ \textbf{and} \ \ \ \ \ \mathbb{H}_2:\beta_2=0. 
+\]
+
+\begin{description}
+\item[Answer:] Given that we are testing these separately, and the alternative hypotheses are that they are not equal to zero, we need to use two-tailed $t$-test for each.
+
+Since there are $n-2$ degrees of freedom and $n=38$ the critical values are $t_{0.025,36} = -2.028$ and $t_{0.975,36}=2.028$.
+
+For $\beta_1$ hypothesis, the $t$-statistic is
+\[
+t_{\beta_1} = \frac{\hat{\beta_1}}{\sqrt{Var({\hat{\beta}_1})}} = \frac{1.41}{\sqrt{0.782}} = 1.59447
+\]
+Similarly, for $\beta_2$ hypothesis, the $t$-statistic is
+\[
+t_{\beta_2} = \frac{\hat{\beta_2}}{\sqrt{Var({\hat{\beta}_2})}} = \frac{0.4162}{\sqrt{0.2549}} = 0.82436
+\]
+
+
+Since neither of them exceed the critical value we cannot reject the null hypothesis.
+\end{description}
+
+
+
+
+
+\bigskip\bigskip
+
+***
+\bigskip\bigskip
+
+#### (b) Given that $R^2$ is defined as $ESS/TSS$, and that $TSS = RSS + ESS$ where $ESS$ is the explained sum of squares, $TSS$ is the total sum of squares, and $RSS$ is the residual sum of squares, show that equation \ref{eq:2} in Question 1(iv) above, can be written as:
+\begin{equation} \label{eq:3}
+F = \frac{\dfrac{(R_U^2-R_R^2)}{df}}{\dfrac{1-R_U^2}{df}}.
+\end{equation}
+\textbf{Under what conditions can equation} ref{eq:2} \textbf{not be rearranged this way?}
+
+\begin{description}
+\item[Answer:] $F$ is defined in equation \ref{eq:2} $F$ as:
+\[
+F = \frac{\dfrac{(RSS_R - RSS_U)}{df}}{\dfrac{RSS_U}{df}}.
+\]
+Since $R^2 = 1 - \frac{RSS}{TSS}$, we have $RSS = (1-R^2)TSS.$ Plugging this into the definition of $F$, we get:
+
+\begin{align*}
+F 
+  &= \frac{\dfrac{\bigg((1-R_R^2)TSS_R - (1-R_U^2)TSS_U\bigg)}{df}}{\dfrac{(1-R_U^2)TSS_U}{df}} \\[6pt]
+  &= \frac{\dfrac{\dfrac{1}{TSS}\bigg((1-R_R^2)TSS - (1-R_U^2)TSS\bigg)}{df}}{\dfrac{1}{TSS}\dfrac{(1-R_U^2)TSS}{df}} \ \ \ \text{since } TSS_R=TSS_U \\[6pt]
+  &= \frac{\dfrac{1-R_R^2 - 1 + R_U^2}{df}}{\dfrac{1-R_U^2}{df}} \\[6pt]
+  &= \frac{\dfrac{(R_U^2-R_R^2)}{df}}{\dfrac{1-R_U^2}{df}}
+\end{align*}
+
+as desired. This is called the \textbf{$R$-squared form of the F statistic}. Since $R^2$ is reported with almost all regressions while $RSS$ is not, it is easier to use $R^2$s from the unrestricted and restricted models to test for exclusion of some variables. Notice that in the numerator the \textit{unrestricted} $R^2$ comes first unlike the numerator in equation \ref{eq:2}. Since $R_U^2 > R_R^2$, the $F$ statistic will always be positive.
+
+Even though $R^2$-form of the $F$ statistic is convenient for testing exclusion restrictions, it can't be applied for testing all linear restrictions. Suppose we want to test whether labor is a rational valuation. If this is the case, then a $1\%$ change in $X_1$ should be associated with a $1\%$ change in the output. That is, $\beta_1 = 1$. In addition, capital should not help to explain the output once labor has been controlled for. The hypothesis is then:
+\[
+\mathbb{H}_0: \beta_1 = 1, \beta_2 = 0.
+\]
+We therefore have one exclusion restriction and $\beta_1=1$ is not. To test the hypothesis using $F$ statistic, we first estimate the unrestricted model and then impose the restrictions in the hypothesis to obtain the restricted model. 
+
+Here, however, the second step can be a bit tricky. The restricted model is $y_t = \alpha + 1x_{t1} + \varepsilon.$ Now, to impose restriction that the coefficient on $x_{t1}$ is unity, we need to estimate the following model:
+\[
+y_t - x_{t1} = \alpha + \varepsilon
+\]
+which is a model with just an intercept but with a different dependent variable than the unrestricted model. Because of this difference in the dependent variable between unrestricted and restricted models, we cannot in this case use $R^2$ form of the $F$ statistic. As a result, the $TSS_U$ and $TSS_R$ would no longer be equal and thus the $R$-squared form of F statistic is not equal to its $RSS$ form.
+
+In general, the $RSS$ form of F statistic should be used if different dependent variable is needed in running the restricted regression.
+\end{description}

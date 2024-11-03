@@ -3543,11 +3543,11 @@ We need to compare this 0.9209 to two F critical values. For this, we will use <
 </blockquote>
 <pre class="r"><code>k1 &lt;- n_X - 1
 k2 &lt;- n_Y - 1
-alpha &lt;- 0.05
+alpha &lt;- 0.01
 qf(p = alpha/2, df1 = k1, df2 = k2, lower.tail = TRUE) # if lower.tail = TRUE, then the probability to the left of p is returned</code></pre>
-<pre><code>## [1] 0.9079001</code></pre>
+<pre><code>## [1] 0.8807506</code></pre>
 <pre class="r"><code>qf(p = alpha/2, df1 = k1, df2 = k2, lower.tail = FALSE) # if lower.tail = FALSE, then the probability to the right of p is returned</code></pre>
-<pre><code>## [1] 1.101693</code></pre>
+<pre><code>## [1] 1.135777</code></pre>
 <blockquote>
 So at <span class="math inline">\(\alpha = 0.05\)</span> our F-statistic of <span class="math inline">\(0.9209\)</span> is neither greater than <span class="math inline">\(F_{0.975,1726,1568} = 1.1017\)</span> nor less than <span class="math inline">\(F_{0.025,1726,1568} = 0.9079.\)</span> Accordingly, we cannot reject the null hypothesis and state that:
 </p>
@@ -3571,7 +3571,7 @@ So, in this case, from Question 2(e) we know <span class="math inline">\(S_y^2 =
 <p>and the critical value for <span class="math inline">\(\alpha=0.5\)</span> is</p>
 </blockquote>
 <pre class="r"><code>qf(p = alpha, df1 = k2, df2 = k1, lower.tail = FALSE) # since it is one sided, we do not divide alpha by 2, and we are interested in the probability of the right side of p. Also notice that we swapped the numerator and denominator degrees of freedom.</code></pre>
-<pre><code>## [1] 1.084464</code></pre>
+<pre><code>## [1] 1.121517</code></pre>
 <blockquote>
 <p>The test statistic <span class="math inline">\(1.0859\)</span> is not larger than the critical value <span class="math inline">\(F_{0.95,1568,1726} = 1.1215.\)</span> So, we are unable to reject the null hyopthesis at <span class="math inline">\(\alpha=0.05\)</span>.</p>
 </blockquote>

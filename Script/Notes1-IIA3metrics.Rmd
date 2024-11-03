@@ -628,7 +628,7 @@ where ESS is the explained sum of squares and TSS is the total sum of squares.
 
 The $R^2$ can also be expressed in terms of the fraction of variance of $Y_i$ that is *not explained* by $X_i$
 \[
-R^2 = 1 - \frac{RSS}{TSS} = \frac{\displaystyle\sum_{i=1}^n\hat{u}_i^2}{\displaystyle\sum_{i=1}^n(Y_i-\bar{Y})^2} = \frac{\displaystyle\sum_{i=1}^n(Y_i - \hat{Y}_i)}{\displaystyle\sum_{i=1}^n(Y_i-\bar{Y})^2}.
+R^2 = 1 - \frac{RSS}{TSS} = \frac{\displaystyle\sum_{i=1}^n\hat{u}_i^2}{\displaystyle\sum_{i=1}^n(Y_i-\bar{Y})^2} = \frac{\displaystyle\sum_{i=1}^n(Y_i - \hat{Y}_i)^2}{\displaystyle\sum_{i=1}^n(Y_i-\bar{Y})^2}.
 \]
 Also note that
 \[
