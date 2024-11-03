@@ -1077,5 +1077,50 @@ Z_i = \beta_0 + \beta_1Z_2 + \beta_2Z_3 + \beta_3Z_4 + u
 #### (i) State exactly what you understand by the term multicollinearity and suggest ways in which it might be possible to detect whether multicollinearity, understood in this way, can be detected.
 
 \begin{description}
-\item[Answer:]
+\item[Answer:] Multicollinearity, or imperfect multicollinearity, means that two or more of the regressors are highly correlated. This means, there is a linear function of the regressors that is highly correlated with another regressor. To see this, consider the sampling variance of OLS slope estimator:
+\[
+Var(\hat{a}_j) = \frac{\sigma_u^2}{TSS_j(1-R_j^2)} = \frac{\dfrac{1}{n}\displaystyle\sum_{i=1}^nu_i^2}{TSS_j(1-R_j^2)}
+\]
+which has three components:
+\begin{itemize}
+\item[$\sigma_u^2:$] the larger the error variance the bigger the variance of OLS slope estimator.It is the one component of the equation above that is unknown. For a given dependent variable, there is only one way to reduce $\sigma_u^2$: add more explanatory variables to the equation, which would take out some factors out of the error term. However, it is not always possible to find additional legitimate factors that affect $q$.
+\item[$TSS_j:$] From the equation above we can see that the larger the total sample variation in the $j^{th}$ explanatory variable the smaller the variance of the OLS slope estimator will be. We can increase the $TSS_j$ by increasing the sample size.
+\item[$R_j^2:$] This is obtained from regressing the $j^th$ independent variable against all the other independent variables. It shows the proportion of the total variation in the $j^th$ independent variable that can be explained by the other independent variables.
+\end{itemize}
+
+For a given $\sigma_u^2$ and $TSS_j$, the extreme case of $R_j^2=1$ means perfect multicollinearity and is a violation of our OLS and Gauss-Markov assumptions. Whereas if $R_j^2=0$, which can occur if and only if the $j^{th}$ variable is has zero sample correlation with every other independent variable, then the smallest $Var(\hat{a}_j)$ is obtained. This is the best case but rarely encountered. 
+
+When $R_j^2 < 1$, but "close" to $1$, then we have imperfect multicollinearity, or just multicollinearity However, there is not a precise definition of "close" in this context. For example $R_j^2 = 0.9$ means $90\%$ of the sample variation in the $j^{th}$ independent variable can be explained by other independent variables in the regression model. However, whether this translates into a $Var(\hat{a}_j)$ that is too large to be useful depends on the sizes of $\sigma_u^2$ and $TSS_j$. 
+
+As well as a large $R_j^2$, a small sample size can lead to a small value of $TSS_j$ and therefore can lead to large sampling variances as well. Therefore large $R_j^2$ and small sample size generate much the same problem in this context: large OLS estimator variance.
+
+Overall, it is better to have less correlation between the $j^{th}$ independent variable and the other independent variables for estimating $\hat{a}_j$. However, there is no great way of tackling multicollinearity. In social sciences where data are usually collective passively, there is no good way to reduce variances of unbiased estimators other than to collect more data. We can try to drop other independent variables from the model to try to reduce multicollinearity but dropping a variable that belongs in the population model can lead to bias. 
+
+There are some methods to determine the severity of multicollinearity, such as variance inflation factor or, VIF, but their use is limited.  
+
+The VIF for slope coefficient is 
+\[
+VIF_j = \frac{1}{1-R_j^2}
+\]
+which allows us to write the variance of the $j^{th}$ OLS estimator as:
+\[
+Var(\hat{a}_j) = \frac{\sigma_u^2}{SST_j}\times VIF_j.
+\]
+This shows that $VIF_j$ is the factor by which $Var(\hat{a}_j)$ is higher. However, looking at the size of $VIF_j$ is of limited use since any cut-off point would be arbitrary.
+
 \end{description}
+
+
+
+
+
+
+
+
+\bigskip\bigskip
+
+***
+\bigskip\bigskip
+
+#### (ii) What problems might regression analysis have if multicollinearity is present? Is the economist correct in assuming these problems will be present in this case?
+
