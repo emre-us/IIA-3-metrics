@@ -1061,7 +1061,7 @@ q = a_0 + a_1y + a_2p_1 +a_3p_2 + a_4n _ u
 Z_i = \beta_0 + \beta_1Z_2 + \beta_2Z_3 + \beta_3Z_4 + u
 \end{equation*}
 \textbf{where $Z_i=q-n, Z_2 = y-n, Z_3=p_1-p_2, Z_4=p_1$, because in equation \ref{eq:5} the correlations between the right hand side variables are lower.}
-\item[(E)] \textbf{says that adding lagged values of $q$ to the equation will reduce multicollinearity since it is know that it has a significant effect on food consumption.}
+\item[(E)] \textbf{says that adding lagged values of $q$ to the equation will reduce multicollinearity since it is known that it has a significant effect on food consumption.}
 \end{itemize}
 
 
@@ -1077,7 +1077,7 @@ Z_i = \beta_0 + \beta_1Z_2 + \beta_2Z_3 + \beta_3Z_4 + u
 #### (i) State exactly what you understand by the term multicollinearity and suggest ways in which it might be possible to detect whether multicollinearity, understood in this way, can be detected.
 
 \begin{description}
-\item[Answer:] Multicollinearity, or imperfect multicollinearity, means that two or more of the regressors are highly correlated. This means, there is a linear function of the regressors that is highly correlated with another regressor. To see this, consider the sampling variance of OLS slope estimator:
+\item[Answer:] Multicollinearity, or imperfect multicollinearity, is a \underline{sample} problem and means that two or more of the regressors are highly correlated. This means, there is a linear function of the regressors that is highly correlated with another regressor. To see this, consider the sampling variance of OLS slope estimator:
 \[
 Var(\hat{a}_j) = \frac{\sigma_u^2}{TSS_j(1-R_j^2)} = \frac{\dfrac{1}{n}\displaystyle\sum_{i=1}^nu_i^2}{TSS_j(1-R_j^2)}
 \]
@@ -1108,6 +1108,8 @@ Var(\hat{a}_j) = \frac{\sigma_u^2}{SST_j}\times VIF_j.
 \]
 This shows that $VIF_j$ is the factor by which $Var(\hat{a}_j)$ is higher. However, looking at the size of $VIF_j$ is of limited use since any cut-off point would be arbitrary.
 
+Another way to detect multicollinearity is to compare $t$-tests with $F$-tests and $R^2$ as we did in Question 4.
+
 \end{description}
 
 
@@ -1124,3 +1126,33 @@ This shows that $VIF_j$ is the factor by which $Var(\hat{a}_j)$ is higher. Howev
 
 #### (ii) What problems might regression analysis have if multicollinearity is present? Is the economist correct in assuming these problems will be present in this case?
 
+\begin{description}
+\item[Answer:] The economist is not correct. It is the case that multicollinearity is present but it is not necessarily a problem. It depends on the sample. If the regressors are imperfectly multicollinear, then the coefficients on at least one individual regressor will be imprecisely estimated. Given the correlation between $p_1$ and $p_2$ is $0.95$ for example, it would be difficult to use these data to estimate the $a_2$ holding constant the index of all other prices. As a result, the OLS estimator of $a_2$ will have a larger variance than if the regressors $p_1$ and $p_2$ were uncorrelated. Assuming the model is correctly specified, presence of multicollinearity implies that it will be difficult to estimate precisely one or more of the partial effects using the data at hand. 
+\end{description}
+
+
+
+
+
+
+
+
+
+\bigskip\bigskip
+
+***
+\bigskip\bigskip
+
+#### (iii) Suppose multicollinearity \textit{is} a problem in this case. Commnet on the appropriateness in each of the suggestions made above.
+
+\begin{description}
+\item[Answer:] 
+\begin{itemize}
+\item[(A):] This is not an appropriate approach. Even if $t<2$ the variable we drop may be important. Leaving a relevant variable with non-zero coefficient out of the model results in a biased estimator of the slope coefficient of the remaining variable. 
+\item[(B):] this can work in that increasing sample size is good. As the sample size increases, the variance of the estimator decreases. This is also why we wouldn't want to drop a variable. If we drop a variable, it is true that the variance of the remaining estimator is lower. However, we can reduce the increase in variance caused by including a correlated regressor by increasing the sample size. The bias created by dropping a variable, on the other hand, is independent of the sample size.
+Note: There are potential problems of combining time series and cross-section data but these will be discussed after covering time series.
+\item[(C):] Yes, this would reduce the amount required of equation and amount asked of the data.This seem to be in keeping with the economic theory: $\frac{q}{n} = e^{a_0}+(\frac{y}{n})^{a_1}(\frac{p_1}{p_2}^{a_2}).$
+\item[(D):] Similar to (C) in principle, but it is not in keeping with the economic theory.
+\item[(E):] This one is a bit messy. It may make multicollinearity worse, but it may alleviate the problem as it would reduce $\hat{\sigma}_u^2$.
+\end{itemize}
+\end{description}
