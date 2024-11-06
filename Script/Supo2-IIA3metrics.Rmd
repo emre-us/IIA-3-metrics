@@ -246,8 +246,8 @@ In this question, the standard error of the estimator $\gamma_2$ is then
 
 \begin{align*}
 se(\hat{\gamma}_2) 
-&= \sqrt{\frac{\hat{\sigma}^2}{\left(\displaystyle\sum_{i=1}^n(\mathit{agemth}_i-\overline{\mathit{agemth}}_j)^2\right)(1-R_\mathit{agemth}^2)}} \\[4pt]
-&= \sqrt{\frac{\hat{\sigma}^2}{\left(12^2\displaystyle\sum_{i=1}^n(\mathit{age}_i-\overline{\mathit{age}}_j)^2\right)(1-R_\mathit{age}^2)}} \\[4pt]
+&= \sqrt{\frac{\hat{\sigma}^2}{\left(\displaystyle\sum_{i=1}^n(\mathit{agemth}_i-\overline{\mathit{agemth}})^2\right)(1-R_\mathit{agemth}^2)}} \\[4pt]
+&= \sqrt{\frac{\hat{\sigma}^2}{\left(12^2\displaystyle\sum_{i=1}^n(\mathit{age}_i-\overline{\mathit{age}})^2\right)(1-R_\mathit{age}^2)}} \\[4pt]
 &= \sqrt{\left(\frac{1}{12}\right)^2\hat{Var}(\hat{\beta}_2)}
 \end{align*}
 
@@ -255,7 +255,7 @@ where $\hat{\sigma}^2$ is the estimator of error variance, and $R_{\mathit{agemt
 
 Plugging this into the $t$-statistic
 \[
-t_{\hat{\gamma}_2} = \frac{\hat{\gamma}_2}{\mathit{se}(\hat{\gamma}_2)} = \frac{\dfrac{\hat{\beta}_2}{12} }{\frac{1}{12}\mathit{se}(\hat{\beta}_2)} = t+{\hat{\beta}_2}.
+t_{\hat{\gamma}_2} = \frac{\hat{\gamma}_2}{\mathit{se}(\hat{\gamma}_2)} = \frac{\dfrac{\hat{\beta}_2}{12} }{\frac{1}{12}\mathit{se}(\hat{\beta}_2)} = t_{\hat{\beta}_2}.
 \]
 Thus, the $t$-statistic for $\hat{\beta}_2$ would not change which would make sense since statistical significance of the explanatory variable should not be impacted by measurement units.
 
@@ -469,7 +469,7 @@ Consequently, the conditional variance is:
 \[
 Var(\beta_1^* | \vec{X}) = \frac{\sigma^2\displaystyle\sum_{i=1}^na_i^2}{\left(\displaystyle\sum_{i=1}^na_iX_i\right)^2}
 \]
-where the conditional variance of $\hat{\beta}_1$ is
+where the conditional variance of $\tilde{\beta}_1$ is
 \[
 Var(\tilde{\beta}_1 | X_1, X_2, X_3) = \frac{6\sigma^2}{(X_3+X_1-2X_2)^2}.
 \]
@@ -561,7 +561,7 @@ RSS &= \sum_{t=1}^n e_t^2 = \sum_{t=1}^n(c_t - \hat{c}_t)^2 \\
   &= \sum_{t=1}^n (c_t - \bar{c})^2 - \sum_{t=1}^n \left( \hat{\alpha}+\hat{\beta}y_t - (\hat{\alpha}+\hat{\beta}\bar{y}) \right)^2 \\
   &= \sum_{t=1}^n (c_t - \bar{c})^2 - \sum_{t=1}^n \left( \hat{\beta}(y_t - \bar{y}) \right)^2 \\
   &= \sum_{t=1}^n (c_t - \bar{c})^2 - \hat{\beta}^2 \sum_{t=1}^n (y_t - \bar{y})^2 \\
-  &= \sum_{t=1}^n (c_t - \bar{c})^2 - \hat{\beta} \frac{\displaystyle\sum_{t=1}^n (y_t - \bar{y})(c_t - \bar{c})}{\displaystyle\sum_{t=1}^n(y-\bar{y})^2} \sum_{t=1}^n (y_t - \bar{y})^2 \ \ \ \text{ plugged-in definiton of } \hat{\beta}  \\
+  &= \sum_{t=1}^n (c_t - \bar{c})^2 - \hat{\beta} \frac{\displaystyle\sum_{t=1}^n (y_t - \bar{y})(c_t - \bar{c})}{\displaystyle\sum_{t=1}^n(y_t-\bar{y})^2} \sum_{t=1}^n (y_t - \bar{y})^2 \ \ \ \text{ plugged-in definiton of } \hat{\beta}  \\
   &= \sum_{t=1}^n (c_t - \bar{c})^2 - \hat{\beta} \left( \sum_{t=1}^n (y_t - \bar{y})(c_t - \bar{c}) \right)
 \end{align*}
 
