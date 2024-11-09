@@ -435,7 +435,7 @@ Note that we cannot simplify this any further since $\mathbb{E}\left( \frac{1}{(
 
 We can compare this to the variance of $\hat{\beta}_1:$
 \[
-Var(\hat{\beta}_1) = \frac{1}{n}\frac{Var\left((X_i-\mu_x)u_i\right)}{\left(Var(X_i)^2\right)}
+Var(\hat{\beta}_1) = \frac{\sigma_u^2}{\displaystyle\sum_{i=1}^n(X_i-\bar{X})^2}
 \]
 which we know has the lowest variance among all unbiased linear estimators due to Gauss-Markov theorem.
 
@@ -652,9 +652,10 @@ The t-statistic is therefore:
 \[
 t_{\hat{\rho}} = \frac{\hat{\rho} - \rho^0}{\mathit{se}(\hat{\rho})} = \frac{0.9981586 - 0}{0.008254527} = 120.9226
 \]
-as desired. Since it is way more than 1.96 we can reject the null hypothesis.
-\end{description}
 
+as desired. Since it is way more than 1.96 we can reject the null hypothesis.
+
+\end{description}
 
 
 
@@ -750,7 +751,7 @@ So, plugging this back in to the variance expression:
 \[
 Var(\hat{\beta}) = \frac{12\sigma_e^2}{T(T+1)(T-1)}
 \]
-Thus, $Var(\hat{\beta}) < Var(b^*)$. The two can be equal if $\frac{2\sigma_e^2}{(T-1)^2} = \frac{12\sigma_e^2}{T(T+1)(T-1)}$ which can happen only if
+Thus, $Var(\hat{\beta}) \leq Var(b^*)$ for $T>1$. The two can be equal if $\frac{2\sigma_e^2}{(T-1)^2} = \frac{12\sigma_e^2}{T(T+1)(T-1)}$ which can happen only if
 
 \begin{align*}
 \frac{1}{T-1} &= \frac{6}{T(T+1)} \\[4pt]
@@ -784,7 +785,7 @@ T = 2 \text{ or } T=3.
 
 Another way of thinking about this is to look back how we derived $\hat{\beta}_1$ before. We took the partial derivative of of $Y$ with respect to $X_1$, $\hat{\beta}_1=\frac{\partial{Y}}{\partial{X_1}}$. This tells us the rate of change of $Y$ with respect to $X_1$ holding $X_2$ constant.
 
-\textbf{Partialling Out:} This is another representation of the partial effect interpretation of $\hat{\beta}_1$. For this approach, we partial out, or partial out the effect of $X_2$ by first regressing $X_1$ on $X_2$ using the model $X_1 = \alpha_0 + \alpha_1X_2 + r_1$. Here, the residual $r_1$ represents all the influences on $X_1$ not related to $X_2$. If we then regress $Y$ on this residual using the model $Y = \gamma_0 + \gamma_1r_1 + v$, then Frisch, Waugh, Lovell Theorem tells us that $\hat{\gamma}_1 = \hat{\beta}_1$. That is, $\hat{\beta}_1 = \frac{Cov(Y,v)}{Var{v}}.$ Thus, this shows that $\hat{\beta}_1$ is estimating the effect of $X_1$ on $Y$ after the effect of $X_2$ has been partialled out.
+\textbf{Partialling Out:} This is another representation of the partial effect interpretation of $\hat{\beta}_1$. For this approach, we partial out out the effect of $X_2$ by first regressing $X_1$ on $X_2$ using the model $X_1 = \alpha_0 + \alpha_1X_2 + r_1$. Here, the residual $r_1$ represents all the influences on $X_1$ not related to $X_2$. If we then regress $Y$ on this residual using the model $Y = \gamma_0 + \gamma_1r_1 + v$, then Frisch, Waugh, Lovell Theorem tells us that $\hat{\gamma}_1 = \hat{\beta}_1$. That is, $\hat{\beta}_1 = \frac{Cov(Y,v)}{Var(v)}.$ Thus, this shows that $\hat{\beta}_1$ is estimating the effect of $X_1$ on $Y$ after the effect of $X_2$ has been partialled out.
 
 \end{description}
 
@@ -815,23 +816,16 @@ y_t = \alpha + \beta_1X_{t1} + \beta_2X_{t2} + \varepsilon_t \ \ \ , \ \ \ t = 1
 \hat{y}_t = 3.38466 + 1.4100x_{t1} + 0.4162x_{t2} \ \ \ , \ \ \ \text{ where } R^2 = 0.5910.
 \]
 
-\textbf{The variance-covariance matrix of the least squares estimates of } $\beta_1$ and $\beta_2$ is estimated to be:
+\textbf{The variance-covariance matrix of the least squares estimates of } $\beta_1$ \textbf{and} $\beta_2$ \textbf{is estimated to be:}
 \[
 \begin{bmatrix}
 0.7820 & -0.4235 \\
 -0.4235 & 0.2549
 \end{bmatrix}
 \]
-i.e. $Var(\hat{\beta}_1)=0.7820 , Var(\hat{\beta}_2) = 0.2549 , Cov(\hat{\beta}_1,\hat{\beta}_2) = -0.4235.$
+i.e. $Var(\hat{\beta}_1)=0.7820 \ \ , \ \ Var(\hat{\beta}_2) = 0.2549 \ \ , \ \ Cov(\hat{\beta}_1,\hat{\beta}_2) = -0.4235.$
 
 
-
-
-
-\bigskip\bigskip
-
-***
-\bigskip\bigskip
 
 #### (a) Test the following hypothesis separately, each at 0.05 level:
 \[
@@ -841,7 +835,7 @@ i.e. $Var(\hat{\beta}_1)=0.7820 , Var(\hat{\beta}_2) = 0.2549 , Cov(\hat{\beta}_
 \begin{description}
 \item[Answer:] Given that we are testing these separately, and the alternative hypotheses are that they are not equal to zero, we need to use two-tailed $t$-test for each.
 
-Since there are $n-2$ degrees of freedom and $n=38$ the critical values are $t_{0.025,36} = -2.028$ and $t_{0.975,36}=2.028$.
+Since the number of coefficient estimators are 3, we have $n-3$ degrees of freedom and $n=39$, so the critical values are $t_{0.025,36} = -2.028$ and $t_{0.975,36}=2.028$.
 
 For $\beta_1$ hypothesis, the $t$-statistic is
 \[
@@ -951,12 +945,11 @@ We then just need to determine the degrees of freedom. The numerator $df$ is the
 
 The denominator $df$ is the difference between the sample size and the degrees of freedom used up, which, in this case, is $38-2=36$. Therefore,
 \[
-F = \frac{\dfrac{(R_U^2-R_R^2)}{df}}{\dfrac{1-R_U^2}{df}} = \frac{\dfrac{(0.5910 - 0)}{2}}{\dfrac{1-0.5910^2}{36}} = 16.348
+F = \frac{\dfrac{(R_U^2-R_R^2)}{df}}{\dfrac{1-R_U^2}{df}} = \frac{\dfrac{(0.5910 - 0)}{2}}{\dfrac{1-0.5910}{36}} = 26.00978
 \]
 \end{description}
 
 The critical value is: $F_{(0.05, 2, 36)} = 3.25945$. Since F-statistic is higher than the critical value, we can reject the null hypothesis at $0.05$.
-
 
 
 
@@ -1067,13 +1060,6 @@ Z_i = \beta_0 + \beta_1Z_2 + \beta_2Z_3 + \beta_3Z_4 + u
 
 
 
-
-
-\bigskip\bigskip
-
-***
-\bigskip\bigskip
-
 #### (i) State exactly what you understand by the term multicollinearity and suggest ways in which it might be possible to detect whether multicollinearity, understood in this way, can be detected.
 
 \begin{description}
@@ -1152,7 +1138,7 @@ Another way to detect multicollinearity is to compare $t$-tests with $F$-tests a
 \item[(B):] this can work in that increasing sample size is good. As the sample size increases, the variance of the estimator decreases. This is also why we wouldn't want to drop a variable. If we drop a variable, it is true that the variance of the remaining estimator is lower. However, we can reduce the increase in variance caused by including a correlated regressor by increasing the sample size. The bias created by dropping a variable, on the other hand, is independent of the sample size.
 Note: There are potential problems of combining time series and cross-section data but these will be discussed after covering time series.
 \item[(C):] Yes, this would reduce the amount required of equation and amount asked of the data.This seem to be in keeping with the economic theory: $\frac{q}{n} = e^{a_0}+(\frac{y}{n})^{a_1}(\frac{p_1}{p_2}^{a_2}).$
-\item[(D):] Similar to (C) in principle, but it is not in keeping with the economic theory.
+\item[(D):] Similar to (C) in principle, but it is not in keeping with the economic theory. So it may not be that interpretable.
 \item[(E):] This one is a bit messy. It may make multicollinearity worse, but it may alleviate the problem as it would reduce $\hat{\sigma}_u^2$.
 \end{itemize}
 \end{description}
