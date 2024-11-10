@@ -455,9 +455,31 @@ Consider the generalized estimator
 \[
 \beta_1^* = \frac{\sum_{i=1}^na_iY_i}{\sum_{i=1}^na_iX_i}
 \]
-where $a_i$ are weights assigned by the estimator to each observation $(Y_i,X_i)$ for $i=1,\dots,n$. 
+where $a_i$ are weights assigned by the estimator to each observation $(Y_i,X_i)$ for $i=1,\dots,n$. As usual, we will need to find the expected value and the variance of $\beta_1^*$:
 
-Notice that $\tilde{\beta}_1$ is one case of $\beta_1^*$. In part (b) we derived $Var(\tilde{\beta})$ as 
+\begin{align*}
+\mathbb{E}(\beta_1^*) 
+  &= \mathbb{E}\left( \frac{\sum_{i=1}^na_iY_i}{\sum_{i=1}^na_iX_i} \right) \\[6pt]
+  &= \mathbb{E}\left( \frac{\sum_{i=1}^na_i(\beta_0 + \beta_1X_i+U_i)}{\sum_{i=1}^na_iX_i} \right) \\[6pt]
+  &= \mathbb{E}\left( \frac{\beta_0\sum_{i=1}^na_i + \beta_1\sum_{i=1}^na_iX_i + \sum_{i=1}^na_iU_i}{\sum_{i=1}^na_iX_i} \right) \\[6pt]
+  &= \mathbb{E}\left( \beta_0 \frac{\sum_{i=1}^na_i}{\sum_{i=1}^na_iX_i} + \beta_1 + \frac{\sum_{i=1}^na_iU_i}{\sum_{i=1}^na_iX_i} \right) \\[6pt]
+  &= \beta_0 \mathbb{E}\left( \frac{\sum_{i=1}^na_i}{\sum_{i=1}^na_iX_i} \right) + \beta_1 + 0 \ \ \ \ \ \text{ since } \mathbb{E}(U_i|X)=0 \\[6pt]
+\end{align*}
+Therefore, $\beta_1^*$ is unbiased insofar as either $\beta_0=0$ or $\mathbb{E}\left( \frac{\sum_{i=1}^na_i}{\sum_{i=1}^na_iX_i} \right)=0$.
+
+Notice that $\tilde{\beta}_1$ is one case of $\beta_1^*$. 
+
+We can derive the general result for the variance of this estimator as well:
+
+\begin{align*}
+Var(\beta_1^*)
+  &= Var\left( \frac{\sum_{i=1}^na_iY_i}{\sum_{i=1}^na_iX_i} \right)
+  = Var\left( \frac{\sum_{i=1}^na_i(\beta_0 + \beta_1X_i+U_i)}{\sum_{i=1}^na_iX_i} \right) \\[6pt]
+  &= \frac{1}{\Big(\sum_{i=1}^na_iX_i\Big)^2} Var\left( \beta_0\sum_{i=1}^na_i + \beta_1\sum_{i=1}^na_iX_i + \sum_{i=1}^na_iU_i \right) \\[6pt]
+  &= \frac{1}{\Big( \sum_{i=1}^na_iX_i \Big) ^2} \times Var\left( \sum_{i=1}^na_iU_i \right) \ \ \ \ \ \text{ since $X_i$ and $U_i$ are independent} \\[6pt]
+  &= \frac{\sigma_U^2\sum_{i=1}^na_i^2}{\Big(\sum_{i=1}^na_iX_i\Big)^2}. \\[6pt]
+\end{align*}
+In part (b) we derived $Var(\tilde{\beta})$ as 
 \[
 Var(\tilde{\beta}_1) = 6\sigma^2\mathbb{E}\left( \frac{1}{(X_3+X_1-2X_2)^2} \right)
 \]
@@ -866,7 +888,7 @@ F = \frac{\dfrac{(R_U^2-R_R^2)}{df}}{\dfrac{1-R_U^2}{df}}.
 \textbf{Under what conditions can equation} \ref{eq:2} \textbf{not be rearranged this way?}
 
 \begin{description}
-\item[Answer:] $F$ is defined in equation \ref{eq:2} $F$ as:
+\item[Answer:] $F$ is defined in equation \ref{eq:2} as:
 \[
 F = \frac{\dfrac{(RSS_R - RSS_U)}{df}}{\dfrac{RSS_U}{df}}.
 \]
@@ -874,13 +896,27 @@ Since $R^2 = 1 - \frac{RSS}{TSS}$, we have $RSS = (1-R^2)TSS.$ Plugging this int
 
 \begin{align*}
 F 
-  &= \frac{\dfrac{\bigg((1-R_R^2)TSS_R - (1-R_U^2)TSS_U\bigg)}{df}}{\dfrac{(1-R_U^2)TSS_U}{df}} \\[6pt]
-  &= \frac{\dfrac{\dfrac{1}{TSS}\bigg((1-R_R^2)TSS - (1-R_U^2)TSS\bigg)}{df}}{\dfrac{1}{TSS}\dfrac{(1-R_U^2)TSS}{df}} \ \ \ \text{since } TSS_R=TSS_U \\[6pt]
-  &= \frac{\dfrac{1-R_R^2 - 1 + R_U^2}{df}}{\dfrac{1-R_U^2}{df}} \\[6pt]
+  &= \frac{\dfrac{\bigg((1-R_R^2)TSS_R - (1-R_U^2)TSS_U\bigg)}{df}}{\dfrac{(1-R_U^2)TSS_U}{df}} \\[4pt]
+  &= \frac{\dfrac{\dfrac{1}{TSS}\bigg((1-R_R^2)TSS - (1-R_U^2)TSS\bigg)}{df}}{\dfrac{1}{TSS}\dfrac{(1-R_U^2)TSS}{df}} \ \ \ \text{since } TSS_R=TSS_U \\[4pt]
+  &= \frac{\dfrac{1-R_R^2 - 1 + R_U^2}{df}}{\dfrac{1-R_U^2}{df}} \\[4pt]
   &= \frac{\dfrac{(R_U^2-R_R^2)}{df}}{\dfrac{1-R_U^2}{df}}
 \end{align*}
 
-as desired. This is called the \textbf{$R$-squared form of the F statistic}. Since $R^2$ is reported with almost all regressions while $RSS$ is not, it is easier to use $R^2$s from the unrestricted and restricted models to test for exclusion of some variables. Notice that in the numerator the \textit{unrestricted} $R^2$ comes first unlike the numerator in equation \ref{eq:2}. Since $R_U^2 > R_R^2$, the $F$ statistic will always be positive.
+as desired. Alternatively, we can use $R^2 = \frac{ESS}{TSS}$ or $ESS = R^2\times TSS$ and $RSS = TSS-ESS$ identities:
+
+\begin{align*}
+F 
+  &= \frac{\dfrac{(RSS_R - RSS_U)}{df}}{\dfrac{RSS_U}{df}} 
+  = \frac{\dfrac{(TSS_R - ESS_R) - (TSS_U - ESS_U)}{df}}{\dfrac{TSS_U - ESS_U}{df}} \\[4pt]
+  &= \frac{\dfrac{(TSS_R - R_R^2\times TSS_R) - (TSS_U - R_U^2\times TSS_U)}{df}}{\dfrac{TSS_U - R_U^2\times TSS_U}{df}} \\[4pt]
+  &= \frac{\dfrac{\Big(TSS_R(1-R_R^2)\Big) - \Big(TSS_U(1-R_U^2)\Big)}{df}}{\dfrac{TSS_U(1-R_U^2)}{df}} \\[4pt]
+  &= \frac{\dfrac{TSS(R_U^2 - R_R^2)}{df}}{\dfrac{TSS_U(1-R_U^2)}{df}} \ \ \ \text{ since } TSS_R=TSS_U \\[4pt] 
+  &= \frac{\dfrac{(R_U^2 - R_R^2)}{df}}{\dfrac{1-R_U^2}{df}}
+\end{align*}
+
+as desired.
+
+This is called the \textbf{$R$-squared form of the F statistic}. Since $R^2$ is reported with almost all regressions while $RSS$ is not, it is easier to use $R^2$s from the unrestricted and restricted models to test for exclusion of some variables. Notice that in the numerator the \textit{unrestricted} $R^2$ comes first unlike the numerator in equation \ref{eq:2}. Since $R_U^2 > R_R^2$, the $F$ statistic will always be positive.
 
 Even though $R^2$-form of the $F$ statistic is convenient for testing exclusion restrictions, it can't be applied for testing all linear restrictions. Suppose we want to test whether labor is a rational valuation. If this is the case, then a $1\%$ change in $X_1$ should be associated with a $1\%$ change in the output. That is, $\beta_1 = 1$. In addition, capital should not help to explain the output once labor has been controlled for. The hypothesis is then:
 \[
@@ -917,6 +953,22 @@ In general, the $RSS$ form of F statistic should be used if different dependent 
 R^2 = 1 - \frac{RSS}{TSS} = 1 - \frac{\displaystyle\sum_{t=1}^n \hat{\varepsilon}_t^2}{\displaystyle\sum_{t=1}^n(y_t - \bar{y})^2} = 1 - \frac{\displaystyle\sum_{t=1}^n(y_t - \hat{y}_t)^2}{\displaystyle\sum_{t=1}^n(y_t - \bar{y})^2}.
 \]
 If all the slope coefficients are zero, then the restricted model is just the intercept, so both the numerator and denominator becomes the variance of dependent variable. Accordingly, $R^2 = 1-1 =0.$
+
+We can also arrive to the same conclusion by looking at the restricted model:
+\[
+\hat{y}_t = \alpha + \varepsilon_t
+\]
+where $\alpha = \bar{y}$. We can now use this within the expression for $R^2$:
+
+\begin{align*}
+R^2 
+&= \frac{ESS}{TSS} \\[4pt]
+&= \frac{\displaystyle\sum_{t=1}^n(\hat{y}-\bar{y})^2}{TSS} \\[4pt]
+&= \frac{\displaystyle\sum_{t=1}^n(\bar{y}-\bar{y})^2}{TSS} \\[4pt]
+&= \frac{0}{TSS} \\[4pt]
+&= 0.
+\end{align*}
+
 
 Intuitively, having an intercept-only model means we have a horizontal line equal to $\alpha$. Since $R^2$ quantifies how well $x$ is associated with $y$, then this means knowing $x$ does not help in understanding $y$. Therefore, the best prediction of $y$ is the mean of all $y_t$ irrespective of $x$. Since $x$ has no useful information in understanding $y$, the $R^2$ would be zero.
 
@@ -1078,7 +1130,7 @@ For a given $\sigma_u^2$ and $TSS_j$, the extreme case of $R_j^2=1$ means perfec
 
 When $R_j^2 < 1$, but "close" to $1$, then we have imperfect multicollinearity, or just multicollinearity However, there is not a precise definition of "close" in this context. For example $R_j^2 = 0.9$ means $90\%$ of the sample variation in the $j^{th}$ independent variable can be explained by other independent variables in the regression model. However, whether this translates into a $Var(\hat{a}_j)$ that is too large to be useful depends on the sizes of $\sigma_u^2$ and $TSS_j$. 
 
-As well as a large $R_j^2$, a small sample size can lead to a small value of $TSS_j$ and therefore can lead to large sampling variances as well. Therefore large $R_j^2$ and small sample size generate much the same problem in this context: large OLS estimator variance.
+As well as a large $R_j^2$, a small sample size can lead to a small value of $TSS_j$ and therefore can lead to large sampling variances as well. Therefore large $R_j^2$ and small sample size generate much the same problem in this context: large OLS estimator variance. This in turn means large standard error, which can cause the t-statistic for the coefficient to become not significant. 
 
 Overall, it is better to have less correlation between the $j^{th}$ independent variable and the other independent variables for estimating $\hat{a}_j$. However, there is no great way of tackling multicollinearity. In social sciences where data are usually collective passively, there is no good way to reduce variances of unbiased estimators other than to collect more data. We can try to drop other independent variables from the model to try to reduce multicollinearity but dropping a variable that belongs in the population model can lead to bias. 
 
