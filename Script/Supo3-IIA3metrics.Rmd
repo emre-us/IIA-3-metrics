@@ -80,9 +80,12 @@ The steps to carry out a Chow test is as follows:
   \item Add the two $RSS$s to compute the unrestricted model's residual sum of squares: $RSS_{UR}=RSS_1+RSS_2$.
   \item Compute the $F$-ratio:
   \[
-  F = \frac{\dfrac{RSS_R-RSS_{UR}}{k+1}}{\dfrac{RSS_{UR}}{n-2(k+1)}}
+  F = \frac{\dfrac{RSS_R-RSS_{UR}}{k+1}}{\dfrac{RSS_{UR}}{n-2(k+1)}} = \frac{\dfrac{\text{improvement in fit}}{\text{extra degrees of freedom used up}}}{\dfrac{\text{residual sum of squares remaining}}{\text{degrees of freedom remaining}}}
   \]
-  \item Compare the $F$-ratio to the critical $F$ value with \big( $(k+1),n-2(k+1)$ \big) degrees of freedom and fail to reject the null hypothesis of \textit{parameter stability}, i.e. no structural change, if $F$-ratio does not exceed the critical value at the chosen significance level.
+  \subitem
+  $\hookrightarrow$
+    Because we are splitting the sample into two, we are estimating k regressors for each sample plus their intercepts, so we are using up $(k+1)$ degrees of freedom twice.
+  \item Compare the $F$-ratio to the critical $F$ value with \big($(k+1),n-2(k+1)$\big) degrees of freedom and fail to reject the null hypothesis of \textit{parameter stability}, i.e. no structural change, if $F$-ratio does not exceed the critical value at the chosen significance level.
 \end{enumerate}
 
 Accordingly, we first need to calculate the $RSS$s. For that, recall that $RSS = \hat{\sigma}^2(n-k-1)$ where $n=39, n_1=20, n_2=19$ because the dates are inclusive. Therefore:
@@ -178,3 +181,239 @@ qf(c(0.05, 0.01), df1 = 16, df2 = 15, lower.tail = FALSE)
 \bigskip\bigskip\bigskip
 
 ## QUESTION 2
+
+\textbf{The following demand for money function was estimated from 60 observations, for which $\sum(M-\bar{M})^2=45600$:}
+\[
+\hat{M}_t = 284+0.56Y_t - 0.43M_{t-1} \ \ \ \ \ \ \ R^2=0.841
+\]
+\textbf{When a further 8 observations became available, the equation was re-estimated. The pooled data had $\sum(M-\bar{M})^2 = 50100$, and the re-estimated equation $R^2=0.818$. Carry out a Chow test for predictive failure. What do you conclude from your results? Explain carefully the role of the dummy variable in this test.}
+
+\begin{description}
+\item[Answer:]
+The approach to the Chow test is similar to Question 1 whereby the $RSS$ for restricted model is the pooled data. Hwoever, notice we are not running a two separate regressions on the subsamples. So we follow the first approach from Question 1(a) by taking the differences of the model:
+\[
+\mathbb{H}_0: (\delta_0=0) \cap (\delta_1=0) \cap (\delta_2=0) 
+\]
+where $\delta$s are the coefficients of model $D_t$ which is the difference between the initial model and the model after the new observations.
+
+Accordingly, we first need to derive the respective $RSS$s using the identity $R^2=1-\frac{RSS}{TSS}$ or $RSS = (1-R^2)TSS$ where $TSS=\sum(M-\bar{M})^2$:
+\begin{align*}
+RSS_R &= (1-0.841)\times 45,600 = 7,250.4 \\
+RSS_{UR} &= (1-0.818)\times 50,100 = 9,118.2
+\end{align*}
+
+We can then calculate the Chow test whereby
+\[
+F = \\frac{\dfrac{9118.2-7250.4}{8}}{\dfrac{7250.4}{57}} = 1.835495
+\]
+The $F$ critical values for $\alpha=0.05$ and for $\alpha=0.01$ with $(8,57)$ degrees of freedom are $2.105599$ and $2.840694$ respectively. Accordingly we cannot reject the null hypothesis and conclude that there is no predictive failure.  
+
+\end{description}
+
+```{r}
+qf(c(0.05, 0.01), df1 = 8, df2 = 57, lower.tail = FALSE)
+```
+
+
+
+
+\bigskip\bigskip\bigskip
+\hdashrule[0.5ex]{\textwidth}{1pt}{3mm}
+\bigskip\bigskip\bigskip
+
+## QUESTION 3
+
+### (a) Use the dataset sup3.xls to import the following variables for the period 1955-1990:
+\begin{description}
+\item[W =] \textbf{Wages and Salaries (£ million), CSO code: CFAJ\_AU}
+\item[P =] \textbf{Implied Deflator for Consumers Expenditure, CSO code: GIEF\_AU} 
+\item[E =] \textbf{Employees in Employment, CSO code: BCAD\_AU}
+\item[WF =] \textbf{Workforce, CSO code: DYDB\_AU}
+\item[U =] \textbf{Unemployed, CSO code: BCAB\_AU}
+\end{description}
+
+Load the libraries:
+```{r}
+libraries <- c("haven",       # to import/export SPSS, STATA, SAS files
+               "readxl",      # to import/export Excel files   
+               "tidyverse",   # for tidy data
+               "ggplot2",     # for visualization
+               "gridExtra",   # to plot graphs in grids
+                "rstatix")     # converts stats functions to a tidyverse-friendly format, and can use `levene_test()`
+
+# lapply(libraries, library, character.only=TRUE) will load the libraries
+```
+
+```{r include = FALSE}
+invisible(lapply(libraries, library, character.only=TRUE))
+```
+
+Load the data:
+```{r}
+salaries_df <- read_excel("../Data/sup3.xls", sheet = 1)
+```
+Briefly examine the data frame
+```{r}
+# Yuo can use any of the following to examine data frame (df): 
+# `dim()`: for its dimensions, by row and column
+# `str()`: for its structure
+# `summary()`: for summary statistics on its columns
+# `colnames()`: for the name of each column
+# `head()`: for the first 6 rows of the data frame
+# `tail()`: for the last 6 rows of the data frame
+# `View()`: for a spreadsheet-like display of the entire data frame
+
+summary(salaries_df)
+```
+We can change the column names to something more memorable:
+```{r} 
+colnames(salaries_df) <- c("Year", "W", "P", "E", "WF", "U")
+```
+
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
+
+### (b) Use the data set to estimate the following wage equation by the OLS method:
+\[
+\Delta ln W_t = \beta_0 +\beta_1 ln P + \beta_2 ln P_{t-1} + \beta_3 ln E_t + \beta_4 ln E_{t-1} + \beta_5 ln UR_t + \beta_6 ln UR_{t-1} +\varepsilon_t 
+\]
+\textbf{where $\beta_i$ are constants, $\Delta$ denotes the first difference operator and $UR_t=\frac{U_i}{WF_i}$.
+
+\textbf{Verify that your estimate of $\beta_1$ is $.91170$. Also show that the above is a generalized version of the following hypothesis:}
+\[
+\Delta ln\Big(\frac{W}{EP}\Big)_t = \beta_0 + \varepsilon.
+\]
+\textbf{How would you explain the inclusion of the $UR$ terms?}
+
+\begin{description}
+\item[Answer:]
+\end{description}
+
+```{r}
+#Transform the data to get it ready for the regression
+salaries_new_df<- salaries_df %>% 
+  mutate(lnW = log(W),
+         DlnW = lnW - lag(lnW,1),
+         lnP = log(P),
+         lag_lnP = lag(lnP,1),
+         lnE = log(E),
+         lag_lnE = lag(lnE,1),
+         lnUR = log(U/WF),
+         lag_lnUR = lag(lnUR,1))
+# Run the regression
+lm1 <- lm(DlnW ~ lnP + lag_lnP + lnE + lag_lnE + lnUR + lag_lnUR, data = salaries_new_df)
+summary(lm1)
+```
+
+We can therefore see that only lnP and lag_lnP coefficients are significant. However, $F$-stat is pretty high which suggests presence of multicollinearity. We can look at the variance inflation factor, VIF:
+
+```{r}
+car::vif(lm1)
+```
+
+where we see each of the $VIF$ value is greater than $5$ suggesting serious collinearity.
+
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
+
+### (c) Append the variable $IP$ (strength of Income Policy Index) in Table 1 to your data set (use the `generate` command in Stata to generate a new variable, or copy and paste the data from the question sheet) and run the above regression including $IP$ as an additional regressor and give both a statistical and an economic interpretation of your results.
+
+\begin{description}
+\item[Answer:]
+\end{description}
+
+```{r}
+#Append IP with data from the question
+
+salaries_new_df <- salaries_new_df %>% 
+  mutate(IP = 0)
+salaries_new_df$IP[salaries_new_df$Year == 1962] <- 1.0
+salaries_new_df$IP[salaries_new_df$Year == 1965] <- 1.0
+salaries_new_df$IP[salaries_new_df$Year == 1966] <- 1.5
+salaries_new_df$IP[salaries_new_df$Year == 1967] <- 1.0
+salaries_new_df$IP[salaries_new_df$Year == 1968] <- 1.5
+salaries_new_df$IP[salaries_new_df$Year == 1969] <- 1.75
+salaries_new_df$IP[salaries_new_df$Year == 1975] <- 1.0
+salaries_new_df$IP[salaries_new_df$Year == 1976] <- 3.0
+salaries_new_df$IP[salaries_new_df$Year == 1977] <- 4.5
+salaries_new_df$IP[salaries_new_df$Year == 1978] <- 1.0
+salaries_new_df$IP[salaries_new_df$Year == 1979] <- 1.0
+
+#Run the regression
+lm2 <- lm(DlnW ~ lnP + lag_lnP + lnE + lag_lnE + lnUR + lag_lnUR + IP, data = salaries_new_df)
+summary(lm2)
+```
+
+With the introduction of IP, we now see that all are statistically significant except for $UR$ and its lag, as well as the intercept. Thus we can see that by adding a required variable, $IP$, we reduce the standard error for the whole equation, which in turn, increases the $t$-values of the other coefficients to rise; except for $UR$ which, as we will see, is because $UR$ has no effect.
+
+$R^2$ is not helpful here since it will always increase when a new variable is added. Adjusted $R^2$ also increases from $0.7965$ to $0.8728$. However, a more useful indicated here is the $F$-statistic which tests that all slope coefficients are zero. If this is higher, then the equation is an improvement. With the introduction of IP, we see an increase from $23.18$ to $34.31$.
+
+We can also check the significance of $IP$ by looking at its $t$-value which is $-4.216$. Since the $p$-value is $0.00025$ we know it is statistically significant and we don't need to calculate the $t$-statistic. As long as $p$-value is less than $0.05$ it is significant at the $5%$ level.
+
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
+
+### (d) Test the following set of restrictions jointly by re-specifying your preferred equation:
+\[
+\beta_1+\beta_2 = 0; \ \ \beta_3+\beta_4=0; \ \ \beta_5+\beta_6 = 0
+\]
+\textbf{Verify your results using the Wald Test (the `test` command in Stata). Interpret your results.}
+
+\begin{description}
+\item[Answer:]
+We can do this in two different ways. First is to use the `test` command in Stata, or `linearHypothesis` command from the `car` package in R. The second way is to impose the constraint on the equation and then compare the constrained and unconstrained equations, testing the restriction on the constrained equation.
+\end{description}
+
+```{r}
+# Approach 1:
+
+car::linearHypothesis(lm2, c("lnP=-lag_lnP", "lnE=-lag_lnE", "lnUR=-lag_lnUR"))
+```
+
+```{r}
+#Approach 2
+
+#Modify the data frame for constrained version:
+salaries_new_diff_df <- salaries_new_df %>% 
+  mutate(DlnP = lnP - lag_lnP,
+         DlnE = lnE - lag_lnE,
+         DlnUR = lnUR - lag_lnUR)
+
+#Estimate the constrained model:
+lm2_constrained <- lm(DlnW ~ DlnP + DlnE + DlnUR + IP, data = salaries_new_diff_df)
+
+```
+
+We will then need to calculate the $F$-statistic:
+
+\[
+F = \frac{\dfrac{RSS_R - RSS_{UR}}{df_1}}{\dfrac{RSS_{UR}}{df_2}}
+\]
+
+which means we need to obtain the $RSS$s from both regressions which can be done either by `deviance` function in R or by calculating the $RSS$ manually:
+
+```{r}
+#RSS unrestricted
+sum(resid(lm2)^2)
+RSS_unr <- deviance(lm2)
+
+#RSS restricted
+sum(resid(lm2_constrained)^2)
+RSS_res <- deviance(lm2_constrained)
+
+#F-statistic:
+Fstat_Q3d <- ((RSS_res - RSS_unr)/3)/(RSS_unr/27)
+
+#F Critical value:
+Crit_Value_Q3d <- qf(0.05,df1=3,df2=27,lower.tail = FALSE)
+
+as.table(c("RSS_unr"=RSS_unr, "RSS_res"=RSS_res, "F-Stat"=Fstat_Q3d, "Critical_Value"=Crit_Value_Q3d))
+```
+
+In both approaches we obtain $F$-statistic of $0.7598$ which is much lower than the critical value of $2.96$, thus we cannot reject the null hypothesis. That is, the constraints seem to be correct.
