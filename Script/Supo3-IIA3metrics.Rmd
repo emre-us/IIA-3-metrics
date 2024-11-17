@@ -1,0 +1,180 @@
+---
+title: "IIA-3 Econometrics: Supervision 3"
+author: "Emre Usenmez"
+date: "`r Sys.Date()`"
+output: pdf_document
+header-includes: 
+  - \usepackage{amsmath, tcolorbox, dashrule}
+  - \tcbuselibrary{listings,most}
+---
+
+<!-- This comment will not be displayed in the output. Below change to CSS style is to ensure the blocktexts are in the same form size as the rest of the text.-->
+
+```{css style settings, echo = FALSE} 
+blockquote {
+    padding: 10px 20px;
+    margin: 0 0 20px;
+    font-size: 14px;
+    border-left: 5px solid #eee;
+}
+```
+
+
+# SUPPLEMENTARY QUESTIONS
+
+\bigskip\bigskip
+
+## QUESTION 1
+
+\textbf{In a study of the Cobb-Douglass production function, a researcher suspects that the parameters are subject to change over time. Data on output, $Y$, labor input, $X_1$, and capital stock, $X_2$, are available for years 1929 to 1967. $T$ represents the time trend. The results obtained are as follows (t-values in parantheses):}
+
+\begin{alignat*}{6}
+\text{Full Sample:  } \ \ \widehat{log Y} & {}={} && -3.02 {}+{} && 1.34 \ logX_1 {}+{} && 0.29 \ logX_2 {}+{} && 0.0052 \ T \\
+ & && (-6.65) && (14.68) && (4.89) && (2.34) \\
+ & && && R^2 = 0.99535 && &&\hat{\sigma} = 0.03274 \\
+\text{1929-48:  } \ \ \widehat{log Y} & {}={} && -3.22 {}+{} && 1.36 \ logX_1 {}+{} && 0.32 \ logX_2 {}+{} && 0.0051 \ T \\
+ & && (-4.63) && (4.95) && (1.36) && (1.40) \\
+ & && && R^2 = 0.97853 && && \hat{\sigma} = 0.04449 \\
+\text{1949-67:  } \ \ \widehat{log Y} & {}={} && -1.56 {}+{} && 1.02 \ logX_1 {}+{} && 0.33 \ logX_2 {}+{} && 0.0095 \ T \\
+ & && (-2.21) && (7.58) && (2.33) && (1.85) \\
+ & && && R^2 = 0.99565 && && \hat{\sigma} = 0.0135 \\
+\end{alignat*}
+
+#### a) Conduct a test of the hypothesis that the four regression coefficients are jointly the same in both sub-periods, against the alternative that they differ.
+\begin{description}
+\item[Answer:] 
+
+This question is effectively testing if there is a structural break from the start of 1949 which may be caused by different intercept, different slope coefficient, or both. Suppose the coefficients of the full sample regression are $\beta$s, and coefficients of the 1929-48 regression are $\psi$s, and coefficients of the 1949-67 are $\gamma$s. Our hypothesis is therefore:
+\[
+\mathbb{H}_0: (\psi_0=\gamma_0) \cap (\psi_1=\gamma_1) \cap (\psi_2=\gamma_2) \cap (\psi_3=\gamma_3) 
+\]
+We can test this in two ways. First is to reparameterize the model and then run an $F$-test, and the second is to run a Chow test.
+
+\underline{First Approach:}
+
+We can create a new coefficient $\delta = \psi-\gamma$ whereby our model becomes: $\widehat{logY}=\delta_0 + \delta_1 \ log X_1 + \delta_2 \ log X_2 + \delta_3 T + \varepsilon$ for which the hypothesis becomes:
+\[
+\mathbb{H}_0: (\delta_0=0) \cap (\delta_1=0) \cap (\delta_2=0) \cap (\delta_3=0)
+\]
+We would then use the $F$-test for this join hypothesis.
+
+\underline{Second Approach:}
+
+An alternative appraoch is to use \textit{Chow Test}.\footnote{Chow, C Gregory (1960) \textit{Tests of Equality Between Sets of Coefficients in Two Linear Regressions}, Econometrica, 28(3) 591:605} This test assumes that:
+\begin{itemize}
+  \item The error terms in the subperiod regressions are normally distributed with the same, i.e. homoskedastic, variance $\sigma^2$. That is, $u_{1929-48t} \sim N(0,\sigma^2)$ and $u_{1949-67t} \sim N(0,\sigma^2)$.
+  \item The two error terms $u_{1929-48t}$ and $u_{1949-67t}$ are independently distributed.
+\end{itemize}
+
+The Chow test is an $F$-ratio which means we will need the $RSS$ of both unrestricted and restricted models. Here, \textit{the full sample model is the restricted model} since that is the model we have by imposing the restrictions that all $\psi_j=\gamma_j$ for $j=0,\dots,3$. The $RSS$ of the unrestricted model, on the other hand - and this is a key insight - is the combination of the two sub-sample $RSS$s.
+
+\begin{tcolorbox}[breakable, title=Why $RSS$ and not $R^2$ form of $F$-Test, skin=enhancedlast]
+Note that the Chow test uses $RSS$ and that there is no simple $R^2$ form of the $F$-test if separate regressions have been estimated for each group. This is because the $TSS$s are not the same as $\bar{Y}$ is not the same in both samples.
+\end{tcolorbox}
+
+The steps to carry out a Chow test is as follows:
+\begin{enumerate}
+  \item Obtain the restricted model's residual sum of squares, $RSS_R$, by estimating the regression for the full sample model with $(n-k-1)$ degrees of freedom, where $n=n_1+n_2$ with $n_1$ being the sample size of the first sub-sample, and $n_2$ being he sample size of the second sub-sample, and where $k$ is the number of regressors in that model.
+  \item Estimate the first sub-sample model to obtain its residual sum of squares, $RSS_1$ with $n_1-k-1$ degrees of freedom.
+  \item Do the same for the second sub-sample model to obtain $RSS_2$ with $n_2-k-1$ degrees of freedom.
+  \item Add the two $RSS$s to compute the unrestricted model's residual sum of squares: $RSS_{UR}=RSS_1+RSS_2$.
+  \item Compute the $F$-ratio:
+  \[
+  F = \frac{\dfrac{RSS_R-RSS_{UR}}{k+1}}{\dfrac{RSS_{UR}}{n-2(k+1)}}
+  \]
+  \item Compare the $F$-ratio to the critical $F$ value with \big( $(k+1),n-2(k+1)$ \big) degrees of freedom and fail to reject the null hypothesis of \textit{parameter stability}, i.e. no structural change, if $F$-ratio does not exceed the critical value at the chosen significance level.
+\end{enumerate}
+
+Accordingly, we first need to calculate the $RSS$s. For that, recall that $RSS = \hat{\sigma}^2(n-k-1)$ where $n=39, n_1=20, n_2=19$ because the dates are inclusive. Therefore:
+
+\begin{align*}
+RSS_R 
+  &= 0.03274^2\times 35 
+  &= 0.03751677 \\
+RSS_UR 
+  &= RSS_1 + RSS_2 \\ 
+  &= 0.04449^2\times 16 + 0.0135^2\times 15 \\
+  &= 0.03440351
+\end{align*}
+
+With these we can now calculate our $F$-ratio:
+\[
+F = \frac{\dfrac{0.03751677-0.04304995}{4}}{\dfrac{RSS_{UR}}{n-2(k+1)}} = \frac{\dfrac{0.03751677 - 0.03440351}{4}}{\dfrac{0.03440351}{31}} = 0.7013157
+\]
+
+The F-statistic for $\alpha=0.05$ is $2.678667$ and for $\alpha=0.01$ is $3.992811$, and thus we fail to reject the null hypothesis of parameter stability at either of the $\psi$ values.
+\end{description}
+
+```{r}
+qf(p=c(0.05, 0.01), df1=4, df2=31, lower.tail = FALSE)
+```
+
+
+\begin{tcolorbox}[breakable, title=Why $RSS$ equals $\hat{\sigma}^2(n-k-1)$?, skin=enhancedlast]
+Consider how we estimate the error variance, $\sigma^2$. First notice that $\sigma^2=\mathbb{E}(u^2)$, so an unbiased estimator of $\sigma^2$ is $\frac{1}{n}\sum_{i=1}^nu_i^2$. However, since we do not observe the errors $u_i$ this is not a true estimator. What we have, though, is the estimates of the errors $u_i$ which are the OLS residuals $\hat{u}_i$. If we replace the errors with the OLS residuals then we have
+\[
+\sigma^2 = \frac{\sum_{i=1}^nu_i^2}{n} = \frac{RSS}{n}
+\]
+which is a true estimator because it gives a computable rule for any sample of data on $X$s and $Y$. However, this is biased because it does not account for the restrictions that must be satisfied by the OLS residuals. These restrictions are given by the two OLS first order conditions:
+\[
+\sum_{i=1}^n\hat{u}_i = 0, \ \ \ \ \ \ \sum_{i=1}^nX_i\hat{u}_i=0
+\]
+for a simple regression with one regressor. In a way, if we know $n-k-1$ residuals, we can always get the other remaining residuals by using the restrictions implied by the first order conditions. Therefore there are only $n-k-1$ degrees of freedom in the OLS residuals, as opposed to $n$ degrees of freedom in the errors.
+
+The unbiased estimator of the error variance is therefore:
+\[
+\hat{\sigma}^2 = \frac{\sum_{i=1}^n\hat{u}_i^2}{n-k-1} = \frac{RSS}{n-k-1}
+\]
+where in simple regression with one regressor, $k=1$.
+\end{tcolorbox}
+
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
+
+### (b) It is believed that irrespective of whether the form of the relationship has changed over the two periods (i.e. whether the coefficients of the equation have changed), there has still been a structural break. Test this hypothesis and use this result to comment on the assumptions made in part (a). What limitations are there to these methods for testing for stability over the whole period.
+
+\begin{description}
+\item[Answer:] What this question is effectively asking is that whether the error variances of the two subperiod regressions are the same. Recall from part (a) one of the two key assumptions of the Chow test is that the variances of the errors are homoskedastic. Therefore the hypothesis is:
+\[
+\mathbb{H}_0: \sigma_\psi = \sigma_\gamma \ \ \ \ \ \ \ \text{or } \ \ \ \ \mathbb{H}_0: \frac{\sigma_\psi}{\sigma_\gamma}=1 \\
+\mathbb{H}_1: \sigma_\psi \neq \sigma_\gamma \ \ \ \ \ \ \ \ text{or } \ \ \ \ \mathbb{H}_0: \frac{\sigma_\psi}{\sigma_\gamma}\neq 1
+\]
+If the variances of the two subpopulations are the same, i.e. $\sigma_\psi=\sigma_\gamma$, as assumed by the Chow test, then the ratios of the ratios of estimated error variance to population error variance has an $F$ distribution with $(n_1-k-1)$ and $(n_2-k-1)$ degrees of freedom in the numerator and denominator, respectively. That is,
+\[
+\frac{\dfrac{\hat{\sigma}_\psi^2}{\sigma_\psi^2}}{\dfrac{\hat{\sigma}_\gamma^2}{\sigma_\gamma^2}} \sim F_{(n_1-k-1),(n_2-k-1)}.
+\]
+
+Notice that if $\sigma_\psi=\sigma_\gamma$ then this ratio and thus the $F$-test becomes:
+\[
+F = \frac{\sigma_\psi^2}{\sigma_\gamma^2}
+\]
+where by convention the larger estimated variance is in the numerator.
+
+Accordingly, our $F$-statistic is:
+\[
+F = \frac{0.04449^2}{0.0135^2} = 10.86069.
+\]
+
+Since this is a two-tailed test, but we are putting the higher variance in the numerator, then we can treat it as one-sided test with alternative hypothesis is greater than $1$, The critical values for $\alpha=0.05$ with $(16,15)$ degrees of freedom is $2.384875$, and for $\alpha=0.01$ it is $3.485246$.
+
+Thus at both $\alpha$ levels we can reject the null hypothesis and conclude that the subperiod variances are not the same at $\alpha=0.01$. 
+This means, the assumption of Chow test does not hold and we shouldn't use the Chow test, at least not in this form. There are modifications to Chow test that can be utilized but that is beyond this class.
+
+Another point regarding the Chow test to bear in mind is that it is sensitive to the choice of the time at which we divide the subperiods. The $F$ values would be different if the cut-off point was 1947 or 1949.
+
+Finally, the Chow test will tell us only if the two regressions are different but not whether the difference is due to the intercepts, the slopes, or both. We can use dummy variables for that, though.
+
+\end{description}
+
+```{r}
+qf(c(0.05, 0.01), df1 = 16, df2 = 15, lower.tail = FALSE)
+```
+
+
+\bigskip\bigskip\bigskip
+\hdashrule[0.5ex]{\textwidth}{1pt}{3mm}
+\bigskip\bigskip\bigskip
+
+## QUESTION 2

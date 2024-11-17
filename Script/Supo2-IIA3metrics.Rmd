@@ -675,7 +675,7 @@ The t-statistic is therefore:
 t_{\hat{\rho}} = \frac{\hat{\rho} - \rho^0}{\mathit{se}(\hat{\rho})} = \frac{0.9981586 - 0}{0.008254527} = 120.9226
 \]
 
-as desired. Since it is way more than 1.96 we can reject the null hypothesis.
+as desired. Since it is way more than 2 we can reject the null hypothesis.
 
 \end{description}
 
