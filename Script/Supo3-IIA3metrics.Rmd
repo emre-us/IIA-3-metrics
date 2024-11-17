@@ -417,3 +417,10 @@ as.table(c("RSS_unr"=RSS_unr, "RSS_res"=RSS_res, "F-Stat"=Fstat_Q3d, "Critical_V
 ```
 
 In both approaches we obtain $F$-statistic of $0.7598$ which is much lower than the critical value of $2.96$, thus we cannot reject the null hypothesis. That is, the constraints seem to be correct.
+
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
+
+### (e) Test the further restrictions that $\beta_5 = \beta_6 = 0$. (N.B. your unrestricted equation is always your currently preferred equation, so in this case you only need to test $\beta_5=0$ explicitly.)
