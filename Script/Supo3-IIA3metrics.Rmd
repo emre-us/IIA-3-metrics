@@ -239,7 +239,7 @@ libraries <- c("haven",       # to import/export SPSS, STATA, SAS files
                "tidyverse",   # for tidy data
                "ggplot2",     # for visualization
                "gridExtra",   # to plot graphs in grids
-                "rstatix")     # converts stats functions to a tidyverse-friendly format, and can use `levene_test()`
+                "rstatix")     # converts stats functions to a tidyverse-friendly format
 
 # lapply(libraries, library, character.only=TRUE) will load the libraries
 ```
@@ -302,15 +302,34 @@ salaries_new_df<- salaries_df %>%
          lag_lnE = lag(lnE,1),
          lnUR = log(U/WF),
          lag_lnUR = lag(lnUR,1))
+```
+
+Since we are taking the differences those columns should have any value for 1955:
+```{r}
+#Look at total number of `NA` values per column:
+colSums(is.na(salaries_new_df))
+
+```
+
+Thus we can adjust our sample size to take account of this:
+```{r}
+n_unr <- nrow(salaries_new_df) - sum(apply(is.na(salaries_new_df), 1, any)) 
+# Note, if we replace 1 with 2 within apply function it will give us 4, the total number of NAs. 
+n_unr
+```
+
+Thus our sample size is $35$.
+
+```{r}
 # Run the regression
-lm1 <- lm(DlnW ~ lnP + lag_lnP + lnE + lag_lnE + lnUR + lag_lnUR, data = salaries_new_df)
-summary(lm1)
+lm_Q3b <- lm(DlnW ~ lnP + lag_lnP + lnE + lag_lnE + lnUR + lag_lnUR, data = salaries_new_df)
+summary(lm_Q3b)
 ```
 
 We can therefore see that only lnP and lag_lnP coefficients are significant. However, $F$-stat is pretty high which suggests presence of multicollinearity. We can look at the variance inflation factor, VIF:
 
 ```{r}
-car::vif(lm1)
+car::vif(lm_Q3b)
 ```
 
 where we see each of the $VIF$ value is greater than $5$ suggesting serious collinearity.
@@ -324,6 +343,10 @@ where we see each of the $VIF$ value is greater than $5$ suggesting serious coll
 
 \begin{description}
 \item[Answer:]
+Once we append $IP$, the model we will be testing is:
+\[
+\Delta ln W_t = \beta_0 +\beta_1 ln P + \beta_2 ln P_{t-1} + \beta_3 ln E_t + \beta_4 ln E_{t-1} + \beta_5 ln UR_t + \beta_6 ln UR_{t-1} + IP_t + \varepsilon_t
+\]
 \end{description}
 
 ```{r}
@@ -343,9 +366,12 @@ salaries_new_df$IP[salaries_new_df$Year == 1977] <- 4.5
 salaries_new_df$IP[salaries_new_df$Year == 1978] <- 1.0
 salaries_new_df$IP[salaries_new_df$Year == 1979] <- 1.0
 
+# Now the number of regressors increased to 7:
+k <- 7
+
 #Run the regression
-lm2 <- lm(DlnW ~ lnP + lag_lnP + lnE + lag_lnE + lnUR + lag_lnUR + IP, data = salaries_new_df)
-summary(lm2)
+lm_Q3c <- lm(DlnW ~ lnP + lag_lnP + lnE + lag_lnE + lnUR + lag_lnUR + IP, data = salaries_new_df)
+summary(lm_Q3c)
 ```
 
 With the introduction of IP, we now see that all are statistically significant except for $UR$ and its lag, as well as the intercept. Thus we can see that by adding a required variable, $IP$, we reduce the standard error for the whole equation, which in turn, increases the $t$-values of the other coefficients to rise; except for $UR$ which, as we will see, is because $UR$ has no effect.
@@ -367,14 +393,20 @@ We can also check the significance of $IP$ by looking at its $t$-value which is 
 
 \begin{description}
 \item[Answer:]
-We can do this in two different ways. First is to use the `test` command in Stata, or `linearHypothesis` command from the `car` package in R. The second way is to impose the constraint on the equation and then compare the constrained and unconstrained equations, testing the restriction on the constrained equation.
 \end{description}
+We can do this in two different ways. First is to use the `test` command in Stata, or `linearHypothesis` command from the `car` package in R. The second way is to impose the constraint on the equation and then compare the constrained and unconstrained equations, testing the restriction on the constrained equation.
 
 ```{r}
 # Approach 1:
 
-car::linearHypothesis(lm2, c("lnP=-lag_lnP", "lnE=-lag_lnE", "lnUR=-lag_lnUR"))
+car::linearHypothesis(lm_Q3c, c("lnP=-lag_lnP", "lnE=-lag_lnE", "lnUR=-lag_lnUR"))
 ```
+
+The restricted model we will test is:
+\[
+\Delta ln W_t = \beta_0 +\beta_1 \Delta ln P_t + \beta_2 ln \Delta ln E_t + \beta_3 \Delta ln UR_t + \beta_4 IP_t + \varepsilon_t
+\]
+
 
 ```{r}
 #Approach 2
@@ -386,7 +418,8 @@ salaries_new_diff_df <- salaries_new_df %>%
          DlnUR = lnUR - lag_lnUR)
 
 #Estimate the constrained model:
-lm2_constrained <- lm(DlnW ~ DlnP + DlnE + DlnUR + IP, data = salaries_new_diff_df)
+lm_Q3d <- lm(DlnW ~ DlnP + DlnE + DlnUR + IP, data = salaries_new_diff_df)
+summary(lm_Q3d)
 
 ```
 
@@ -400,20 +433,28 @@ which means we need to obtain the $RSS$s from both regressions which can be done
 
 ```{r}
 #RSS unrestricted
-sum(resid(lm2)^2)
-RSS_unr <- deviance(lm2)
+# Manual calculation: sum(resid(lm_Q3c)^2)
+RSS_unr_Q3d <- deviance(lm_Q3c)
 
 #RSS restricted
-sum(resid(lm2_constrained)^2)
-RSS_res <- deviance(lm2_constrained)
+#Manual calculation: sum(resid(lm_Q3d)^2)
+RSS_res_Q3d <- deviance(lm_Q3d)
 
-#F-statistic:
-Fstat_Q3d <- ((RSS_res - RSS_unr)/3)/(RSS_unr/27)
+# Difference between the two models (ie number of restrictions):
+q_1 <- 3
+
+#F-statistic with (3,27) df:
+Fstat_Q3d <- ((RSS_res_Q3d - RSS_unr_Q3d)/q_1)/(RSS_unr_Q3d/(n_unr-k-1))
 
 #F Critical value:
-Crit_Value_Q3d <- qf(0.05,df1=3,df2=27,lower.tail = FALSE)
+Crit_Value_Q3d <- qf(0.05, df1=q_1, df2=n_unr-k-1,lower.tail = FALSE)
 
-as.table(c("RSS_unr"=RSS_unr, "RSS_res"=RSS_res, "F-Stat"=Fstat_Q3d, "Critical_Value"=Crit_Value_Q3d))
+as.table(c("RSS_unr"=RSS_unr_Q3d, 
+           "RSS_res"=RSS_res_Q3d, 
+           "F-Stat"=Fstat_Q3d, 
+           "Critical_Value"=Crit_Value_Q3d, 
+           "df_1"=q_1, 
+           "df_2"=n_unr-k-1))
 ```
 
 In both approaches we obtain $F$-statistic of $0.7598$ which is much lower than the critical value of $2.96$, thus we cannot reject the null hypothesis. That is, the constraints seem to be correct.
@@ -424,3 +465,93 @@ In both approaches we obtain $F$-statistic of $0.7598$ which is much lower than 
 \bigskip\bigskip
 
 ### (e) Test the further restrictions that $\beta_5 = \beta_6 = 0$. (N.B. your unrestricted equation is always your currently preferred equation, so in this case you only need to test $\beta_5=0$ explicitly.)
+
+\textbf{Answer:}
+We can respecify the constraint and run the regression on this model. Our constrained is $\beta_5=0$. This is because in part (d) we have $\beta_5+\beta_6 = 0$ thus if $\beta_5=0$ then $\beta_6=0$. For this we can just do a t-test or check the t-statistic of the regression summary:
+
+```{r}
+summary(lm_Q3d)$coefficients["DlnUR", "t value"]
+```
+
+We see that the $t$-stat for $DlnUR$ is $-0.4770329$. But the question asks this to be done by respecifying the model. Also note that this time our unrestricted model is the restricted model in (d) since we are imposing further restrictions. Accordingly the model we test is:
+
+\[
+\Delta ln W_t = \beta_0 +\beta_1 \Delta ln P_t + \beta_2 ln \Delta ln E_t + \beta_4 IP_t + \varepsilon_t
+\]
+
+```{r}
+# New RSS unrestricted:
+RSS_unr_Q3e <- RSS_res_Q3d
+
+# Number of regressors in the new unrestricted model:
+k_2 <- 4
+
+#Estimate the constrained model:
+lm_Q3e <- lm(DlnW ~ DlnP + DlnE + IP, data = salaries_new_diff_df)
+summary(lm_Q3e)
+
+#RSS restricted
+#Manual calculation: sum(resid(lm2_constrained)^2)
+RSS_res_Q3e <- deviance(lm_Q3e)
+
+# Difference between the two models (ie number of restrictions):
+q_2 <- 1
+
+#F-statistic with (3,27) df:
+Fstat_Q3e <- ((RSS_res_Q3e - RSS_res_Q3d)/q_2)/(RSS_res_Q3d/(n_unr-k_2-1))
+
+#F Critical value:
+Crit_Value_Q3e <- qf(0.05, df1=q_2, df2=n_unr-k-1,lower.tail = FALSE)
+
+as.table(c("RSS_unr"=RSS_unr_Q3e, 
+           "RSS_res"=RSS_res_Q3e, 
+           "F-Stat"=Fstat_Q3e, 
+           "Critical_Value"=Crit_Value_Q3e, 
+           "df_1"=q_2, 
+           "df_2"=n_unr-k_2-1))
+```
+
+If we take the square of the t-statistic from the summary table, we should also get this F-statistic:
+```{r}
+summary(lm_Q3d)$coefficients["DlnUR", "t value"]^2
+```
+
+which gives us the F-Stat as expected.
+
+
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
+
+### (f) Interpret your prefereed equation in light of your results to (c), (d), and (e).
+
+\begin{description}
+\item[Answer:]
+The equation in (e), should be our new preferred equation since on all measures it is the best equation so far. This is good for the first hypothesis, i.e. the real wage resistance hypothesis, as this is exactly what we would expect if the hypothesis is correct.
+\end{description}
+
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
+
+### (g) Test the hypothesis that $\beta_3=1$ by respecifying your preferred equation in terms of average wages and salaries. (Your F-statistic for this test should be about 0.086)
+
+\begin{description}
+\item[Answer:]
+One way to answer this question is to run a t-test on the coefficient of $\Delta ln E$:
+\end{description}
+
+```{r}
+(summary(lm_Q3e)$coefficients["DlnE","Estimate"]-1)/summary(lm_Q3e)$coefficients["DlnE","Std. Error"]
+```
+
+We check against the critical $t$ value
+```{r}
+qt(p=0.025, df=34, lower.tail = FALSE)
+```
+
+Thus we cannot reject the null hypothesis.
+
+However, the question actually ask us to respecify the equation. 
