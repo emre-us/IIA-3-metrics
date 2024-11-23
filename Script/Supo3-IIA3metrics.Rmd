@@ -19,6 +19,136 @@ blockquote {
 }
 ```
 
+# FACULTY QUESTIONS
+
+\bigskip\bigskip
+
+## QUESTION 1
+
+\textbf{An investigator analysing the relationship between food expenditure, disposable income and prices across a random sample of 25 counties in the UK estimates the relationship}
+\begin{alignat*}{4}
+log(FOOD) = & 4.7377 {}+{} && 0.3506 \ log(PDI) {}-{} && 0.5086 \ log(PRICE) \\
+& (0.6805) && (0.0899) && (0.1010)
+\end{alignat*}
+
+\textbf{where figures in paranthesis are standard errors and where:}
+
+\textbf{FOOD = Average household expenditure on food}
+
+\textbf{PDI = Average personal dosposable income}
+
+\textbf{PRICE = Average price of food deflated by a general price index}
+
+#### (i) Give an economic interpretation of the coefficients on log(PDI) and log(PRICE).
+
+\begin{description}
+\item[Answer:] The coefficient of $log(PDI)$ is income elasticity, and the coefficient of $log(PRICE)$ is the price elasticity.
+\end{description}
+
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
+
+### (ii) Test the hypothesis, using 5% significance level, that the coefficient of log(PRICE) is equal to zero against the alternative that it is nonzero.
+\begin{description}
+\item[Answer:] For this we would use a $t$-test for the hypothesis that
+\[
+\mathbb{H}_0: \beta_2=0 \text{vs } \mathbb{H}_{A}: \beta_2 \neq 0
+\]
+The $t$-statistic is:
+\[
+\frac{-0.5086 - 0}{0.1010} = -5.035644
+\]
+which is significantly different than $t_{0.025,24}=-2.064$, and so we would reject the null hypothesis. 
+\end{description}
+
+
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
+
+### (iii) Test the hypothesis using 5% significance level that the coefficient of log(INCOME) is equal to 1 against the alternative that it is significantly different from 1.
+
+\begin{description}
+\item[Answer:] For this we would use a $t$-test for the hypothesis that
+\[
+\mathbb{H}_0: \beta_1=1 \text{vs } \mathbb{H}_{A}: \beta_1 \neq 1
+\]
+The $t$-statistic is:
+\[
+\frac{0.3506 - 1}{0.0899} = -7.223582
+\]
+which is significantly different than $t_{0.025,24}=-2.064$, and so we would reject the null hypothesis. 
+\end{description}
+
+
+
+
+
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
+
+### (iv) You are now given the following extra information:
+\begin{align*}
+TSS &= \sum_{i=1}^n (y_i-\bar{y})^2 = 0.52876 \\
+RSS &= \sum_{i=1}^n e_i^2 = 0.46276
+\end{align*}
+\textbf{Compute ESS and $R^2$ for the above regression}.
+
+\begin{description}
+\item[Answer:]
+\begin{align*}
+ESS &= TSS - RSS = 0.52876 - 0.46276 = 0.066 \\
+R^2 &= \frac{ESS}{TSS} = \frac{0.066}{0.52876} = 0.1248203.
+\end{align*}
+\end{description}
+
+
+
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
+
+### (v) Test the joint hypothesis at the 5% level that the two slope coefficients are all equal to zero against the alternative that at least one slope coefficient is nonzero.
+
+\begin{description}
+\item[Answer:] For this we would use an $F$-test for the hypothesis that
+\[
+\mathbb{H}_0: (\beta_1=0) \cap (\beta_2=0)
+\]
+The $F$-statistic is:
+\[
+F = \frac{\dfrac{ESS}{df_1}}{\dfrac{RSS}{df_2}} = \frac{\dfrac{0.066}{2}}{\dfrac{0.46279}{22}} = 1.568746
+\]
+or
+\[
+F = \frac{\dfrac{R^2_unr - R^2_res}{df_1}}{\dfrac{1-R^2_unr}{df_2}} = frac{\dfrac{0.1248203}{2}}{\dfrac{1-0.1248203}{22}} = 1.568847
+\]
+giving a marginal difference due to rounding errors. In either case the F-statistic is significantly different than $F_{0.05,2, 22}=0.0514$, and so we would reject the null hypothesis. 
+\end{description}
+
+
+
+\bigskip\bigskip\bigskip
+\hdashrule[0.5ex]{\textwidth}{1pt}{3mm}
+\bigskip\bigskip\bigskip
+
+## QUESTION 2
+
+
+
+
+
+
+
+
+
+\pagebreak
 
 # SUPPLEMENTARY QUESTIONS
 
@@ -140,10 +270,10 @@ where in simple regression with one regressor, $k=1$.
 
 \begin{description}
 \item[Answer:] What this question is effectively asking is that whether the error variances of the two subperiod regressions are the same. Recall from part (a) one of the two key assumptions of the Chow test is that the variances of the errors are homoskedastic. Therefore the hypothesis is:
-\[
+\begin{align*}
 \mathbb{H}_0: \sigma_\psi = \sigma_\gamma \ \ \ \ \ \ \ \text{or } \ \ \ \ \mathbb{H}_0: \frac{\sigma_\psi}{\sigma_\gamma}=1 \\
-\mathbb{H}_1: \sigma_\psi \neq \sigma_\gamma \ \ \ \ \ \ \ \ text{or } \ \ \ \ \mathbb{H}_0: \frac{\sigma_\psi}{\sigma_\gamma}\neq 1
-\]
+\mathbb{H}_1: \sigma_\psi \neq \sigma_\gamma \ \ \ \ \ \ \ \text{or } \ \ \ \ \mathbb{H}_0: \frac{\sigma_\psi}{\sigma_\gamma}\neq 1
+\end{align*}
 If the variances of the two subpopulations are the same, i.e. $\sigma_\psi=\sigma_\gamma$, as assumed by the Chow test, then the ratios of the ratios of estimated error variance to population error variance has an $F$ distribution with $(n_1-k-1)$ and $(n_2-k-1)$ degrees of freedom in the numerator and denominator, respectively. That is,
 \[
 \frac{\dfrac{\hat{\sigma}_\psi^2}{\sigma_\psi^2}}{\dfrac{\hat{\sigma}_\gamma^2}{\sigma_\gamma^2}} \sim F_{(n_1-k-1),(n_2-k-1)}.
@@ -237,9 +367,7 @@ Load the libraries:
 libraries <- c("haven",       # to import/export SPSS, STATA, SAS files
                "readxl",      # to import/export Excel files   
                "tidyverse",   # for tidy data
-               "ggplot2",     # for visualization
-               "gridExtra",   # to plot graphs in grids
-                "rstatix")     # converts stats functions to a tidyverse-friendly format
+               "rstatix")     # converts stats functions to a tidyverse-friendly format
 
 # lapply(libraries, library, character.only=TRUE) will load the libraries
 ```
@@ -279,7 +407,7 @@ colnames(salaries_df) <- c("Year", "W", "P", "E", "WF", "U")
 \[
 \Delta ln W_t = \beta_0 +\beta_1 ln P + \beta_2 ln P_{t-1} + \beta_3 ln E_t + \beta_4 ln E_{t-1} + \beta_5 ln UR_t + \beta_6 ln UR_{t-1} +\varepsilon_t 
 \]
-\textbf{where $\beta_i$ are constants, $\Delta$ denotes the first difference operator and $UR_t=\frac{U_i}{WF_i}$.
+\textbf{where $\beta_i$ are constants, $\Delta$ denotes the first difference operator and $UR_t=\frac{U_i}{WF_i}$}.
 
 \textbf{Verify that your estimate of $\beta_1$ is $.91170$. Also show that the above is a generalized version of the following hypothesis:}
 \[
@@ -401,7 +529,7 @@ We can also check the significance of $IP$ by looking at its $t$-value which is 
 \[
 \beta_1+\beta_2 = 0; \ \ \beta_3+\beta_4=0; \ \ \beta_5+\beta_6 = 0
 \]
-\textbf{Verify your results using the Wald Test (the `test` command in Stata). Interpret your results.}
+\textbf{Verify your results using the Wald Test (the} `test` \textbf{command in Stata). Interpret your results.}
 
 \begin{description}
 \item[Answer:]
@@ -417,9 +545,62 @@ which gives us the $F$-statistic as $0.7598$.
 
 In the second approach, the restricted model we will test is:
 \[
-\Delta ln W_t = \beta_0 +\beta_1 \Delta ln P_t + \beta_3 \Delta ln E_t + \beta_5 \Delta ln UR_t + \beta_7 IP_t + \varepsilon_t
+\Delta ln W_t = \beta_0 +\beta_1 \Delta ln P_t + \beta_3 \Delta ln E_t + \beta_5 \Delta ln UR_t + \beta_7 IP_t + \Delta \varepsilon_t
 \]
 
+
+\begin{tcolorbox}[breakable, title=Why restricted model is a \textit{dynamic} regression model?, skin=enhancedlast]
+Suppose we have the following model:
+\[
+Y_t = \beta_0 + \beta_1X_t + u_t
+\]
+This model is known as \textit{level form}. Since this level form holds true for every time period, this can also be written as their lagged values:
+\[
+Y_{t-1} = \beta_0 + \beta_1X_{t-1} + u_{t-1}
+\]
+If we subtract the latter from the former, we will get what is called \textit{first difference form}:
+\[
+\Delta Y_t = \beta_1\Delta X_t + \Delta u_t
+\]
+where the \textit{first difference operator}, $\Delta$, tells us to take successive differences of the variables in the equation. 
+
+So, for example, if $X$ and $Y$ in the level form represent the logarithms of income and consumption expenditure, then $\Delta X$ and $\Delta Y$ represent changes in the logs of income and consumption expenditure, respectively. So, if we are interested in the relationships between the variables in their growth form, then the difference form may be more appropriate. This is because a change in the log of a variable is a relative change, or a percentage change if multiplied by 100.
+
+If the error term in the level form satisfies the OLS assumptions, especially the assumption of no autocorrelation, then the error term $v_t = \Delta u_t = u_t - u_{t-1}$ is autocorrelated. To see this we need to take the expectation and variance of $v_t$:
+\[
+\mathbb{E}(v_t) = \mathbb{E}(u_t - u_{t-1}) = \mathbb{E}(u) - \mathbb{E}(u_{t-1}) = 0
+\]
+since $\mathbb{E}(u)=0$ for each t.
+\begin{align*}
+Var(v_t) 
+  &= Var(u_t - u_{t-1}) \\
+  &= Var(u_t) + Var (-u_{t-1}) \\
+  &= \sigma^2 + \sigma^2 \\
+  &= 2\sigma^2 
+\end{align*}
+thus $v_t$ is homoskedastic. However we also need to look at the covariance of $v_t$ and $v_{t-1}$:
+\begin{align*}
+Cov(v_t, v_{t-1})
+  &= \mathbb{E}(v_t v_{t-1}) - mathbb{E}(v_t)mathbb{E}(v_{t-1}) \\
+  &= \mathbb{E}\big( (u_t-u_{t-1})(u_{t-1}-u_{t-2}) \big) - 0 \\
+  &= \mathbb{E}( u_t u_{t-1} - u_t u_{t-2} - u_{t-1}^2 + u_{t-1}u_{t-2}) \\
+  &= \mathbb{E}(-u_{t-1}^2) \\
+  &= -\sigma^2
+\end{align*}
+which is nonzero. Therefore, although the $u$'s are not autocorrelated the $v$'s are.
+
+Now to see why the restrictions in the question are expressed in the first difference form, consider a general distributed-lag model with a finite lag of $k$ time periods:
+\[
+Y_t = \beta_0 + \beta_1 X_1 + \beta_2 X_{t-1} + \dots + \beta_{k+1} X_{t-k} + u_t
+\]
+The coefficient $\beta_1$ is known as the \textit{short-run multiplier}, or \textit{impact multiplier}, because it gives the change in the mean value of $Y$ following a unit change in $X$ in the same time period. If the change in $X$ is maintained at the same level thereafter, then $(\beta_1+\beta_2)$ gives the change in the mean value of $Y$ in the next period, $(\beta_1+\beta_2 + \beta_3)$ in the following period, so on. These partial sums are called \textit{interim multipliers} or \textit{intermediate multipliers}. After $k$ time periods we obtain:
+\[
+\sum_{i=1}^k+1 \beta_i = \beta_1 + \beta_1 + \dots + \beta_k+1 = \beta
+\]
+which is known as the \textit{long-run distributed-lag multiplier} or \textit{total distributed-lag multiplier}.
+
+In this question, what we are testing is if that total distributed-lag multiplier is different from $0$ for first differences form.
+\end{tcolorbox}
 
 ```{r}
 #Approach 2
@@ -469,7 +650,7 @@ as.table(c("RSS_unr"=RSS_unr_Q3d,
            "df_2"=n_unr-k_3c-1))
 ```
 
-In both approaches we obtain the same $F$-statistic of $0.7598$ as in Approach 1, which is much lower than the critical value of $2.96$, thus we cannot reject the null hypothesis. That is, the constraints seem to be correct.
+We again obtain the same $F$-statistic of $0.7598$ as in Approach 1, which is much lower than the critical value of $2.96$, thus we cannot reject the null hypothesis. That is, the constraints seem to be correct.
 
 
 \bigskip\bigskip
@@ -490,7 +671,7 @@ We see that the $t$-stat for $DlnUR$ is $-0.4770329$.
 But the question asks this to be done by respecifying the model. Also note that this time our unrestricted model is the restricted model in (d) since we are imposing further restrictions. Accordingly the model we test is:
 
 \[
-\Delta ln W_t = \beta_0 +\beta_1 \Delta ln P_t + \beta_3 \Delta ln E_t + \beta_7 IP_t + \varepsilon_t
+\Delta ln W_t = \beta_0 +\beta_1 \Delta ln P_t + \beta_3 \Delta ln E_t + \beta_7 IP_t + \Delta \varepsilon_t
 \]
 ```{r}
 #Estimate the constrained model:
@@ -572,11 +753,11 @@ Thus we cannot reject the null hypothesis.
 
 However, the question actually ask us to respecify the equation. For this, we set the coefficient on $\Delta ln E$ to 1, i.e. $\beta_3=1$ and then take it over to the other side of the equation so that the model becomes:
 \[
-\Delta ln W_t - \Delta ln E_t = \beta_0 +\beta_1 \Delta ln P_t + \beta_7 IP_t + \varepsilon_t
+\Delta ln W_t - \Delta ln E_t = \beta_0 +\beta_1 \Delta ln P_t + \beta_7 IP_t + \Delta \varepsilon_t
 \]
 or
 \[
-\Delta ln\Big(\frac{W_t}{E_t}\Big) = \beta_0 +\beta_1 \Delta ln P_t + \beta_7 IP_t + \varepsilon_t
+\Delta ln\Big(\frac{W_t}{E_t}\Big) = \beta_0 +\beta_1 \Delta ln P_t + \beta_7 IP_t + \Delta \varepsilon_t
 \]
 We can run the regression on this:
 
@@ -654,4 +835,67 @@ Thus we cannot reject the null hypothesis.
 ***
 \bigskip\bigskip
 
-### (i)
+### (i) Interpret and comment upon your findings (especially in relation to the hypothesis suggested in (b)) and explain why your preferred equation is now given by:
+\[
+\Delta ln\Big(\frac{W_t}{E_t}\Big) = \beta_0 + \beta_1 \Delta ln P_t + \beta_7 IP_t + \Delta \varepsilon
+\]
+
+\begin{description}
+\item[Answer:]
+We have tested back as far as we can go and at each stage the real wage resistance hypothesis gives us the best equation. It is not clear what an hypothesis would have to do in order to be better.
+\end{description}
+
+
+
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
+
+### (j) Why might it be expected that a structural break took place around 1979/1980? Test the hypothesis that the structure of wage determination changed significantly from 1980 onwards using the method of dummy variables (NB this is a different test to those you used in Q1 and Q2). Discuss your results.
+
+\begin{description}
+\item[Answer:] The short answer is Thatcher. End to corporatism and wage bargaining etc.
+
+To test this, rather than using the Chow Test, use the dummy variables method. For this, we define a variable, $M$ which is $0$ for the period 1956-1979, and $1$ for 1980 onwards. We then estimate the following:
+\[
+\Delta ln W_t = \beta_0 + \beta_1 \Delta ln P_t + \beta_8 M_t + \beta_9 M\Delta ln P_t + \Delta \varepsilon
+\]
+
+\end{description}
+
+```{r}
+# First, add Z column to the data frame:
+
+salaries_new_df <- salaries_new_df %>%
+  mutate(
+    M = case_when(
+      Year < 1980 ~ 0,
+      Year >= 1980 ~ 1
+    ),
+    MDlnP = M * DlnP
+  )
+
+# Then run the regression:
+
+lm_Q3j <- lm(DlnW ~ DlnP + M + MDlnP, salaries_new_df)
+summary(lm_Q3j)
+```
+
+Notice that there is not a $MlnP$ term because if we include it we would have perfect multicollinearity. From the regression output we can see that neither $M$ nor $MDlnP$ are significant - see their t-stats, so we can conclude that there is not any evidence of structural break for these years. 
+
+
+
+
+
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
+
+### (k) Discuss the advantages of using the method of dummy variables over the Chow Test you used in part 1(a).
+
+\begin{description}
+\item[Answer:]
+With the dummy variable we find out which variable or variables have changed. Whereas Chow test tells us only that something has changed. That is, it will tell us if the two sub-regressions are different but not whether the difference is due to the intercepts, the slope, or both.
+\end{description}
