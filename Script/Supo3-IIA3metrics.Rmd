@@ -19,136 +19,8 @@ blockquote {
 }
 ```
 
-# FACULTY QUESTIONS
-
-\bigskip\bigskip
-
-## QUESTION 1
-
-\textbf{An investigator analysing the relationship between food expenditure, disposable income and prices across a random sample of 25 counties in the UK estimates the relationship}
-\begin{alignat*}{4}
-log(FOOD) = & 4.7377 {}+{} && 0.3506 \ log(PDI) {}-{} && 0.5086 \ log(PRICE) \\
-& (0.6805) && (0.0899) && (0.1010)
-\end{alignat*}
-
-\textbf{where figures in paranthesis are standard errors and where:}
-
-\textbf{FOOD = Average household expenditure on food}
-
-\textbf{PDI = Average personal dosposable income}
-
-\textbf{PRICE = Average price of food deflated by a general price index}
-
-#### (i) Give an economic interpretation of the coefficients on log(PDI) and log(PRICE).
-
-\begin{description}
-\item[Answer:] The coefficient of $log(PDI)$ is income elasticity, and the coefficient of $log(PRICE)$ is the price elasticity.
-\end{description}
-
-
-\bigskip\bigskip
-***
-\bigskip\bigskip
-
-### (ii) Test the hypothesis, using 5% significance level, that the coefficient of log(PRICE) is equal to zero against the alternative that it is nonzero.
-\begin{description}
-\item[Answer:] For this we would use a $t$-test for the hypothesis that
-\[
-\mathbb{H}_0: \beta_2=0 \text{vs } \mathbb{H}_{A}: \beta_2 \neq 0
-\]
-The $t$-statistic is:
-\[
-\frac{-0.5086 - 0}{0.1010} = -5.035644
-\]
-which is significantly different than $t_{0.025,24}=-2.064$, and so we would reject the null hypothesis. 
-\end{description}
-
-
-
-\bigskip\bigskip
-***
-\bigskip\bigskip
-
-### (iii) Test the hypothesis using 5% significance level that the coefficient of log(INCOME) is equal to 1 against the alternative that it is significantly different from 1.
-
-\begin{description}
-\item[Answer:] For this we would use a $t$-test for the hypothesis that
-\[
-\mathbb{H}_0: \beta_1=1 \text{vs } \mathbb{H}_{A}: \beta_1 \neq 1
-\]
-The $t$-statistic is:
-\[
-\frac{0.3506 - 1}{0.0899} = -7.223582
-\]
-which is significantly different than $t_{0.025,24}=-2.064$, and so we would reject the null hypothesis. 
-\end{description}
-
-
-
-
-
-
-\bigskip\bigskip
-***
-\bigskip\bigskip
-
-### (iv) You are now given the following extra information:
-\begin{align*}
-TSS &= \sum_{i=1}^n (y_i-\bar{y})^2 = 0.52876 \\
-RSS &= \sum_{i=1}^n e_i^2 = 0.46276
-\end{align*}
-\textbf{Compute ESS and $R^2$ for the above regression}.
-
-\begin{description}
-\item[Answer:]
-\begin{align*}
-ESS &= TSS - RSS = 0.52876 - 0.46276 = 0.066 \\
-R^2 &= \frac{ESS}{TSS} = \frac{0.066}{0.52876} = 0.1248203.
-\end{align*}
-\end{description}
-
-
-
-
-\bigskip\bigskip
-***
-\bigskip\bigskip
-
-### (v) Test the joint hypothesis at the 5% level that the two slope coefficients are all equal to zero against the alternative that at least one slope coefficient is nonzero.
-
-\begin{description}
-\item[Answer:] For this we would use an $F$-test for the hypothesis that
-\[
-\mathbb{H}_0: (\beta_1=0) \cap (\beta_2=0)
-\]
-The $F$-statistic is:
-\[
-F = \frac{\dfrac{ESS}{df_1}}{\dfrac{RSS}{df_2}} = \frac{\dfrac{0.066}{2}}{\dfrac{0.46279}{22}} = 1.568746
-\]
-or
-\[
-F = \frac{\dfrac{R^2_unr - R^2_res}{df_1}}{\dfrac{1-R^2_unr}{df_2}} = frac{\dfrac{0.1248203}{2}}{\dfrac{1-0.1248203}{22}} = 1.568847
-\]
-giving a marginal difference due to rounding errors. In either case the F-statistic is significantly different than $F_{0.05,2, 22}=0.0514$, and so we would reject the null hypothesis. 
-\end{description}
-
-
-
-\bigskip\bigskip\bigskip
-\hdashrule[0.5ex]{\textwidth}{1pt}{3mm}
-\bigskip\bigskip\bigskip
-
-## QUESTION 2
-
-
-
-
-
-
-
-
-
-\pagebreak
+\tiny{Very grateful to Dr Oleg Kitov and Dr Clive Lawson for the very informative stylized answers to previous iterations of the supervision questions.}
+\normalsize
 
 # SUPPLEMENTARY QUESTIONS
 
@@ -367,6 +239,8 @@ Load the libraries:
 libraries <- c("haven",       # to import/export SPSS, STATA, SAS files
                "readxl",      # to import/export Excel files   
                "tidyverse",   # for tidy data
+               "Statamarkdown", # for using STATA commands in R
+               "kableExtra", # for creating nice tables in R
                "rstatix")     # converts stats functions to a tidyverse-friendly format
 
 # lapply(libraries, library, character.only=TRUE) will load the libraries
@@ -375,6 +249,7 @@ libraries <- c("haven",       # to import/export SPSS, STATA, SAS files
 ```{r include = FALSE}
 invisible(lapply(libraries, library, character.only=TRUE))
 ```
+
 
 Load the data:
 ```{r}
@@ -642,12 +517,15 @@ Fstat_Q3d <- ((RSS_res_Q3d - RSS_unr_Q3d)/q_3d)/(RSS_unr_Q3d/(n_unr-k_3c-1))
 #F Critical value:
 Crit_Value_Q3d <- qf(0.05, df1=q_3d, df2=n_unr-k_3c-1,lower.tail = FALSE)
 
-as.table(c("RSS_unr"=RSS_unr_Q3d, 
+tbl_Q3d <- as.table(c("RSS_unr"=RSS_unr_Q3d, 
            "RSS_res"=RSS_res_Q3d, 
            "F-Stat"=Fstat_Q3d, 
            "Critical_Value"=Crit_Value_Q3d, 
            "df_1"=q_3d, 
            "df_2"=n_unr-k_3c-1))
+tbl_Q3d %>%
+   kbl(caption = "F-Test for Supplementary Question 3(d)") %>%
+  kable_classic(full_width=FALSE)
 ```
 
 We again obtain the same $F$-statistic of $0.7598$ as in Approach 1, which is much lower than the critical value of $2.96$, thus we cannot reject the null hypothesis. That is, the constraints seem to be correct.
@@ -700,12 +578,15 @@ Fstat_Q3e <- ((RSS_res_Q3e - RSS_unr_Q3e)/q_3e)/(RSS_unr_Q3e/(n_unr-k_3e-1))
 #F Critical value:
 Crit_Value_Q3e <- qf(0.05, df1=q_3e, df2=n_unr-k_3e-1,lower.tail = FALSE)
 
-as.table(c("RSS_unr"=RSS_unr_Q3e, 
+tbl_Q3e <- as.table(c("RSS_unr"=RSS_unr_Q3e, 
            "RSS_res"=RSS_res_Q3e, 
            "F-Stat"=Fstat_Q3e, 
            "Critical_Value"=Crit_Value_Q3e, 
            "df_1"=q_3e, 
            "df_2"=n_unr-k_3e-1))
+tbl_Q3e %>%  
+  kbl(caption = "F-Test for Supplementary Question 3(e)") %>%
+  kable_classic(full_width=FALSE)
 ```
 
 If we take the square of the t-statistic from the summary table, we should also get this F-statistic:
@@ -792,12 +673,15 @@ Fstat_Q3g <- (RSS_res_Q3g - RSS_unr_Q3g/q_3g)/(RSS_unr_Q3g/(n_unr-k_3g-1))
 #F Critical value:
 Crit_Value_Q3g <- qf(0.05, df1=q_3g, df2=n_unr-k_3g-1,lower.tail = FALSE)
 
-as.table(c("RSS_unr"=RSS_unr_Q3g, 
+tbl_Q3g <- as.table(c("RSS_unr"=RSS_unr_Q3g, 
            "RSS_res"=RSS_res_Q3g, 
            "F-Stat"=Fstat_Q3g, 
            "Critical_Value"=Crit_Value_Q3g, 
            "df_1"=q_3g, 
            "df_2"=n_unr-k_3g-1))
+tbl_Q3g %>%
+   kbl(caption = "F-Test for Supplementary Question 3(g)") %>%
+  kable_classic(full_width=FALSE)
 ```
 
 we can check that this is the square of the $t$-stat:
@@ -865,7 +749,7 @@ To test this, rather than using the Chow Test, use the dummy variables method. F
 \end{description}
 
 ```{r}
-# First, add Z column to the data frame:
+# First, add M column to the data frame:
 
 salaries_new_df <- salaries_new_df %>%
   mutate(
@@ -899,3 +783,635 @@ Notice that there is not a $MlnP$ term because if we include it we would have pe
 \item[Answer:]
 With the dummy variable we find out which variable or variables have changed. Whereas Chow test tells us only that something has changed. That is, it will tell us if the two sub-regressions are different but not whether the difference is due to the intercepts, the slope, or both.
 \end{description}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+\pagebreak
+
+# FACULTY QUESTIONS
+
+\bigskip\bigskip
+
+## QUESTION 1
+
+\textbf{An investigator analysing the relationship between food expenditure, disposable income and prices across a random sample of 25 counties in the UK estimates the relationship}
+\begin{alignat*}{4}
+log(FOOD) = & 4.7377 {}+{} && 0.3506 \ log(PDI) {}-{} && 0.5086 \ log(PRICE) \\
+& (0.6805) && (0.0899) && (0.1010)
+\end{alignat*}
+
+\textbf{where figures in paranthesis are standard errors and where:}
+
+\textbf{FOOD = Average household expenditure on food}
+
+\textbf{PDI = Average personal dosposable income}
+
+\textbf{PRICE = Average price of food deflated by a general price index}
+
+#### (i) Give an economic interpretation of the coefficients on log(PDI) and log(PRICE).
+
+\begin{description}
+\item[Answer:] The coefficient of $log(PDI)$ is income elasticity, and the coefficient of $log(PRICE)$ is the price elasticity.
+\end{description}
+
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
+
+### (ii) Test the hypothesis, using 5% significance level, that the coefficient of log(PRICE) is equal to zero against the alternative that it is nonzero.
+\begin{description}
+\item[Answer:] For this we would use a $t$-test for the hypothesis that
+\[
+\mathbb{H}_0: \beta_2=0 \text{vs } \mathbb{H}_{A}: \beta_2 \neq 0
+\]
+The $t$-statistic is:
+\[
+\frac{-0.5086 - 0}{0.1010} = -5.035644
+\]
+which is significantly different than $t_{0.025,24}=-2.064$, and so we would reject the null hypothesis. 
+\end{description}
+
+
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
+
+### (iii) Test the hypothesis using 5% significance level that the coefficient of log(INCOME) is equal to 1 against the alternative that it is significantly different from 1.
+
+\begin{description}
+\item[Answer:] For this we would use a $t$-test for the hypothesis that
+\[
+\mathbb{H}_0: \beta_1=1 \text{vs } \mathbb{H}_{A}: \beta_1 \neq 1
+\]
+The $t$-statistic is:
+\[
+\frac{0.3506 - 1}{0.0899} = -7.223582
+\]
+which is significantly different than $t_{0.025,24}=-2.064$, and so we would reject the null hypothesis. 
+\end{description}
+
+
+
+
+
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
+
+### (iv) You are now given the following extra information:
+\begin{align*}
+TSS &= \sum_{i=1}^n (y_i-\bar{y})^2 = 0.52876 \\
+RSS &= \sum_{i=1}^n e_i^2 = 0.46276
+\end{align*}
+\textbf{Compute ESS and $R^2$ for the above regression}.
+
+\begin{description}
+\item[Answer:]
+\begin{align*}
+ESS &= TSS - RSS = 0.52876 - 0.46276 = 0.066 \\
+R^2 &= \frac{ESS}{TSS} = \frac{0.066}{0.52876} = 0.1248203.
+\end{align*}
+\end{description}
+
+
+
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
+
+### (v) Test the joint hypothesis at the 5% level that the two slope coefficients are all equal to zero against the alternative that at least one slope coefficient is nonzero.
+
+\begin{description}
+\item[Answer:] For this we would use an $F$-test for the hypothesis that
+\[
+\mathbb{H}_0: (\beta_1=0) \cap (\beta_2=0)
+\]
+The $F$-statistic is:
+\[
+F = \frac{\dfrac{ESS}{df_1}}{\dfrac{RSS}{df_2}} = \frac{\dfrac{0.066}{2}}{\dfrac{0.46279}{22}} = 1.568746
+\]
+or
+\[
+F = \frac{\dfrac{R^2_unr - R^2_res}{df_1}}{\dfrac{1-R^2_unr}{df_2}} = frac{\dfrac{0.1248203}{2}}{\dfrac{1-0.1248203}{22}} = 1.568847
+\]
+giving a marginal difference due to rounding errors. In either case the F-statistic is significantly different than $F_{0.05,2, 22}=0.0514$, and so we would reject the null hypothesis. 
+\end{description}
+
+
+
+
+
+
+
+\bigskip\bigskip\bigskip
+\hdashrule[0.5ex]{\textwidth}{1pt}{3mm}
+\bigskip\bigskip\bigskip
+
+## QUESTION 2
+
+\textbf{Download the dataset} `wage2.dta` \textbf{Use the STATA commands} `des` \textbf{and} `sum` \textbf{to understand the structure of the data and the meaning of the variable labels. Now answer the following questions relating to performance on the IQ test for this sample of working age women. The IQ test was taken as an adult after the woman had completed her formal education.}
+
+
+Load the data in R, though the equivalent commands produce output that is not as neat as Stata here are the commands for obtaining summary and structure of the data frame. I keep them in the "comment" format to save paper when printing:
+```{r}
+wage2_df <- read_dta("../Data/wage2.dta")
+# summary(wage2_df)
+# str(wage2_df)
+
+# We should also check for any NA data entries per column
+colSums(is.na(wage2_df))
+```
+
+
+
+
+
+### (a) Run a regression of IQ test score on parents' education. What do you conclude?
+
+\begin{description}
+\item[Answer:]
+We need to estimate the following regression:
+\[
+IQ = \beta_0 + \beta_1 feduc_i + \beta_2 meduc_i + u_i, \ \ \ i = 1,\dots,n.
+\]
+\end{description}
+The regression would give us:
+```{r}
+lm_FQ2a <- lm(IQ ~ feduc + meduc, data = wage2_df)
+summary(lm_FQ1a)
+```
+
+We can see that the coefficients for both parents' education are positive, individually close to unity, and statistically significant given the high $t$-values and very low $p$-values. We can also see that the $F$-statistic of $61.72$ is quite high which means the regression coefficients are jointly significant. On the other hand, we can see that the goodness-of-fit is relatively low at $R^2=0.147$.   
+
+
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
+
+### (b) Suppose I want to know whether the only way parents' education increases their daughter's test score is through the daughter's own education. How would you test that hypothesis?
+
+\begin{description}
+\item[Answer:]
+This question is effectively asking us to test whether parents' education level has no effect on daughter's IQ beyond its influence on the child's education level. Therefore, we need to estimate a regression on $IQ$ on the daughter's own education level, in addition to father's and mother's education levels, and subsequently test the joint significance of the parents' education. Thus we have a restricted and unrestricted model:
+\begin{align*}
+\text{Unestricted Model:  }  IQ &= \beta_0 + \beta_1 feduc_i + \beta_2 meduc_i + \beta_3educ_i + u_i, \\
+\text{Restricted Model:  } IQ &= \gamma_0 + \gamma_1educ_i + v_i.
+\end{align*}
+
+The joint hypothesis for the $F$-test is:
+\begin{equation*}
+\mathbb{H}_0: (\beta_1 = 0) \cap (\beta_2= 0) \\
+\mathbb{H}_A: (\beta_1 \neq 0) \cup (\beta_2 \neq 0)
+\end{equation*}
+
+The $F$-test statistic has $F_{q,(n-k-1)}$ distribution and is obtained either via $RSS$ or $R^2$:
+\[
+F = \frac{\frac{RSS_{res} - RSS_{unr}}{q}}{\frac{RSS_{unr}}{(n-k-1)}}
+  = \frac{\frac{(R_{unr}^2 - R_{res}^2)}{q}}{\frac{1-R_{unr}^2}{(n-k-1)}}
+  \sim F_{q, (n-k-1)}
+\]
+
+We can calculate this in R as follows:
+\end{description}
+
+```{r}
+# Before obtaining estimates we need to remove the rows with NAs:
+ wage2_nona_df <- wage2_df %>%
+  filter(!is.na(feduc), !is.na(meduc))
+
+# Obtain the estimates
+lm_FQ2b_unr <- lm(IQ ~ feduc + meduc + educ, data = wage2_df)
+lm_FQ2b_res <- lm(IQ ~ educ, data = wage2_nona_df)
+
+#RSS unrestricted
+# Manual calculation: sum(resid(lm_FQ2b_unr)^2)
+RSS_unr_FQ2b <- deviance(lm_FQ2b_unr)
+
+#RSS restricted
+#Manual calculation: sum(resid(lm_FQ2b_res)^2)
+RSS_res_FQ2b <- deviance(lm_FQ2b_res)
+
+# or to use R-squareds:
+Rsq_unr <- summary(lm_FQ2b_unr)$r.squared
+Rsq_res <- summary(lm_FQ2b_res)$r.squared
+
+# Difference between the two models (ie number of restrictions):
+q_FQ2b <- 2
+
+# Sample size - since we have NAs in both columns but in different rows we need to remove them:
+n_FQ2b <- nrow(wage2_nona_df)
+
+# number of regressors in unrestricted model:
+k_FQ2b <- 3
+
+#F-statistic:
+Fstat_FQ2b_withRSS <- ((RSS_res_FQ2b - RSS_unr_FQ2b)/q_FQ2b)/(RSS_unr_FQ2b/(n_FQ2b-k_FQ2b-1))
+Fstat_FQ2b_withRsq <- ((Rsq_unr-Rsq_res)/q_FQ2b)/((1-Rsq_unr)/(n_FQ2b-k_FQ2b-1))
+
+#F Critical value:
+Crit_Value_FQ2b <- qf(0.95, df1=q_FQ2b, df2=n_FQ2b-k_FQ2b-1,lower.tail = TRUE)
+
+tbl_FQ2b <- as.table(c("RSS_unr"=round(RSS_unr_FQ2b,4), 
+           "RSS_res"=round(RSS_res_FQ2b,4), 
+           "R-squared_unr" = round(Rsq_unr,4),
+           "R-squared_res" = round(Rsq_res,4),
+           "F-Stat (using RSS)"=round(Fstat_FQ2b_withRSS, 4),
+           "F-Stat (using R-sq)"=round(Fstat_FQ2b_withRsq, 4),
+           "Critical_Value"=round(Crit_Value_FQ2b, 4),
+           "df_1"=round(q_FQ2b, 4),
+           "df_2"=round(n_FQ2b-k_FQ2b-1,4)))
+
+tbl_FQ2b %>%
+  kbl(caption = "F-Test for Faculty Question 2(b)") %>%
+  kable_classic(full_width=FALSE)
+```
+
+Which gives us an F-statistic of $13.18272$. Comparing this to the critical values at $95% = 3.008$ we can reject the null.
+
+
+The same test can be done using `linearHypothesis()` function from the `car` package:
+```{r}
+# A quick way to do the F-test:
+car::linearHypothesis(lm_FQ1b_unr, c("feduc=0","meduc=0"))
+```
+
+Which gives us an F-statistic of $13.183$. Comparing this to the critical values at $95% = 3.008$ and $99% = 4.635$ we can reject the null.
+```{r}
+qf(0.99,2,718, lower.tail = TRUE)
+qf(0.95,2,718, lower.tail = TRUE)
+```
+
+
+
+
+
+
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
+
+### (c) What do you conclude from your test of part (b)?
+
+\begin{description}
+\item[Answer:]
+In either approaches, we can conclude that the parents' education affects daughter's IQ beyond their influence on the daughter's own education. Perhaps there is a direct genetic effect on IQ.
+\end{description}
+
+
+
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
+
+### (d) What do you conclude from your test of part (b)?
+
+\begin{description}
+\item[Answer:]
+Notice from the coefficients of the unrestricted model that mother's education has twice the partial effect of the father's education and its statistical significance is higher. One could suggest that the emphasis of the policy should be on raising educational level on women.
+\end{description}
+
+
+
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
+
+### (e) Suppose I wish to know whether the impact of own and parents' education on IQ test score varies by race. Conduct such a test of hypothesis and report your finding.
+
+\begin{description}
+\item[Answer (though not necessarily a robust way to answer the question)]
+One approach is to regress $IQ$ on father's education, mother's education, and own education for two subsets separately, using a dummy variable for $black$, and then test the hypothesis that the coefficents in the two regressions are the same.
+
+To conduct this test we need three regressions: a full sample regression which we already obtained in part (b), a regression for the sub-sample of non-black individuals, and a regression for the sub-sample of black individuals:
+\begin{align*}
+black = 0: IQ &= \beta_0^{b0} + \beta_1^{b0} educ_i + \beta_2^{b0} meduc_i + \beta_3^{b0} educ_i +u_i \\
+black = 1: IQ &= \beta_0^{b1} + \beta_1^{b1} educ_i + \beta_2^{b1} meduc_i + \beta_3^{b1} educ_i +u_i
+\end{align*}
+
+The hypothesis we are testing is whether the coefficients are equal or not:
+\begin{align*}
+\mathbb{H}_0: &(\beta_0^{b0} = \beta_0^{b1}) \cap (\beta_1^{b0} = \beta_1^{b1}) \cap (\beta_2^{b0} = \beta_2^[b1]) \cap (\beta_3^{b0} = \beta_3^{b1}) \\
+\mathbb{H}_A: &(\beta_0^{b0} \neq \beta_0^{b1}) \cup (\beta_1^{b0} \neq \beta_1^{b1}) \cup (\beta_2^{b0} \neq \beta_2^{b1}) \cup (\beta_3^{b0} \neq \beta_3^{b1})
+\end{align*}
+
+To test this we use the Chow test with the following $F$-test statistic:
+\[
+F = \frac{\frac{\big(RSS - (RSS^{b0} + RSS^{b1})\big)}{k+1}}{\frac{(RSS^{b0}+RSS^{b1})}{n-2(k+1)}}
+\sim F_{(k+1,(n-2(k+1)))}
+\]
+
+The estimation are as follows:
+\end{description}
+
+```{r}
+#First divide data into two based on the dummy variable `black`:
+wage2_nona_b1_df <- wage2_nona_df %>%
+  filter(black==1)
+wage2_nona_b0_df <- wage2_nona_df %>%
+  filter(black==0)
+
+# Estimate the regressions:
+lm_FQ2e_b0 <- lm(IQ ~ feduc + meduc + educ, data = wage2_nona_b0_df)
+lm_FQ2e_b1 <- lm(IQ ~ feduc + meduc + educ, data = wage2_nona_b1_df)
+
+#Conduct the Chow test:
+RSS_FQ2e_b0 <- deviance(lm_FQ2e_b0)
+RSS_FQ2e_b1 <- deviance(lm_FQ2e_b1)
+
+# For degrees of freedom:
+k_FQ2e <- 3
+
+# Chow Test F-statistic:
+F_Chow_FQ2e <- ((RSS_unr_FQ2b-(RSS_FQ2e_b0 + RSS_FQ2e_b1))/(k_FQ2e+1))/((RSS_FQ2e_b0 + RSS_FQ2e_b1)/(n_FQ2b-2*(k_FQ2e+1)))
+
+# F Critical value:
+Crit_Value_FQ2e <- qf(0.95, df1=k_FQ2e+1, df2=n_FQ2b-2*(k_FQ2e+1),lower.tail = TRUE)
+
+tbl_FQ2e <- as.table(c(
+  "RSS" = round(RSS_unr_FQ2b,4),
+  "RSS_b0" = round(RSS_FQ2e_b0, 4),
+  "RSS_b1" = round(RSS_FQ2e_b1, 4),
+  "Chow F-Stat" = round(F_Chow_FQ2e,4),
+  "Crit. Value" = round(Crit_Value_FQ2e, 4),
+  "df1" = k_FQ2e+1,
+  "df2" = n_FQ2b-2*(k_FQ2e+1)
+))
+
+tbl_FQ2e %>%
+   kbl(caption = "Chow Test for Faculty Question 2(e)") %>%
+  kable_classic(full_width=FALSE)
+```
+
+
+The $F$-stat of $17.1274$ is much higher than the critical value of $2.3844$ at $95%$ with $(4,714)$ degrees of freedom. We can therefore reject the null hypothesis and conclude that the coefficients for the black and non-black individuals are different. Accordingly, from the data we can ascertain that race may have an effect on how one's own and parental education influences IQ.
+
+However, notice that the Chow test here is testing the equality of all coefficients including the intercept. But in this question we are interested only in the three slope coefficients.
+
+\bigskip
+\textbf{Answer: A more robust approach}
+
+A more appropriate approach would be to test the hypothesis of race difference with interacting variables as in the following model:
+\[
+IQ = \beta_0 + \beta_1 feduc_i + \beta_2 meduc_i + \beta_3 educ_i + \beta_4 (feduc_i \times black_i) + \beta_5 (meduc_i \times black_i) + \beta_6 (educ_i \times black_i) + u_i
+\]
+Notice that the additional variables are the interactions of the educational variables with the dummy variable. The coefficients $\beta_4, \beta_5$ and $\beta_6$ show the additional partial effect of father's education, mother's education, and own education for black individuals as compared to non-black individuals. Therefore, in order to test whether the impact of own and parents' education on IQ test score varies by race, we have the following hypothesis:
+\begin{align*}
+\mathbb{H}_0: & (\beta_4 = 0) \cap (\beta_5 = 0) \cap (\beta_6 = 0) \\[4pt]
+\mathbb{H}_A: & (\beta_4 \neq 0) \cup (\beta_5 \neq 0) \cup (\beta_6 \neq 0)
+\end{align*}
+
+We therefore create a new set of variables with these interacting terms in the dataframe and then run the regression:
+
+```{r}
+# create the new variables
+wage2_nona_df <- wage2_nona_df %>%
+  mutate(
+    educb = educ * black,
+    feducb = feduc * black,
+    meducb = meduc * black
+  )
+
+# run the regression
+
+lm_FQ2e <- lm(IQ ~ feduc + meduc + educ + feducb + meducb + educb, data = wage2_nona_df)
+```
+
+We would now conduct an $F$-test where this model is the unrestricted regression, and the unrestricted model in 2(b) as the restricted regression here:
+
+```{r}
+#RSS unrestricted
+# Manual calculation: sum(resid(lm_FQ2e_unr)^2)
+RSS_unr_FQ2e <- deviance(lm_FQ2e)
+
+#RSS restricted
+#Manual calculation: sum(resid(lm_FQ2b_unr)^2)
+RSS_res_FQ2e <- deviance(lm_FQ2b_unr)
+
+# or to use R-squareds:
+Rsq_unr_FQ2e <- summary(lm_FQ2e)$r.squared
+Rsq_res_FQ2e <- summary(lm_FQ2b_unr)$r.squared
+
+# Difference between the two models (ie number of restrictions):
+q_FQ2e <- 3
+
+# Sample size - since we have NAs in both columns but in different rows we need to remove them:
+n_FQ2e <- nrow(wage2_nona_df)
+
+# number of regressors in unrestricted model:
+k_FQ2e <- 6
+
+#F-statistic:
+Fstat_FQ2e_withRSS <- ((RSS_res_FQ2e - RSS_unr_FQ2e)/q_FQ2e)/(RSS_unr_FQ2e/(n_FQ2e-k_FQ2e-1))
+Fstat_FQ2e_withRsq <- ((Rsq_unr_FQ2e-Rsq_res_FQ2e)/q_FQ2e)/((1-Rsq_unr_FQ2e)/(n_FQ2e-k_FQ2e-1))
+
+#F Critical value:
+Crit_Value_FQ2e <- qf(0.95, df1=q_FQ2e, df2=n_FQ2e-k_FQ2e-1,lower.tail = TRUE)
+
+tbl_FQ2b <- as.table(c("n" = n_FQ2e,
+          "RSS_unr"=round(RSS_unr_FQ2e,4), 
+          "RSS_res"=round(RSS_res_FQ2e,4), 
+          "R-squared_unr" = round(Rsq_unr_FQ2e,4),
+          "R-squared_res" = round(Rsq_res_FQ2e,4),
+          "F-Stat (using RSS)"=round(Fstat_FQ2e_withRSS, 4),
+          "F-Stat (using R-sq)"=round(Fstat_FQ2e_withRsq, 4),
+          "Critical_Value @ 95%"=round(Crit_Value_FQ2e, 4),
+          "df_1"=round(q_FQ2e, 4),
+          "df_2"=round(n_FQ2e-k_FQ2e-1,4)))
+
+tbl_FQ2b %>%
+  kbl(caption = "F-Test for Faculty Question 2(e)") %>%
+  kable_classic(full_width=FALSE)
+```
+
+The test statistic of $22.2773$ is greater than the critical value of $2.6174$ so we reject the null hypothesis and conclude that race has an effect on the way education affects IQ test score. 
+
+As before, we could run an F-test in R instead of calculating it manually:
+```{r}
+car::linearHypothesis(lm_FQ2e, c("feducb=0", "meducb=0", "educb=0"))
+```
+
+which yields the same result.
+
+
+
+
+\bigskip\bigskip\bigskip
+\hdashrule[0.5ex]{\textwidth}{1pt}{3mm}
+\bigskip\bigskip\bigskip
+
+## QUESTION 3
+
+\textbf{Let us revisit the following problem you did in the previous supervision sheet. Consider the regression model} $Y_i = \beta_0+\beta_1X_i + U_i$ \textbf{for an i.i.d. sample with} $N=1000$ \textbf{observations. Suppose} $U_i \sim i.i.d. (0,\sigma^2)$ \textbf{and the} $X_i$ \textbf{are i.i.d. for} $i=1,2,\dots,1000$ \textbf{and that} $X_i$ \textbf{is independent of} $U_i$. \textbf{Let} $\hat{\beta}_i$ \textbf{denote the OLS estimator of} $\beta_1$ \textbf{and consider another estimator} $\tilde{\beta_1}$ \textbf{of} $\beta_1$ \textbf{constructed in the following way:}
+\[
+\tilde{\beta}_1 = \frac{Y_3-Y_2}{X_3-X_2}
+\]
+\textbf{You can assume that} $X_i$ \textbf{are continuously distributed and that} $X_3-X_2$ \textbf{never takes the value of} $0$.
+
+\textbf{Is} $\tilde{\beta}_1$ \textbf{a consistent estimator of} $\beta_1$\textbf{? Why?}
+
+\begin{description}
+\item[Answer:]
+First observe that $\tilde{\beta}_1$ does not change as more data are added, and so it remains a random variable as $n \to \infty$. That is, it does not converge to $\beta_1$.
+
+For consistency, the variance of this estimator also needs to converge to $0$ as $n \to \infty$. So, let's calculate its variance. For this, recall that the regressors $X_i$ are not fixed but are assumed to random and drawn from some distribution. This means, \underline{$X_i$ have an expectation and a variance}. Importantly, this also means $\mathbb{E}(X_i)\neq X_i$ but $E(X_i | X_i = x) = x$, or, alternatively, $\mathbb{E}(X_i|X_i)=X_i$. That is, conditional on $X_i$ taking a realization $x_i$, the expection of $X_i$ is $x$. Therefore, we will need to rely on \textit{the law of iterated expectations} to obtain the variance of this estimator.
+
+For this, we need to follow these steps:
+\begin{enumerate}
+\item Express the estimator in terms of $X_1, X_2$ and $U_1, U_2$,
+\item Obtain the variance of this estimator
+\item Take the conditional expectation of this variance
+\item Utilize the law of iterated expectations to derive the unconditional variance
+\end{enumerate}
+
+\item[Step 1: Express $\tilde{\beta}_1$ without $Y_2, Y_3$] 
+\begin{align*}
+\tilde{\beta}_1 
+  &= \frac{Y_3-Y_2}{X_3-X_2} \\[4pt]
+  &= \frac{\beta_0+\beta_1X_3 + U_3 - \beta_0 - \beta_1X_2 - U_2}{X_3-X_2} \\[4pt]
+  &= \frac{\beta_1(X_3-X_2) + (U_3 - U_2)}{X_3-X_2} \\[4pt]
+  &= \beta_1 + \frac{U_3 - U_2}{X_3-X_2}.
+\end{align*}
+
+\item[Step 2: Take variance of this expression]
+\begin{align*}
+Var(\tilde{\beta}_1)
+  &= Var(\beta_1 + \frac{U_3 - U_2}{X_3-X_2}) \\[4pt]
+  &= Var(\frac{U_3 - U_2}{X_3-X_2}) \ \ \ \text{because $\beta_1$ is a constant parameter} \\[4pt]
+  &= \mathbb{E}\Bigg[\Big(\frac{U_3 - U_2}{X_3-X_2}\Big)^2\Bigg] - \Bigg[\mathbb{E}\Big(\frac{U_3 - U_2}{X_3-X_2}\Big)\Bigg]^2 \\[4pt]
+  &= \mathbb{E}\Bigg[\Big(\frac{U_3 - U_2}{X_3-X_2}\Big)^2\Bigg] - \Bigg[\Big(\frac{1}{X_3-X_2}\Big)\big(\mathbb{E}(U_3) - \mathbb{E}(U_2)\big)\Bigg]^2 \\[4pt]
+  &= \mathbb{E}\Bigg[\Big(\frac{U_3 - U_2}{X_3-X_2}\Big)^2\Bigg] - 0 \ \ \ \text{since } \mathbb{E}(U_i) = 0, \ i=2,3 \\[4pt]
+\end{align*}
+
+\item[Step3: Take the conditional expectation of this expression]
+\begin{align*}
+\mathbb{E}[Var(\tilde{\beta}_1|X_2,X_3)] 
+  &= \mathbb{E}\Bigg[\Big(\frac{U_3 - U_2}{X_3-X_2}\Big)^2 \bigg{|} X_2, X_3 \Bigg] \\[6pt]
+  &= \mathbb{E}\Bigg[\Big(\frac{U_3^2 + U_2^2 - 2U_3U_2}{(X_3-X_2)^2}\Big) \bigg{|} X_2, X_3 \Bigg] \\[6pt]
+  &= \mathbb{E}\Big(\frac{1}{(X_3-X_2)^2} \bigg{|} X_2, X_3 X_2, X_3 \Big) \\
+    &\qquad \times \Bigg[\mathbb{E}\big(U_3^2 | X_2, X_3\big) + \mathbb{E}\big(U_2^2 | X_2, X_3\big) - \mathbb{E}\big(2U_3U_2 | X_2, X_3\big)\Bigg] \\[6pt]
+  &= \mathbb{E}\Big(\frac{1}{(X_3-X_2)^2} \bigg{|} X_2, X_3 X_2, X_3 \Big) (\sigma^2 + \sigma^2 - 0) \\
+    &\qquad \text{since } Var(u_i|\vec{X})=\sigma^2, \ \ i = 1,\dots,n \\
+    &\qquad \text{and } Cov(u_i,u_j)=\mathbb{E}(u_iu_j)-\mathbb{E}(u_i)\mathbb{E}(u_j) = \mathbb{E}(u_iu_j)=0 \\[6pt]
+  &= \frac{2\sigma^2}{(X_3-X_2)^2} \ \ \ \text{since } \mathbb{E}\Big(\frac{1}{(X_3-X_2)^2} \bigg{|} X_2, X_3 X_2, X_3 \Big) = \frac{1}{(X_3-X_2)^2}.
+\end{align*}
+
+\item[Step 4: Utilize law of iterated expectations to derive unconditional variance]
+\begin{align*}
+Var(\tilde{\beta}_1) 
+  &= \mathbb{E}\big[\mathbb{E}(\tilde{\beta}_1)|X_2,X_3\big] \\[6pt]
+  &= \mathbb{E}\Bigg(\mathbb{E}\Bigg[\Big(\frac{U_3 - U_2}{X_3-X_2}\Big)^2 \bigg{|} X_2, X_3 \Bigg]\Bigg) \\[6pt]
+  &= \mathbb{E}\Big(\frac{2\sigma^2}{(X_3-X_2)^2}\Big) \\[6pt]
+  &= 2\sigma^2\mathbb{E}\Big(\frac{2\sigma^2}{(X_3-X_2)^2}\Big). 
+\end{align*}
+
+$\hookrightarrow$
+Note that we cannot simplify this any further since $\mathbb{E}\left( \frac{1}{(X_3-X_2)^2} \right) \neq \frac{1}{(X_3-X_2)^2}$ unlike $\mathbb{E}\left(\frac{1}{(X_3-X_2)^2} \bigg{|} X_2, X_3\right) = \frac{1}{(X_3-X_2)^2}$. This is because $X_i$ are random variables which means $\mathbb{E}(X_i)\neq X_i$ but $\mathbb{E}(X_i|X_i=x)=x$, or alternatively $\mathbb{E}(X_i|X_i)=X_i$, as discussed at the top of this answer.
+
+Now we can check how this variance behaves when $n$ tends to infinity. We can again see that this variance does not change as more data are added, and consequently does not converge to $0$ as $n \to \infty$. Accordingly, this estimator is not consistent.
+
+\end{description}
+
+
+
+
+
+
+
+
+
+
+\pagebreak
+
+## STATA - FACULTY QUESTIONS
+
+Load the data in STATA:
+```{stata, collectcode=TRUE}
+* Change the working directory to access the data file:
+    quietly cd .. 
+* Load the data:
+    use Data/wage2
+* Run the command for describe and summarize:
+  * des
+  * summ
+
+* part (a) regression:
+  * regress IQ feduc meduc
+
+* part (b) regressions:
+  * regress IQ feduc meduc educ
+  * regress IQ educ if ((feduc!=.) & (meduc!=.))
+
+* part (b) alternative way:
+  * regress IQ feduc meduc educ
+  * test feduc meduc
+
+* part (e) regressions for not so robust answer:
+  * reg IQ feduc meduc educ if black == 0
+  * reg IQ feduc meduc educ if black == 1
+
+* part (e) regressions for more robust answer:
+  * generate the new variables:
+      gen educb = educ * black
+      gen feducb = feduc * black
+      gen meducb = meduc * black
+  * reg IQ feduc meduc educ feducb meducb educb
+  * test feducb meducb educb
+
+* put all of these into a neat table using the `STATA` command `esttab` from the `estout` package:
+  * first install the package:
+      ssc install estout, replace
+  * then run the following regressions together to build the table:
+      eststo: quietly reg IQ feduc meduc
+      eststo: quietly reg IQ feduc meduc educ
+      eststo: quietly reg IQ educ if ((feduc!=.) & (meduc!=.))
+      eststo: quietly reg IQ feduc meduc educ if black == 0
+      eststo: quietly reg IQ feduc meduc educ if black == 1
+      eststo: quietly reg IQ feduc meduc educ feducb meducb educb
+      esttab, r2 ar2 scalars(F rss rmse)
+```
+
