@@ -96,7 +96,7 @@ Accordingly, we first need to calculate the $RSS$s. For that, recall that $RSS =
 RSS_R 
   &= 0.03274^2\times 35 
   &= 0.03751677 \\
-RSS_UR 
+RSS_{UR} 
   &= RSS_1 + RSS_2 \\ 
   &= 0.04449^2\times 16 + 0.0135^2\times 15 \\
   &= 0.03440351
@@ -143,17 +143,17 @@ where in simple regression with one regressor, $k=1$.
 \begin{description}
 \item[Answer:] What this question is effectively asking is that whether the error variances of the two subperiod regressions are the same. Recall from part (a) one of the two key assumptions of the Chow test is that the variances of the errors are homoskedastic. Therefore the hypothesis is:
 \begin{align*}
-\mathbb{H}_0: \sigma_\psi = \sigma_\gamma \ \ \ \ \ \ \ \text{or } \ \ \ \ \mathbb{H}_0: \frac{\sigma_\psi}{\sigma_\gamma}=1 \\
-\mathbb{H}_1: \sigma_\psi \neq \sigma_\gamma \ \ \ \ \ \ \ \text{or } \ \ \ \ \mathbb{H}_0: \frac{\sigma_\psi}{\sigma_\gamma}\neq 1
+\mathbb{H}_0: \sigma_\psi^2 = \sigma_\gamma^2 \ \ \ \ \ \ \ \text{or } \ \ \ \ \mathbb{H}_0: \frac{\sigma_\psi^2}{\sigma_\gamma^2}=1 \\
+\mathbb{H}_1: \sigma_\psi^2 \neq \sigma_\gamma^2 \ \ \ \ \ \ \ \text{or } \ \ \ \ \mathbb{H}_0: \frac{\sigma_\psi^2}{\sigma_\gamma^2}\neq 1
 \end{align*}
-If the variances of the two subpopulations are the same, i.e. $\sigma_\psi=\sigma_\gamma$, as assumed by the Chow test, then the ratios of the ratios of estimated error variance to population error variance has an $F$ distribution with $(n_1-k-1)$ and $(n_2-k-1)$ degrees of freedom in the numerator and denominator, respectively. That is,
+If the variances of the two subpopulations are the same, i.e. $\sigma_\psi^2=\sigma_\gamma^2$, as assumed by the Chow test, then the ratios of the ratios of estimated error variance to population error variance has an $F$ distribution with $(n_1-k-1)$ and $(n_2-k-1)$ degrees of freedom in the numerator and denominator, respectively. That is,
 \[
 \frac{\dfrac{\hat{\sigma}_\psi^2}{\sigma_\psi^2}}{\dfrac{\hat{\sigma}_\gamma^2}{\sigma_\gamma^2}} \sim F_{(n_1-k-1),(n_2-k-1)}.
 \]
 
-Notice that if $\sigma_\psi=\sigma_\gamma$ then this ratio and thus the $F$-test becomes:
+Notice that if $\sigma_\psi^2=\sigma_\gamma^2$ then this ratio and thus the $F$-test becomes:
 \[
-F = \frac{\sigma_\psi^2}{\sigma_\gamma^2}
+F = \frac{\hat{\sigma}_\psi^2}{\hat{\sigma}_\gamma^2}
 \]
 where by convention the larger estimated variance is in the numerator.
 
@@ -192,7 +192,7 @@ qf(c(0.05, 0.01), df1 = 16, df2 = 15, lower.tail = FALSE)
 
 \begin{description}
 \item[Answer:]
-The approach to the Chow test is similar to Question 1 whereby the $RSS$ for restricted model is the pooled data. Hwoever, notice we are not running a two separate regressions on the subsamples. So we follow the first approach from Question 1(a) by taking the differences of the model:
+The approach to the Chow test is similar to Question 1 whereby the $RSS$ for restricted model is the pooled data. However, notice we are not running a two separate regressions on the subsamples. So we follow the first approach from Question 1(a) by taking the differences of the model:
 \[
 \mathbb{H}_0: (\delta_0=0) \cap (\delta_1=0) \cap (\delta_2=0) 
 \]
@@ -206,7 +206,7 @@ RSS_{UR} &= (1-0.818)\times 50,100 = 9,118.2
 
 We can then calculate the Chow test whereby
 \[
-F = \\frac{\dfrac{9118.2-7250.4}{8}}{\dfrac{7250.4}{57}} = 1.835495
+F = \frac{\frac{9118.2-7250.4}{8}}{\frac{7250.4}{57}} = 1.835495
 \]
 The $F$ critical values for $\alpha=0.05$ and for $\alpha=0.01$ with $(8,57)$ degrees of freedom are $2.105599$ and $2.840694$ respectively. Accordingly we cannot reject the null hypothesis and conclude that there is no predictive failure.  
 
@@ -282,7 +282,7 @@ colnames(salaries_df) <- c("Year", "W", "P", "E", "WF", "U")
 \[
 \Delta ln W_t = \beta_0 +\beta_1 ln P + \beta_2 ln P_{t-1} + \beta_3 ln E_t + \beta_4 ln E_{t-1} + \beta_5 ln UR_t + \beta_6 ln UR_{t-1} +\varepsilon_t 
 \]
-\textbf{where $\beta_i$ are constants, $\Delta$ denotes the first difference operator and $UR_t=\frac{U_i}{WF_i}$}.
+\textbf{where $\beta_i$ are constants, $\Delta$ denotes the first difference operator and $UR_t=\frac{U_t}{WF_t}$}.
 
 \textbf{Verify that your estimate of $\beta_1$ is $.91170$. Also show that the above is a generalized version of the following hypothesis:}
 \[
@@ -349,6 +349,15 @@ car::vif(lm_Q3b)
 
 where we see each of the $VIF$ value is greater than $5$ suggesting serious collinearity.
 
+The question is also asking for us to show that the model we have is a generalized version of the hypothesis that the change in average real wage is independent of all other variables:
+\begin{align*}
+\Delta ln\Big(\frac{W}{EP}\Big)_t &= \beta_0 + \varepsilon \\
+\Delta ln(W)_t - \Delta ln(E)_t - \Delta ln(P)_t &= \beta_0 + \varepsilon \\
+\Delta ln(W)_t &= \beta_0 + \Delta ln(P)_t + \Delta ln(E)_t + \varepsilon \\
+\Delta ln(W)_t &= \beta_0 + \beta_1 ln(P)_t +\beta_2 ln(P)_{t-1} + \beta_3 ln(E)_t + \beta_4 ln(E)_{t-1} + \varepsilon \\
+\end{align*}
+
+To this we also include $UR$ because we want to control for the unemployment whereby avoid omitted variable bias. If $\Delta ln UR_t$ has effect on $\Delta ln W_t$ and correlated with $\Delta ln P_t$ and/or $\Delta ln E_t$, then not controlling for $UR$ would lead to biased estimators. 
 
 \bigskip\bigskip
 ***
@@ -456,7 +465,7 @@ Var(v_t)
 thus $v_t$ is homoskedastic. However we also need to look at the covariance of $v_t$ and $v_{t-1}$:
 \begin{align*}
 Cov(v_t, v_{t-1})
-  &= \mathbb{E}(v_t v_{t-1}) - mathbb{E}(v_t)mathbb{E}(v_{t-1}) \\
+  &= \mathbb{E}(v_t v_{t-1}) - \mathbb{E}(v_t)\mathbb{E}(v_{t-1}) \\
   &= \mathbb{E}\big( (u_t-u_{t-1})(u_{t-1}-u_{t-2}) \big) - 0 \\
   &= \mathbb{E}( u_t u_{t-1} - u_t u_{t-2} - u_{t-1}^2 + u_{t-1}u_{t-2}) \\
   &= \mathbb{E}(-u_{t-1}^2) \\
@@ -470,7 +479,7 @@ Y_t = \beta_0 + \beta_1 X_1 + \beta_2 X_{t-1} + \dots + \beta_{k+1} X_{t-k} + u_
 \]
 The coefficient $\beta_1$ is known as the \textit{short-run multiplier}, or \textit{impact multiplier}, because it gives the change in the mean value of $Y$ following a unit change in $X$ in the same time period. If the change in $X$ is maintained at the same level thereafter, then $(\beta_1+\beta_2)$ gives the change in the mean value of $Y$ in the next period, $(\beta_1+\beta_2 + \beta_3)$ in the following period, so on. These partial sums are called \textit{interim multipliers} or \textit{intermediate multipliers}. After $k$ time periods we obtain:
 \[
-\sum_{i=1}^k+1 \beta_i = \beta_1 + \beta_1 + \dots + \beta_k+1 = \beta
+\sum_{i=1}^{k+1} \beta_i = \beta_1 + \beta_1 + \dots + \beta_{k+1} = \beta
 \]
 which is known as the \textit{long-run distributed-lag multiplier} or \textit{total distributed-lag multiplier}.
 
@@ -602,7 +611,7 @@ which gives us the F-Stat as expected.
 ***
 \bigskip\bigskip
 
-### (f) Interpret your prefereed equation in light of your results to (c), (d), and (e).
+### (f) Interpret your preferred equation in light of your results to (c), (d), and (e).
 
 \begin{description}
 \item[Answer:]
@@ -690,7 +699,7 @@ we can check that this is the square of the $t$-stat:
 sqrt(Fstat_Q3g)
 ```
 
-
+We cannot reject $\mathbb{H}_0$ and conclude that $\beta_3$ is not statistically different from $1$.
 
 \bigskip\bigskip
 ***
@@ -721,7 +730,7 @@ Thus we cannot reject the null hypothesis.
 
 ### (i) Interpret and comment upon your findings (especially in relation to the hypothesis suggested in (b)) and explain why your preferred equation is now given by:
 \[
-\Delta ln\Big(\frac{W_t}{E_t}\Big) = \beta_0 + \beta_1 \Delta ln P_t + \beta_7 IP_t + \Delta \varepsilon
+\Delta ln\Big(\frac{W}{EP}\Big)_t = \beta_0 + \beta_7 IP_t + \Delta \varepsilon
 \]
 
 \begin{description}
@@ -880,7 +889,7 @@ which is significantly different than $t_{0.025,24}=-2.064$, and so we would rej
 \begin{description}
 \item[Answer:] For this we would use a $t$-test for the hypothesis that
 \[
-\mathbb{H}_0: \beta_1=1 \text{vs } \mathbb{H}_{A}: \beta_1 \neq 1
+\mathbb{H}_0: \beta_1=1 \ \ \ \ \text{vs } \ \ \ \ \mathbb{H}_{A}: \beta_1 \neq 1
 \]
 The $t$-statistic is:
 \[
@@ -929,11 +938,11 @@ R^2 &= \frac{ESS}{TSS} = \frac{0.066}{0.52876} = 0.1248203.
 \]
 The $F$-statistic is:
 \[
-F = \frac{\dfrac{ESS}{df_1}}{\dfrac{RSS}{df_2}} = \frac{\dfrac{0.066}{2}}{\dfrac{0.46279}{22}} = 1.568746
+F = \frac{\frac{ESS}{df_1}}{\frac{RSS}{df_2}} = \frac{\frac{0.066}{2}}{\frac{0.46279}{22}} = 1.568746
 \]
 or
 \[
-F = \frac{\dfrac{R^2_unr - R^2_res}{df_1}}{\dfrac{1-R^2_unr}{df_2}} = frac{\dfrac{0.1248203}{2}}{\dfrac{1-0.1248203}{22}} = 1.568847
+F = \frac{\dfrac{R^2_{unr} - R^2_{res}}{df_1}}{\dfrac{1-R^2_{unr}}{df_2}} = \frac{\frac{0.1248203}{2}}{\frac{1-0.1248203}{22}} = 1.568847
 \]
 giving a marginal difference due to rounding errors. In either case the F-statistic is significantly different than $F_{0.05,2, 22}=0.0514$, and so we would reject the null hypothesis. 
 \end{description}
@@ -979,7 +988,7 @@ IQ = \beta_0 + \beta_1 feduc_i + \beta_2 meduc_i + u_i, \ \ \ i = 1,\dots,n.
 The regression would give us:
 ```{r}
 lm_FQ2a <- lm(IQ ~ feduc + meduc, data = wage2_df)
-summary(lm_FQ1a)
+summary(lm_FQ2a)
 ```
 
 We can see that the coefficients for both parents' education are positive, individually close to unity, and statistically significant given the high $t$-values and very low $p$-values. We can also see that the $F$-statistic of $61.72$ is quite high which means the regression coefficients are jointly significant. On the other hand, we can see that the goodness-of-fit is relatively low at $R^2=0.147$.   
@@ -1001,10 +1010,10 @@ This question is effectively asking us to test whether parents' education level 
 \end{align*}
 
 The joint hypothesis for the $F$-test is:
-\begin{equation*}
-\mathbb{H}_0: (\beta_1 = 0) \cap (\beta_2= 0) \\
-\mathbb{H}_A: (\beta_1 \neq 0) \cup (\beta_2 \neq 0)
-\end{equation*}
+\begin{align*}
+\mathbb{H}_0: &(\beta_1 = 0) \cap (\beta_2= 0) \\
+\mathbb{H}_A: &(\beta_1 \neq 0) \cup (\beta_2 \neq 0)
+\end{align*}
 
 The $F$-test statistic has $F_{q,(n-k-1)}$ distribution and is obtained either via $RSS$ or $R^2$:
 \[
@@ -1107,7 +1116,7 @@ In either approaches, we can conclude that the parents' education affects daught
 ***
 \bigskip\bigskip
 
-### (d) What do you conclude from your test of part (b)?
+### (d) Is there any policy recommendation from your results?
 
 \begin{description}
 \item[Answer:]
@@ -1327,7 +1336,7 @@ Var(\tilde{\beta}_1)
   &= \mathbb{E}\Bigg[\Big(\frac{U_3 - U_2}{X_3-X_2}\Big)^2\Bigg] - 0 \ \ \ \text{since } \mathbb{E}(U_i) = 0, \ i=2,3 \\[4pt]
 \end{align*}
 
-\item[Step3: Take the conditional expectation of this expression]
+\item[Step 3: Take the conditional expectation of this expression]
 \begin{align*}
 \mathbb{E}[Var(\tilde{\beta}_1|X_2,X_3)] 
   &= \mathbb{E}\Bigg[\Big(\frac{U_3 - U_2}{X_3-X_2}\Big)^2 \bigg{|} X_2, X_3 \Bigg] \\[6pt]
@@ -1346,7 +1355,7 @@ Var(\tilde{\beta}_1)
   &= \mathbb{E}\big[\mathbb{E}(\tilde{\beta}_1)|X_2,X_3\big] \\[6pt]
   &= \mathbb{E}\Bigg(\mathbb{E}\Bigg[\Big(\frac{U_3 - U_2}{X_3-X_2}\Big)^2 \bigg{|} X_2, X_3 \Bigg]\Bigg) \\[6pt]
   &= \mathbb{E}\Big(\frac{2\sigma^2}{(X_3-X_2)^2}\Big) \\[6pt]
-  &= 2\sigma^2\mathbb{E}\Big(\frac{2\sigma^2}{(X_3-X_2)^2}\Big). 
+  &= 2\sigma^2\mathbb{E}\Big(\frac{1}{(X_3-X_2)^2}\Big). 
 \end{align*}
 
 $\hookrightarrow$
