@@ -1,0 +1,148 @@
+---
+title: "IIA-3 Econometrics: Supervision 3"
+author: "Emre Usenmez"
+date: "Christmas Break 2024"
+output: pdf_document
+header-includes: 
+  - \usepackage{amsmath, tcolorbox, dashrule}
+  - \tcbuselibrary{listings,most}
+---
+
+<!-- This comment will not be displayed in the output. Below change to CSS style is to ensure the blocktexts are in the same form size as the rest of the text.-->
+
+```{css style settings, echo = FALSE} 
+blockquote {
+    padding: 10px 20px;
+    margin: 0 0 20px;
+    font-size: 14px;
+    border-left: 5px solid #eee;
+}
+```
+
+
+\small Very grateful to Dr Oleg Kitov and Dr Clive Lawson for the very informative stylized answers to previous iterations of the supervision questions.
+\normalsize
+
+
+# FACULTY QUESTIONS
+
+\bigskip\bigskip
+ 
+
+## QUESTION 1
+
+\textbf{Consider the following bivariate linear regression}
+\[
+y = \alpha + T\beta + u
+\]
+\textbf{where $T$ is a binary treatment regressor, $\alpha$ and $\beta$ are unknown parameters, and $u$ is an error term.}
+
+
+\bigskip
+
+### (a) Describe in two sentences an empirical, real-life example where such an equation might arise.
+
+\begin{description}
+\item[Answer:] 
+
+We can think of $T$ as "graduated from university" and $y$ as "annual earning after 10 years of graduation."
+
+\end{description}
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
+
+### (b) Why might $u$ be heteroskedastic in your example.
+
+\begin{description}
+\item[Answer:] 
+
+The variance of earnings will likely to be smaller across people who did not graduate from a university compared to those who did it. This may be because those who did not go to university are less likely to be in the professions such as lawyers or doctors, and more likely to be in lower-paying jobs, or unemployed, or out of labor force.
+
+\end{description}
+
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
+
+### (c) Why might T be endogenous in your example?
+
+\begin{description}
+\item[Answer:] 
+
+Broadly, variables that are correlated with the error term are called \textit{endogeneous variables}, and those that are uncorrelated with the error term are called \textit{exogeneous variables}.\footnote{See Chapter 12: Instrumental Variables Regression p.428 in Stock J H, and Watson M W (2020) Introduction to Econometrics, $4^{th}$ Global Ed, Pearson; and Section 8.5: Instrumental Variables in Dougherty C (2016) Introduction to Econometrics $5^{th}$ ed, OUP}
+
+Thus the question is asking us to consider some of the reasons as to why $T$ might be correlated with the error term. There are certainly nonnegligible number of high earners who either never went to a university or dropped out. There may be omitted variable or even simultaneity is possible.
+
+Let's consider what the implications of of endogeneity are for the OLS estimator of $\beta$.
+
+Variable $T$ would be endogenous if $\mathbb{E}(u|T) \neq 0$. Endogeneity would imply that $Cov(T,u)\neq 0$. 
+
+We can first look at whether it is biased. For that, we need to use the law of iterated expectations whereby
+\[
+\mathbb{E}(\hat{\beta}_{OLS}) = \mathbb{E}\Big[\mathbb{E}(\hat{\beta}_{OLS}\ |\ T_1,\dots,T_n)\Big]
+\]
+The OLS estimator of $\beta$ would be:
+\allowdisplaybreaks
+\begin{align*}
+\mathbb{E}(\hat{\beta}_{OLS} | T_1,\dots,T_n) 
+  &= \mathbb{E}\Bigg( \frac{\widehat{Cov}(T_i,Y_i)}{\widehat{Var}(T_i)} \ \Bigg{|}\ T_1,\dots,T_n \Bigg) = \mathbb{E} \Big( \frac{\hat{\sigma}_{TY}}{\hat{\sigma}_{TT}} \ \bigg{|}\ T_1,\dots,T_n \Big) \\[4pt]
+  &= \mathbb{E}\left( \frac{\displaystyle\sum_{i=1}^n(T_i-\bar{T})(Y_i-\bar{Y})}{\displaystyle\sum_{i=1}^n(T-\bar{T})^2}\ \Bigg{|}\  T_1,\dots,T_n \right) \\[4pt]
+  &= \mathbb{E}\left( \frac{\displaystyle\sum_{i=1}^n(T_i-\bar{T})\big((\alpha + \beta T_i + u_i) - (\alpha + \beta \bar{T} + \bar{u})\big)}{\displaystyle\sum_{i=1}^n(T-\bar{T})^2} \ \Bigg{|}\ T_1,\dots,T_n \right)\\[4pt]
+  &= \mathbb{E}\left( \frac{\displaystyle\sum_{i=1}^n(T_i-\bar{T})\big(\beta(T_i-\bar{T}) + u_i - \bar{u}\big)}{\displaystyle\sum_{i=1}^n(T-\bar{T})^2}  \ \Bigg{|}\ T_1,\dots,T_n \right) \\[4pt]
+  &= \mathbb{E}\left( \frac{\displaystyle\sum_{i=1}^n \beta(T_i-\bar{T})^2 + \displaystyle\sum_{i=1}^n(T_i-\bar{T})(u_i - \bar{u})}{\displaystyle\sum_{i=1}^n(T-\bar{T})^2} \ \Bigg{|}\ T_1,\dots,T_n \right) \\[4pt]
+  &= \mathbb{E}\left( \beta + \frac{\displaystyle\sum_{i=1}^n(T_i-\bar{T})(u_i-\bar{u})}{\displaystyle\sum_{i=1}^n(T_i-\bar{T})^2} \ \Bigg{|}\ T_1,\dots,T_n \right) \\[4pt]
+  &= \mathbb{E}\left( \beta + \frac{\displaystyle\sum_{i=1}^n(T_i-\bar{T})u_i - \bar{u}\displaystyle\sum_{i=1}^n(T_i-\bar{T})}{\displaystyle\sum_{i=1}^n(T_i-\bar{T})^2} \ \Bigg{|}\ T_1,\dots,T_n \right) \\[4pt]
+  &= \mathbb{E}\left(\beta + \frac{\displaystyle\sum_{i=1}^n(T_i-\bar{T})u_i - \bar{u}\left(\sum_{i=1}^nT_i-n\bar{T}\right)}{\displaystyle\sum_{i=1}^n(T_i-\bar{T})^2} \ \Bigg{|}\ T_1,\dots,T_n \right) \\[4pt]
+  &= \mathbb{E}\left( \beta + \frac{\displaystyle\sum_{i=1}^n(T_i-\bar{T})u_i - \bar{u}\left(n\bar{T}-n\bar{T})\right)}{\displaystyle\sum_{i=1}^n(T_i-\bar{T})^2} \ \Bigg{|}\ T_1,\dots,T_n \right) \\[4pt]
+  &= \mathbb{E}\left( \beta + \frac{\displaystyle\sum_{i=1}^n(T_i-\bar{T})u_i}{\displaystyle\sum_{i=1}^n(T_i-\bar{T})^2} \ \Bigg{|}\ T_1,\dots,T_n \right) \\[4pt]
+  &= \beta + \frac{\displaystyle\sum_{i=1}^n(T_i-\bar{T})\ \mathbb{E}(u_i \ |\ T_1,\dots,T_n)}{\mathbb{E}\left( \displaystyle\sum_{i=1}^n(T_i-\bar{T})^2 \ \Big{|}\ T_1,\dots,T_n \right)} \\[4pt]
+\end{align*}
+Notice that since $\mathbb{E}(u|T) \neq 0$, the numerator of this last expression is also nonzero. That is, $\sum_{i=1}^n(T_i-\bar{T})\ \mathbb{E}(u_i \ |\ T_1,\dots,T_n) \neq 0$. Therefore the expectation of this expectation is also not equal to $\beta$:
+\[
+\mathbb{E}(\hat{\beta}_{OLS}) = \mathbb{E}\Big[\mathbb{E}(\hat{\beta}_{OLS}\ |\ T_1,\dots,T_n)\Big] = \mathbb{E}\left[ \mathbb{E}\left( \beta + \frac{\displaystyle\sum_{i=1}^n(T_i-\bar{T})u_i}{\displaystyle\sum_{i=1}^n(T_i-\bar{T})^2} \ \Bigg{|}\ T_1,\dots,T_n \right] \right) \neq \beta
+\]
+which means the OLS estimator is \textit{not} unbiased.
+
+We can also check for consistency by examining the probability limit of this expression as $n$ tends towards infinity. For that, we can rewrite the OLS estimator as:
+\[
+\hat{\beta}_{OLS} = \beta + \frac{\displaystyle\frac{1}{n}\displaystyle\sum_{i=1}^n(T_i-\bar{T})u_i}{\displaystyle\frac{1}{n}\displaystyle\sum_{i=1}^n(T_i-\bar{T})^2} 
+\]
+Using the law of large numbers, we can see that as $n \to \infty$
+\begin{align*}
+\frac{1}{n}\sum_{i=1}^n(T_i-\bar{T})u_i &\overset{p}{\to} \mathbb{E}\big[(T_i - \bar{T})u_i\big] = Cov(T_i,u_i)\neq 0 \\
+\text{and}\\
+\frac{1}{n}\sum_{i=1}^n(T_i-\bar{T})^2 &\overset{p}{\to} \mathbb{E}\Big[(T_i-\bar{T})^2\Big] = Var(T_i) = \sigma^2_T < \infty
+\end{align*}
+Note that $Var(T_i) = \sigma^2_T < \infty$ is an additional assumption.
+
+Since $Cov(T_i,u_i)\neq 0$, the OLS estimator as $n \to \infty$ (using Slutsky's theorem):
+\[
+\hat{\beta}_{OLS} \overset{p}{\to}\beta+\frac{Cov(T_i,u_i)}{Var(T_i)}\neq \beta
+\]
+which means the OLS estimator is not only biased but also inconsistent for $\beta$.
+\end{description}
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
+
+### (d) Suppose a single instrument $z$ is available. Show that the population coefficient $\beta$ satisfies
+\[
+\beta = \frac{Cov(z,y)}{Cov(z,T)}
+\]
+\textbf{where $Cov(z,y)$ and $Cov(z,T)$ denote, respectively, the population covariance between $z$ and $y$, and $z$ and $T$. How can you use this information to obtain a consistent estimate of $\beta$?}
+\begin{description}
+\item[Answer:]
+Instrument $z$ needs to satisfy the following conditions:
+\begin{itemize}
+\item \textit{Instrument relevance}: $z$ must have non-trivial explanatory power for $T$, namely $Cov(z,T)\neq 0$.
+\item \textit{Instrument exogeneity}: $z$ must affect $Y$ only through its influence on $T$ and not in any other way. That is, $z$ must be exogenous with respect to $u$ in regression $y = \alpha + \beta T + u$. Formally, $\mathbb{E}(u|z)=0$. This is why it is said "z is exogenous in $y = \alpha + \beta T + u$. Exogeneity of instrument $z$ implies that $Cov(z, u)=0$.
+\end{itemize}
+
+In the context of omitted variables, instrument exogeneity means that $z$ should be uncorrelated with the omitted variables, i.e. $Cov(z,u)=0$, and $z$ should be related, positively or negatively, to the endogeneous explanatory variable $T$, i.e. $Cov(z,T)\neq 0$.\footnote{see Section 15-1: Omitted Variables in a Simple Regression Model in Wooldridge J M (2021) Introductory Econometrics: A Modern Approach, $7^{th}$ ed, Cengage}
+
+The underlying reasoning is that if an instrument is relevant, then variation in that instrument $z$ is related to variation in $T$, and if it is also exogeneous, then that part of the variation of $T$ captured by $z$ is exogeneous. Therefore, an instrument that is relevant and exogeneous can capture movements in $T$ that are exogeneous. This exogeneous variation can in turn be used to estimate the population coefficient $\beta$.\footnote{see Section 12.1: The IV Estimator with a Single Regressor and a Single Instrument in Stock and Watson (2020, $4^{th}$ ed.).}  
+\end{description}

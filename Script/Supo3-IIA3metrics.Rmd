@@ -771,7 +771,7 @@ salaries_new_df <- salaries_new_df %>%
 
 # Then run the regression:
 
-lm_Q3j <- lm(DlnW ~ DlnP + M + MDlnP, salaries_new_df)
+lm_Q3j <- lm(DlnWE ~ DlnP + IP + M + MDlnP, salaries_new_df)
 summary(lm_Q3j)
 ```
 
@@ -1083,7 +1083,7 @@ Which gives us an F-statistic of $13.18272$. Comparing this to the critical valu
 The same test can be done using `linearHypothesis()` function from the `car` package:
 ```{r}
 # A quick way to do the F-test:
-car::linearHypothesis(lm_FQ1b_unr, c("feduc=0","meduc=0"))
+car::linearHypothesis(lm_FQ2b_unr, c("feduc=0","meduc=0"))
 ```
 
 Which gives us an F-statistic of $13.183$. Comparing this to the critical values at $95% = 3.008$ and $99% = 4.635$ we can reject the null.

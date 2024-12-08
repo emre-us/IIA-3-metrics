@@ -2,14 +2,14 @@
 title: "2024-25 Tripos IIA Paper 3"
 subtitle: "Supervision 2"
 author: "Emre Usenmez"
-date: "`r Sys.Date()`"
+date: "Michaelmas 2024"
 output: pdf_document
 header-includes: 
   - \usepackage{tcolorbox, xcolor, changepage, float, dashrule}
   - \tcbuselibrary{listings,most}
 ---
 
-\tiny{Very grateful to Dr Oleg Kitov and Dr Clive Lawson for the very informative stylized answers to previous iterations of the supervision questions.}
+\small Very grateful to Dr Oleg Kitov and Dr Clive Lawson for the very informative stylized answers to previous iterations of the supervision questions.
 \normalsize
 
 
