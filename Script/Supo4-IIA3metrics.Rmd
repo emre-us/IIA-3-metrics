@@ -82,12 +82,12 @@ Variable $T$ would be endogenous if $\mathbb{E}(u|T) \neq 0$. Endogeneity would 
 
 We can first look at whether it is biased. For that, we need to use the law of iterated expectations whereby
 \[
-\mathbb{E}(\hat{\beta}_{OLS}) = \mathbb{E}\Big[\mathbb{E}(\hat{\beta}_{OLS}\ |\ T_1,\dots,T_n)\Big]
+\mathbb{E}(\hat{\beta}^{OLS}) = \mathbb{E}\Big[\mathbb{E}(\hat{\beta}_{OLS}\ |\ T_1,\dots,T_n)\Big]
 \]
 The OLS estimator of $\beta$ would be:
 \allowdisplaybreaks
 \begin{align*}
-\mathbb{E}(\hat{\beta}_{OLS} | T_1,\dots,T_n) 
+\mathbb{E}(\hat{\beta}^{OLS} | T_1,\dots,T_n) 
   &= \mathbb{E}\Bigg( \frac{\widehat{Cov}(T_i,Y_i)}{\widehat{Var}(T_i)} \ \Bigg{|}\ T_1,\dots,T_n \Bigg) = \mathbb{E} \Big( \frac{\hat{\sigma}_{TY}}{\hat{\sigma}_{TT}} \ \bigg{|}\ T_1,\dots,T_n \Big) \\[4pt]
   &= \mathbb{E}\left( \frac{\displaystyle\sum_{i=1}^n(T_i-\bar{T})(Y_i-\bar{Y})}{\displaystyle\sum_{i=1}^n(T-\bar{T})^2}\ \Bigg{|}\  T_1,\dots,T_n \right) \\[4pt]
   &= \mathbb{E}\left( \frac{\displaystyle\sum_{i=1}^n(T_i-\bar{T})\big((\alpha + \beta T_i + u_i) - (\alpha + \beta \bar{T} + \bar{u})\big)}{\displaystyle\sum_{i=1}^n(T-\bar{T})^2} \ \Bigg{|}\ T_1,\dots,T_n \right)\\[4pt]
@@ -102,13 +102,13 @@ The OLS estimator of $\beta$ would be:
 \end{align*}
 Notice that since $\mathbb{E}(u|T) \neq 0$, the numerator of this last expression is also nonzero. That is, $\sum_{i=1}^n(T_i-\bar{T})\ \mathbb{E}(u_i \ |\ T_1,\dots,T_n) \neq 0$. Therefore the expectation of this expectation is also not equal to $\beta$:
 \[
-\mathbb{E}(\hat{\beta}_{OLS}) = \mathbb{E}\Big[\mathbb{E}(\hat{\beta}_{OLS}\ |\ T_1,\dots,T_n)\Big] = \mathbb{E}\left[ \mathbb{E}\left( \beta + \frac{\displaystyle\sum_{i=1}^n(T_i-\bar{T})u_i}{\displaystyle\sum_{i=1}^n(T_i-\bar{T})^2} \ \Bigg{|}\ T_1,\dots,T_n \right] \right) \neq \beta
+\mathbb{E}(\hat{\beta}^{OLS}) = \mathbb{E}\Big[\mathbb{E}(\hat{\beta}^{OLS}\ |\ T_1,\dots,T_n)\Big] = \mathbb{E}\left[ \mathbb{E}\left( \beta + \frac{\displaystyle\sum_{i=1}^n(T_i-\bar{T})u_i}{\displaystyle\sum_{i=1}^n(T_i-\bar{T})^2} \ \Bigg{|}\ T_1,\dots,T_n \right] \right) \neq \beta
 \]
 which means the OLS estimator is \textit{not} unbiased.
 
 We can also check for consistency by examining the probability limit of this expression as $n$ tends towards infinity. For that, we can rewrite the OLS estimator as:
 \[
-\hat{\beta}_{OLS} = \beta + \frac{\displaystyle\frac{1}{n}\displaystyle\sum_{i=1}^n(T_i-\bar{T})u_i}{\displaystyle\frac{1}{n}\displaystyle\sum_{i=1}^n(T_i-\bar{T})^2} 
+\hat{\beta}^{OLS} = \beta + \frac{\displaystyle\frac{1}{n}\displaystyle\sum_{i=1}^n(T_i-\bar{T})u_i}{\displaystyle\frac{1}{n}\displaystyle\sum_{i=1}^n(T_i-\bar{T})^2} 
 \]
 Using the law of large numbers, we can see that as $n \to \infty$
 \begin{align*}
@@ -120,7 +120,7 @@ Note that $Var(T_i) = \sigma^2_T < \infty$ is an additional assumption.
 
 Since $Cov(T_i,u_i)\neq 0$, the OLS estimator as $n \to \infty$ (using Slutsky's theorem):
 \[
-\hat{\beta}_{OLS} \overset{p}{\to}\beta+\frac{Cov(T_i,u_i)}{Var(T_i)}\neq \beta
+\hat{\beta}^{OLS} \overset{p}{\to}\beta+\frac{Cov(T_i,u_i)}{Var(T_i)}\neq \beta
 \]
 which means the OLS estimator is not only biased but also inconsistent for $\beta$.
 \end{description}
@@ -145,4 +145,55 @@ Instrument $z$ needs to satisfy the following conditions:
 In the context of omitted variables, instrument exogeneity means that $z$ should be uncorrelated with the omitted variables, i.e. $Cov(z,u)=0$, and $z$ should be related, positively or negatively, to the endogeneous explanatory variable $T$, i.e. $Cov(z,T)\neq 0$.\footnote{see Section 15-1: Omitted Variables in a Simple Regression Model in Wooldridge J M (2021) Introductory Econometrics: A Modern Approach, $7^{th}$ ed, Cengage}
 
 The underlying reasoning is that if an instrument is relevant, then variation in that instrument $z$ is related to variation in $T$, and if it is also exogeneous, then that part of the variation of $T$ captured by $z$ is exogeneous. Therefore, an instrument that is relevant and exogeneous can capture movements in $T$ that are exogeneous. This exogeneous variation can in turn be used to estimate the population coefficient $\beta$.\footnote{see Section 12.1: The IV Estimator with a Single Regressor and a Single Instrument in Stock and Watson (2020, $4^{th}$ ed.).}  
+
+These conditions serve to \textit{identify} the parameter $\beta$. In this context, \textit{identification of a parameter} means that we can write $\beta$ in terms of population moments that can be estimated using a sample of data. 
+
+To write $\beta$ in terms of population covariances we use $y = \alpha + \beta T + u$:
+\[
+Cov(z,y) = Cov(z, \ \alpha+\beta T + u) = \beta Cov(z,T) + Cov(z,u)
+\]
+
+Since instrument exogeneity condition assumes that $Cov(z,u)=0$ then $Cov(z,y)=\beta Cov(z,T)$. Rearranging this gives:
+\[
+\beta=\frac{Cov(z,y)}{Cov(z,T)}
+\]
+as desired. Notice that this only holds if instrument relevance also holds, since this expression would fail if $Cov(z,T)=0$. What this expression is telling us is that $\beta$ is identified by the ratio of population covariance between $z$ and $y$ to population covariance between $z$ and $T$. 
+
+Given a random sample, we estimate the population quantities by the sample analogs:
+\[
+\hat{\beta}^{IV} = \frac{\displaystyle\frac{1}{n}\displaystyle\sum_{i=1}^n(z_i-\bar{z})(y_i-\bar{y})}{\displaystyle\frac{1}{n}\displaystyle\sum_{i=1}^n(z_i-\bar{z})(T_i-\bar{T})} = \frac{\displaystyle\sum_{i=1}^n(z_i-\bar{z})(y_i-\bar{y})}{\displaystyle\sum_{i=1}^n(z_i-\bar{z})(T_i-\bar{T})}.
+\]
+With a sample data on $T, y,$ and $z$ we can obtain the IV estimator above. The IV estimator for the intercept $\alpha$ is $\alpha = \bar{y} - \hat{\beta}^{IV}\bar{T}$. Also notice that when $z=T$, we get the OLS estimator of $\beta$. That is, when $T$ is exogeneous, it can used as its own IV, and the IV estimator is then identical to the OLS estimator.
+
+A similar set of steps we used in part (c) will show that IV estimator is consistent for $\beta$. That is, $\underset{n\to \infty}{plim}(\hat{\beta}) = \beta$.
+
+Note that, an important feature of IV estimator is that when $T$ and $u$ are in fact correlated, and thus instrumental variables estimation is actually needed, it is essentially \underline{never unbiased}. This means, in small samples, the IV estimator can have a substantial bias, which is one reason why large samples are preferred. 
 \end{description}
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
+
+### (e) Can you give an example of an instrument in your example? Argue why it might be a sensible IV.
+\begin{description}
+\item[Answer:]
+Distance from nearest college can be an example of an instrument, where $z=1$ if individual lived near college and $0$ otherwise. This may be violated for a number of reasons, though; for e.g. if wealthy parents choose to live near college. This would mean that $z$ is correlated with unobserved factors that also affect wage, our $y$. For any example, exogeneity and relevance conditions need to be checked.
+\end{description}
+
+
+
+
+\bigskip\bigskip\bigskip
+\hdashrule[0.5ex]{\textwidth}{1pt}{3mm}
+\bigskip\bigskip\bigskip
+
+
+## QUESTION 2
+
+\textbf{Consider the following wage equation that explicitly recognizes that ability affects $log(wage)$}
+\[
+log(wage) = \alpha + \beta_1 educ + \beta_2 ability + u
+\]
+\textbf{The above model shows explicitly that we would like to hold ability fixed when measuring the returns on education. Assuming that the primary interest is in obtaining a reliable estimate of the slope parameters $\beta_1$, and that there is no direct measurement for ability, explain how you would do this using a method based upon a proxy variable and an IV estimator. In doing so evaluate the following statement:}
+
+"\textbf{\textit{whilst IQ is a good candidate as a proxy for variable for ability, it is not a good instrumental variable for $educ$.}}"
