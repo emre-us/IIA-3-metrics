@@ -72,7 +72,7 @@ The variance of earnings will likely to be smaller across people who did not gra
 \begin{description}
 \item[Answer:] 
 
-Broadly, variables that are correlated with the error term are called \textit{endogeneous variables}, and those that are uncorrelated with the error term are called \textit{exogeneous variables}.\footnote{See Chapter 12: Instrumental Variables Regression p.428 in Stock J H, and Watson M W (2020) Introduction to Econometrics, $4^{th}$ Global Ed, Pearson; and Section 8.5: Instrumental Variables in Dougherty C (2016) Introduction to Econometrics $5^{th}$ ed, OUP}
+Broadly, variables that are correlated with the error term are called \textit{endogeneous variables}, and those that are uncorrelated with the error term are called \textit{exogeneous variables}.\footnote{See Chapter 12: Instrumental Variables Regression p.428 in Stock J H, and Watson M W (2020) Introduction to Econometrics, $4^{th}$ Global Ed, Pearson; and Section 8.5: Instrumental Variables in Dougherty C (2016) Introduction to Econometrics $5^{th}$ ed, OUP in addition to Chapter 9: More on Specification and Data Issues in Wooldridge J M (2021) Introductory Econometrics: A Modern Approach, $7^{th}$ ed, Cengage}
 
 Thus the question is asking us to consider some of the reasons as to why $T$ might be correlated with the error term. There are certainly nonnegligible number of high earners who either never went to a university or dropped out. There may be omitted variable or even simultaneity is possible.
 
@@ -82,7 +82,7 @@ Variable $T$ would be endogenous if $\mathbb{E}(u|T) \neq 0$. Endogeneity would 
 
 We can first look at whether it is biased. For that, we need to use the law of iterated expectations whereby
 \[
-\mathbb{E}(\hat{\beta}^{OLS}) = \mathbb{E}\Big[\mathbb{E}(\hat{\beta}_{OLS}\ |\ T_1,\dots,T_n)\Big]
+\mathbb{E}(\hat{\beta}^{OLS}) = \mathbb{E}\Big[\mathbb{E}(\hat{\beta}^{OLS}\ |\ T_1,\dots,T_n)\Big]
 \]
 The OLS estimator of $\beta$ would be:
 \allowdisplaybreaks
@@ -197,3 +197,53 @@ log(wage) = \alpha + \beta_1 educ + \beta_2 ability + u
 \textbf{The above model shows explicitly that we would like to hold ability fixed when measuring the returns on education. Assuming that the primary interest is in obtaining a reliable estimate of the slope parameters $\beta_1$, and that there is no direct measurement for ability, explain how you would do this using a method based upon a proxy variable and an IV estimator. In doing so evaluate the following statement:}
 
 "\textbf{\textit{whilst IQ is a good candidate as a proxy for variable for ability, it is not a good instrumental variable for $educ$.}}"
+
+\begin{description}
+\item[Answer:] 
+This question is essentially aiming to ensure the students understand the difference between proxy variable and instrumental variable.
+\begin{itemize}
+\item[proxy variable:] refers to an \textit{observed} variable that is correlated with but not identical to the \textit{unobserved} variable.
+\item[instrumental variable] refers to a variable that does not appear in the regression, uncorrelated with the error in the equation, and partially correlated with the endogenous explanatory variable in an equation where such endogenous explanatory variable exists.
+\end{itemize}
+
+\textit{Proxy Variable:}
+
+Notice in this question $educ$ is observed but $ability$ is unobserved, and we would not even know how to interpret it's coefficient $\beta_2$ since 'ability' itself is a vague concept. We could use intelligence quotient, or $IQ$ as a proxy for ability, instead, as long as $IQ$ is correlated with ability. This is captured by the following simple regression:
+\[
+ability = \delta_0 + \delta_2IQ + v_2
+\]
+where $v_2$ is an error due to the fact that $ability$ and $IQ$ are not exactly related. The parameter $\delta_2$ measures the relationship between $ability$ and $IQ$. If $\delta_2=0$ then $IQ$ is not a suitable proxy for $ability$.
+
+Note that the intercept $\delta_0$ allows $ability$ and $IQ$ to be measured on different scales and thus can be positive or negative. That is, the unobserved $ability$ is not required to have the same average value as $IQ$ in the population.
+
+To use $IQ$ to get unbiased, or at least consistent, estimators for $\beta_1$, the coefficient of $educ$, we would regress $log(wage)$ on $educ$ and $IQ$. This is called \textit{the plug-in solution to the omitted variables problem} since we plug-in $IQ$ for $ability$ before running the OLS. However, since $IQ$ and $educ$ are not the same, we need to check if this does give consistent estimator for $\beta_1$. 
+
+For the plug-in solution to provide consistent estimator for $\beta_1$ the following two assumptions need to hold true:
+\begin{itemize}
+\item The error $u$ is uncorrelated with $educ$ and $ability$ as well as $IQ$. That is, $\mathbb{E}(u|educ,ability,IQ)=0$. What this means is that $IQ$ is irrelevant in the population model which is true by definition since $IQ$ is a proxy for $ability$, it is $ability$ that directly affects $log(wage)$ not $IQ$.
+\item The error $v_2$ is uncorrelated with $educ$ and $IQ$. For $v_2$ to be a uncorrelated with $educ$, $IQ$ needs to be a 'good' proxy for $ability$. 
+\end{itemize}
+
+What is meant by 'good' proxy in this sense is that
+\[
+\mathbb{E}(ability\ |\ educ,IQ) = \mathbb{E}(ability\ |\ IQ) = \delta_0 + \delta_2IQ.
+\]
+Here, the first equality, which is the most important one, says that once $IQ$ is controlled for, the expected value of $ability$ does not depend on $educ$. In other words, $ability$ has zero correlation with $educ$ once $IQ$ is partialled out. Thus the average level of $ability$ only changes with $IQ$ and not with $educ$.
+
+To see why these two assumptions are enough for the plug-in solution to work, we can rewrite the $log(wage)$ equation in the question as:
+\begin{align*}
+log(wage) 
+  &= \alpha + \beta_1 educ + \beta_2 ability + u \\
+  &= \alpha + \beta_1 educ + \beta_2 (\delta_0 + \delta_2IQ + v_2) + u \\
+  &= (\alpha + \beta_2\delta_0) + \beta_1 educ + \beta_2\delta_2IQ + u + \beta_2v_2 \\
+  &= (\alpha + \beta_2\delta_0) + \beta_1 educ + \beta_2\delta_2IQ + \epsilon \\
+  &= \gamma_0 + \beta_1 educ + \gamma_2 IQ + \epsilon.
+\end{align*}
+
+Notice that the composite error $\epsilon$ depends on both the error in the model of interest in the question, $u$, and on the error in the proxy variable equation, $v_2$. Since both $u$ and $v_2$ have zero mean and each is uncorralated with $educ$ and $IQ$, $\epsilon$ also has zero mean and is uncorralted with $educ$ and $IQ$.
+
+So when we regress $log(wage)$ on $educ$ and $IQ$, we will \underline{not} get unbiased estimators of $\alpha$ and $\beta_2$. Instead, we will get unbiased, or at least consistent, estimators of $\gamma_0, \beta_1,$ and $\gamma_2$. The important thing is that we get good estimators of $\beta_1$. 
+
+In most cases, the estimate of $\gamma_2$ is more interesting that an estimate of $\beta_2$ anyway, since $\gamma_2$ measures the return to $log(wage)$ given one more point on $IQ$ score.
+
+\end{description}

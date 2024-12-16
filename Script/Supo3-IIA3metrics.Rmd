@@ -1,7 +1,7 @@
 ---
 title: "IIA-3 Econometrics: Supervision 3"
 author: "Emre Usenmez"
-date: "`r Sys.Date()`"
+date: "Michaelmas 2024"
 output: pdf_document
 header-includes: 
   - \usepackage{amsmath, tcolorbox, dashrule}
@@ -19,7 +19,7 @@ blockquote {
 }
 ```
 
-\tiny{Very grateful to Dr Oleg Kitov and Dr Clive Lawson for the very informative stylized answers to previous iterations of the supervision questions.}
+\small Very grateful to Dr Oleg Kitov and Dr Clive Lawson for the very informative stylized answers to previous iterations of the supervision questions.
 \normalsize
 
 # SUPPLEMENTARY QUESTIONS
@@ -42,7 +42,7 @@ blockquote {
  & && && R^2 = 0.99565 && && \hat{\sigma} = 0.0135 \\
 \end{alignat*}
 
-#### a) Conduct a test of the hypothesis that the four regression coefficients are jointly the same in both sub-periods, against the alternative that they differ.
+### a) Conduct a test of the hypothesis that the four regression coefficients are jointly the same in both sub-periods, against the alternative that they differ.
 \begin{description}
 \item[Answer:] 
 
