@@ -1,5 +1,5 @@
 ---
-title: "IIA-3 Econometrics: Supervision 3"
+title: "IIA-3 Econometrics: Supervision 4"
 author: "Emre Usenmez"
 date: "Christmas Break 2024"
 output: pdf_document
@@ -86,7 +86,6 @@ We can first look at whether it is biased. For that, we need to use the law of i
 \mathbb{E}(\hat{\beta}^{OLS}) = \mathbb{E}\Big[\mathbb{E}(\hat{\beta}^{OLS}\ |\ T_1,\dots,T_n)\Big]
 \]
 The OLS estimator of $\beta$ would be:
-\allowdisplaybreaks
 \begin{align*}
 \mathbb{E}(\hat{\beta}^{OLS} | T_1,\dots,T_n) 
   &= \mathbb{E}\Bigg( \frac{\widehat{Cov}(T_i,Y_i)}{\widehat{Var}(T_i)} \ \Bigg{|}\ T_1,\dots,T_n \Bigg) = \mathbb{E} \Big( \frac{\hat{\sigma}_{TY}}{\hat{\sigma}_{TT}} \ \bigg{|}\ T_1,\dots,T_n \Big) \\[4pt]
@@ -370,12 +369,20 @@ Here, if we only regress $tvyest$ on $bmi$ then inevitably all the omitted varia
 \end{description}
 
 
+\bigskip\bigskip
+***
+\bigskip\bigskip
+
 ### (b) Interpret the coefficient $0.73$ on $black$.
 \begin{description}
 \item[Answer:]
 The coefficient implies that holding other variables constant, black children watched on average about 0.73 hours more tv than non-black children.
 \end{description}
 
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
 
 ### (c) Can you state a reason why we may doubt the validity of the 2SLS estimates reported above?
 \begin{description}
@@ -486,3 +493,7 @@ Var(\hat{\beta}) = \left( \frac{\displaystyle\sum_{i=1}^m (X_i - \bar{X})^2\sigm
 \end{description}
 
 
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
