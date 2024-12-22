@@ -4,8 +4,9 @@ author: "Emre Usenmez"
 date: "Christmas Break 2024"
 output: pdf_document
 header-includes: 
-  - \usepackage{amsmath, tcolorbox, dashrule}
+  - \usepackage{amsmath, tcolorbox, dashrule, booktabs}
   - \tcbuselibrary{listings,most}
+  - \allowdisplaybreaks
 ---
 
 <!-- This comment will not be displayed in the output. Below change to CSS style is to ensure the blocktexts are in the same form size as the rest of the text.-->
@@ -196,19 +197,20 @@ log(wage) = \alpha + \beta_1 educ + \beta_2 ability + u
 \]
 \textbf{The above model shows explicitly that we would like to hold ability fixed when measuring the returns on education. Assuming that the primary interest is in obtaining a reliable estimate of the slope parameters $\beta_1$, and that there is no direct measurement for ability, explain how you would do this using a method based upon a proxy variable and an IV estimator. In doing so evaluate the following statement:}
 
-"\textbf{\textit{whilst IQ is a good candidate as a proxy for variable for ability, it is not a good instrumental variable for $educ$.}}"
+"\textbf{\textit{whilst $IQ$ is a good candidate as a proxy for variable for ability, it is not a good instrumental variable for $educ$.}}"
 
 \begin{description}
 \item[Answer:] 
 This question is essentially aiming to ensure the students understand the difference between proxy variable and instrumental variable.
 \begin{itemize}
-\item[proxy variable:] refers to an \textit{observed} variable that is correlated with but not identical to the \textit{unobserved} variable.
+\item[proxy variable] refers to an \textit{observed} variable that is correlated with but not identical to the \textit{unobserved} variable.
 \item[instrumental variable] refers to a variable that does not appear in the regression, uncorrelated with the error in the equation, and partially correlated with the endogenous explanatory variable in an equation where such endogenous explanatory variable exists.
 \end{itemize}
 
-\textit{Proxy Variable:}
 
-Notice in this question $educ$ is observed but $ability$ is unobserved, and we would not even know how to interpret it's coefficient $\beta_2$ since 'ability' itself is a vague concept. We could use intelligence quotient, or $IQ$ as a proxy for ability, instead, as long as $IQ$ is correlated with ability. This is captured by the following simple regression:
+\underline{Proxy Variable:}
+
+Notice in this question $educ$ is observed but $ability$ is unobserved, and we would not even know how to interpret it's coefficient $\beta_2$ since 'ability' itself is a vague concept. We can instead use intelligence quotient, or $IQ$, as a proxy for ability as long as $IQ$ is correlated with ability. This is captured by the following simple regression:
 \[
 ability = \delta_0 + \delta_2IQ + v_2
 \]
@@ -244,6 +246,243 @@ Notice that the composite error $\epsilon$ depends on both the error in the mode
 
 So when we regress $log(wage)$ on $educ$ and $IQ$, we will \underline{not} get unbiased estimators of $\alpha$ and $\beta_2$. Instead, we will get unbiased, or at least consistent, estimators of $\gamma_0, \beta_1,$ and $\gamma_2$. The important thing is that we get good estimators of $\beta_1$. 
 
-In most cases, the estimate of $\gamma_2$ is more interesting that an estimate of $\beta_2$ anyway, since $\gamma_2$ measures the return to $log(wage)$ given one more point on $IQ$ score.
+In most cases, the estimate of $\gamma_2$ is more interesting than an estimate of $\beta_2$ anyway, since $\gamma_2$ measures the return to $log(wage)$ given one more point on $IQ$ score.
+
+
+\begin{tcolorbox}[breakable, title=Bias and Multicollinearity when using a proxy, skin=enhancedlast]
+\textbf{When using a proxy variable can still lead to bias?}
+
+If the two assumptions above are not satisfied, then using a proxy variable can lead to a bias. To see this, suppose now that ability is not only related to $IQ$ but also to $educ$:
+\[
+ability = \delta_0 + \delta_1 educ + \delta_2 IQ + v_3
+\]
+where the error $v_3$ has a zero mean and uncorrelated with $educ$ and $IQ$. In the proxy variable discussion above, it was essentially assumed that $\delta_1=0$. We can re-write $log(wage)$ with this plug-in solution:
+\begin{align*}
+log(wage) 
+  &= \alpha + \beta_1 educ + \beta_2 ability + u \\
+  &= \alpha + \beta_1 educ + \beta_2 (\delta_0 + \delta_1 educ + \delta_2 IQ + v_3) + u \\
+  &= (\alpha + \beta_2\delta_0) + (\beta_1 + \beta_2\delta_1) educ + \beta_2\delta_2 IQ + u + \beta_2v_3 \\
+\end{align*}
+Since the error term $u+\beta_2v_3$ has zero mean and is uncorrelated with $educ$ and $IQ$, we have $plim(\hat{\beta}_1)=\beta_1 + \beta_2\delta_1$. If $educ$ is partially and positively correlated with $ability$, i.e. $\delta_1 > 0$, and if the coefficient of $ability$ is positively correlated with $log(wage$, i.e. $\beta_2 > 0$, then $plim(\hat{\beta}_1)=\beta_1 + \beta_2\delta_1 > \beta_1$ giving us an upward bias. That is, in this case where $IQ$ is not a good proxy for $ability$ but we still use it, then we'd still be getting an upward bias for the coefficient of $educ$.
+
+Having said that, the bias is likely to be smaller than if we ignored the problem of omitted ability entirely.
+
+\bigskip
+
+\textbf{What about multicollinearity?}
+
+Even if $IQ$ is a good proxy for $ability$, using it in a regression that includes $educ$ can exacerbate the multicollinearity problem, which, in turn, is likely to lead a less precise estimate of the coefficient for $educ$, i.e. $\beta_1$.
+
+However, notice that
+\begin{itemize}
+\item inclusion of $IQ$ in the regression means that the part of $ability$ explained by $IQ$ is removed from the error term, reducing the error variance. This is likely to be reflected in a smaller standard error of the regression, though that reduction may not happen because of degrees of freedom adjustment.
+
+\item if we want to have a less bias for $\beta_1$, ie, the estimator of the coefficient for $educ$, then we have to live with increased multicollinearity. This is an important point. Since $educ$ and $ability$ are thought to be correlated, and if we could include $ability$ in the regression, then there would be inevitable multicollinearity caused by the correlation between these two variables. Since $IQ$ is a proxy for $ability$, $educ$ and $IQ$ are also correlated, and a similar argument ensues.
+\end{itemize}
+\end{tcolorbox}
+
+\bigskip
+
+\underline{Instrumental Variable}
+
+Suppose now that the proxy variable does not have the required properties for a consistent estimator of $\beta_1$. Then we put $ability$ in the error term since it is unobserved and we don't have a proxy for it. This leaves us with:
+\[
+log(wage) = \beta_0 + \beta_1 educ + \epsilon
+\]
+where $\epsilon$ contains $ability$. If $ability$ and $educ$ are correlated, then we have a biased and inconsistent estimate of $\beta_1$.
+
+However, we can still use this equation as the basis for estimation as long as we can find an instrumental variable for $educ$. For this we can introduce an \textit{instrumental variable} $z$ which satisfies the "instrument relevance", i.e. $Cov(z, educ)\neq 0$, and "instrument exogeneity", i.e. $Cov(z,\epsilon)=0$ conditions as discussed in Question 1(d).
+
+Note that we cannot really test for "instrument exogeneity" assumption and need to consider economic behavior in order to maintain the $Cov(z, \epsilon)=0$ assumption. At times, there may be an observable proxy for some factor contained in $\epsilon$ and we can check if $z$ and the proxy variable are more or less uncorrelated. And, of course, as discussed above, if we have a good proxy then we would add that variable to the equation and estimate the expanded form by OLS. 
+
+This is exactly where we see a tension between a good proxy vs a good instrumental variable. For $IQ$ to be a good proxy, it needs to be as highly correlated with $ability$ as possible. Yet for $IQ$ to be a good instrumental variable, it needs to be uncorrelated with $ability$ since $ability$ is contained in $\epsilon$ and a good instrumental variable should not covary with the error term. That is, a good instrumental variable should affect $log(wage)$ only through its influence on $educ$ and not in any other way.
+
+Thus, in this question, although $IQ$ is a good candidate as a proxy variable for $ability$, it is not a good instrumental variable for $educ$.
 
 \end{description}
+
+
+
+
+
+
+
+
+\bigskip\bigskip\bigskip
+\hdashrule[0.5ex]{\textwidth}{1pt}{3mm}
+\bigskip\bigskip\bigskip
+
+
+## QUESTION 3
+\textbf{The following regression explores the relationship between television watching and childhood obesity, using a cross-section of US children. The variables are:}
+
+\begin{tabular}{llccc}
+Name   & Description & Minimum & Maximum & Mean \\ 
+\midrule
+tvyest & hours of TV watched yesterday & 0  & 6  & 3.14 \\
+black  & dummy, 1 if black             & 0  & 1  & 0.31 \\
+hisp   & dummy, 1 if hispanic          & 0  & 1  & 0.36 \\
+ageyrs & age in years                  & 5  & 16 & 9.4  \\
+bmi    & child's Body Mass Index       & 11 & 55 & 19   \\
+dadbmi & father's BMI                  & 11 & 58 & 26   \\
+mombmi & mother's BMI                  & 14 & 56 & 26   \\
+\midrule
+\end{tabular}
+
+```{r include=FALSE}
+libraries <- c("haven",       # to import/export SPSS, STATA, SAS files
+               "readxl",      # to import/export Excel files   
+               "tidyverse",   # for tidy data
+               "Statamarkdown", # for using STATA commands in R
+               "ivreg", #for regressions with instrumental variables
+               "kableExtra", # for creating nice tables in R
+               "rstatix")     # converts stats functions to a tidyverse-friendly format
+
+invisible(lapply(libraries, library, character.only=TRUE))  # will load the libraries
+
+```
+
+\bigskip
+
+The output from a 2SLS regression appears below:
+
+
+```{stata echo=FALSE}
+* Change the working directory to access the data file:
+    quietly cd .. 
+* Load the data:
+    use Data/obesekids.dta
+
+* Run the instrumental variables regression
+    ivregress 2sls tvyest black hisp ageyrs (bmi = dadbmi mombmi)
+
+```
+
+\textbf{Now answer the following questions.}
+
+### (a) Why might an OLS regression of $tvyest$ on the child's BMI give us inconsistent estimates of the causal effect of BMI on TV watching?
+
+\begin{description}
+\item[Answer:]
+Recall that correlation between the error term and any of the regressors generally causes all of the OLS estimators to be inconsistent. In fact, if the error term is correlated with any of the independent variables, then OLS is both biased and inconsistent. This means any bias persists even as the sample size grows.
+
+Here, if we only regress $tvyest$ on $bmi$ then inevitably all the omitted variables would be contained in the error term and they would be correlated with $bmi$, which would give us inconsistent estimates of the causal effect of $bmi$ on tv watching.
+\end{description}
+
+
+### (b) Interpret the coefficient $0.73$ on $black$.
+\begin{description}
+\item[Answer:]
+The coefficient implies that holding other variables constant, black children watched on average about 0.73 hours more tv than non-black children.
+\end{description}
+
+
+### (c) Can you state a reason why we may doubt the validity of the 2SLS estimates reported above?
+\begin{description}
+\item[Answer:]
+In the least, the 2SLS estimation method have the following assumptions:
+
+\begin{itemize}
+\item the error term of the structural equation is uncorrelated with each of the exogenous explanatory variables
+\item there exists at least one exogenous variable that is partially correlated with the endogenous variable in the structural equation but itself is not in the structural equation to ensure consistency
+\item the structural error term cannot depend on any of the exogeneous variables, i.e. homoskedasticity assumption. This ensures the 2SLS standard errors and $t$-statistics to be asymptotically valid. 
+\end{itemize}
+
+\item Violation of any one of these assumptions would make us doubt the validity of the 2SLS estimates reported above.
+\end{description}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+\pagebreak
+
+# SUPPLEMENTARY QUESTIONS
+
+\bigskip\bigskip
+
+## QUESTION 1
+
+\textbf{Consider the simple regression model:}
+\[
+Y_i = \alpha + \beta X_i + \varepsilon_i, \ \ i = 1,2,\dots,m
+\]
+\textbf{where $Y_i$ is the mean expenditure on alcohol in group $i$ and $X_i$ is the mean income of group $i$. Each group $i$ has $N_i$ members and the model satisfies all the classical assumptions except that the variance of $\varepsilon_i$ is equal to $\sigma^2/N_i$.}
+
+
+### (a) What are the statistical properties of the OLS estimates of $\alpha$ nad $\beta$ in this case?
+
+\begin{description}
+\item[Answer:] 
+Recall that when demonstrating unbiasedness and consistency of OLS estimators, homoskedasticity assumption did not play any role. That is, if the variance of the unobserved error is not constant, i.e. heteroskedastic, it does not impact whether an estimator is unbiased or consistent. Similarly, the interpretation of the goodness-of-fit measures, $R^2$ and $\bar{R}^2$, are also unaffected by the presence of heteroskedasticity.
+
+The problem with the presence of heteroskedasticity is that the estimators of the variances are biased. Since the OLS standard errors are based on these variances, they are no longer valid for constructing confidence intervals and $t$-statistics. In this situation the OLS $t$-statistics do not have $t$ distributions and the problem is not resolved by increasing the sample size. Similarly, $F$-statistics are not longer $F$-distributed. Finally, the OLS is no longer BLUE as it is no longer asymptotically efficient.
+
+Recall that the OLS estimator is
+\[
+\hat{\beta} = \beta + \frac{\displaystyle\sum_{i=1}^m (X_i - \bar{X})\varepsilon_i}{\displaystyle\sum_{i=1}^m (X_i - \bar{X})^2} = \beta + \frac{\displaystyle\sum_{i=1}^m (X_i - \bar{X})\varepsilon_i}{{SST}_X^2} 
+\]
+
+and its variance when homoskedasticity is present is
+\begin{align*}
+Var(\hat{\beta})  
+  &= Var \left( \beta + \frac{\displaystyle\sum_{i=1}^m (X_i - \bar{X})\varepsilon_i}{\displaystyle\sum_{i=1}^m (X_i - \bar{X})^2} \right) \\[6pt] 
+  &= Var \left(\frac{\displaystyle\sum_{i=1}^m (X_i - \bar{X})\varepsilon_i}{\displaystyle\sum_{i=1}^m (X_i - \bar{X})^2} \right) \ \ \ \ \text{since $\beta$ is constant} \\[6pt] 
+  &= \left(\frac{1}{\displaystyle\sum_{i=1}^m (X_i - \bar{X})^2} \right)^2 \ Var\Big( \displaystyle\sum_{i=1}^m (X_i - \bar{X})\varepsilon_i \Big)  \ \ \ \ \text{since we are conditioning on $X_i$, $SST_X$ is nonrandom}   \\[6pt]
+  &= \Big( \frac{1}{SST_X} \Big)^2 \Big( \displaystyle\sum_{i=1}^m (X_i - \bar{X})^2 \ Var(\varepsilon_i) \Big) \ \ \ \ \text{since we are conditioning on $X_i$, $X_i - \bar{X}$ is nonrandom} \\[6pt]
+  &= \Big( \frac{1}{SST_X} \Big)^2 \Big( \displaystyle\sum_{i=1}^m (X_i - \bar{X})^2\sigma_\varepsilon^2 \Big)  \ \ \ \ \text{since $Var(\varepsilon_i) = \sigma^2$ for all $i$ when homoskedastic} \\[6pt]
+  &= \sigma_\varepsilon^2 \Big( \frac{1}{SST_X}\Big)^2 SST_X \\[6pt]
+  &= \frac{\sigma_\varepsilon^2}{SST_X} 
+  = \frac{\sigma_\varepsilon^2}{\displaystyle\sum_{i=1}^m(X_i - \bar{X})^2}
+\end{align*}
+
+and its variance when heteroskedasticity is present is
+\[
+Var(\hat{\beta}) = \left( \frac{\displaystyle\sum_{i=1}^m (X_i - \bar{X})^2\sigma_i^2}{SST_X^2} \right) = \left( \frac{\displaystyle\sum_{i=1}^m (X_i - \bar{X})^2\sigma_i^2}{\displaystyle\sum_{i=1}^m(X_i - \bar{X})^2} \right).
+\]
+
+\end{description}
+
+
