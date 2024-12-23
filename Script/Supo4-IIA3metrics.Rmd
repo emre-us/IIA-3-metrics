@@ -334,6 +334,7 @@ libraries <- c("haven",       # to import/export SPSS, STATA, SAS files
                "tidyverse",   # for tidy data
                "Statamarkdown", # for using STATA commands in R
                "ivreg", #for regressions with instrumental variables
+               "mnormt", #for creating bivariate normal distributions
                "kableExtra", # for creating nice tables in R
                "rstatix")     # converts stats functions to a tidyverse-friendly format
 
@@ -453,9 +454,9 @@ In the least, the 2SLS estimation method have the following assumptions:
 ## QUESTION 1
 
 \textbf{Consider the simple regression model:}
-\[
+\begin{equation} \label{eq:SQ1}
 Y_i = \alpha + \beta X_i + \varepsilon_i, \ \ i = 1,2,\dots,m
-\]
+\end{equation}
 \textbf{where $Y_i$ is the mean expenditure on alcohol in group $i$ and $X_i$ is the mean income of group $i$. Each group $i$ has $N_i$ members and the model satisfies all the classical assumptions except that the variance of $\varepsilon_i$ is equal to $\sigma^2/N_i$.}
 
 
@@ -490,10 +491,164 @@ and its variance when heteroskedasticity is present is
 Var(\hat{\beta}) = \left( \frac{\displaystyle\sum_{i=1}^m (X_i - \bar{X})^2\sigma_i^2}{SST_X^2} \right) = \left( \frac{\displaystyle\sum_{i=1}^m (X_i - \bar{X})^2\sigma_i^2}{\displaystyle\sum_{i=1}^m(X_i - \bar{X})^2} \right).
 \]
 
+\underline{Spherical Errors}
+
+We assume homoskedasticity and no autocorrelation in estimating the variance of OLS estimates. That is, we assume that all errors have the same variance $\sigma^2$ and that there is no correlation across errors. If these hold true, then we have \textit{spherical errors}, or that the error term follows a \textit{spherical distribution}. This is represented in matrix form as follows:
+\begin{equation*}
+\mathbb{E}(\vec{u}\vec{u}^T | \mathbf{X}) = 
+\begin{bmatrix}
+\sigma^2 & 0 & \dots & 0 \\
+0 & \sigma^2 & \dots & 0 \\
+\vdots & \vdots & \ddots & \vdots \\
+0 & 0 & \dots & \sigma^2
+\end{bmatrix}
+= \sigma^2 \mathbf{I}
+\end{equation*}
+
+To see why this is called a spherical distribution lets look at a special case of two dimensions, i.e. circular distribution, as opposed to three dimensions for spherical distribution. Consider two random errors, $u_i$ and $u_j$ which are graphed below as density plots and contour plots, the latter of which shows what you'd see when you look straight down from the top of the density plot.
+
+The shapes of these plots depend on the variances and covariances of these two random errors. If $u_i$ and $u_j$ are homoskedastic and they are not autocorrelated, then the contour lines will be circles. If there were three random error variables $u_i$, $u_j$, and $u_k$ then we would have four-dimensional density plot and the contours would form a sphere. If there were more than three random error variables then the contours would form a hyper-sphere. This is why the errors are spherically distributed.
+
+What we are plotting is therefore:
+\begin{equation*}
+\mathbb{E}
+\begin{pmatrix}
+u_i \\
+u_j
+\end{pmatrix}
+=
+\begin{pmatrix}
+0 \\
+0
+\end{pmatrix}
+\ \ \ \ ; \ \ \ \
+Var
+\begin{pmatrix}
+u_i \\
+u_j
+\end{pmatrix}
+=
+\begin{pmatrix}
+1 & 0 \\
+0 & 1
+\end{pmatrix}
+\end{equation*}
+
+where errors are homoskedastic and there is no autocorrelation.
 \end{description}
 
+```{r echo=FALSE}
+#build bivariate normal distribution
+x <- seq(-3,3,0.25)
+y <- seq(-3,3,0.25)
+mu <- c(0,0)
+sigma <- matrix(c(1,0,0,1), nrow = 2)
+f <- function(x,y) dmnorm(cbind(x,y),mean = mu, varcov = sigma)
+z <- outer(x,y,f)
 
+#plot side by side
+par(mfrow = c(1,2))
+#density plot
+persp(x,y,z, main="Density",  xlab = expression(error[i]), ylab=expression(error[j]), zlab=expression('density'))
+#contour plot
+contour(x,y,z, main="Contour", axes=FALSE)
+
+
+```
+
+
+If on the other hand, heterskedasticity is present then we loose the symmetry of the joint density plot and get a more elliptic contours. Suppose now the variance-covariance matrix is as follows:
+\begin{equation*}
+Var
+\begin{pmatrix}
+u_i \\
+u_j
+\end{pmatrix}
+=
+\begin{pmatrix}
+0.25 & 0 \\
+0 & 2
+\end{pmatrix}
+\end{equation*}
+
+```{r echo=FALSE}
+#build bivariate normal distribution
+x <- seq(-3,3,0.25)
+y <- seq(-3,3,0.25)
+mu <- c(0,0)
+sigma <- matrix(c(0.25,0,0,2), nrow = 2)
+f <- function(x,y) dmnorm(cbind(x,y),mean = mu, varcov = sigma)
+z <- outer(x,y,f)
+
+#plot side by side
+par(mfrow = c(1,2))
+#density plot
+persp(x,y,z, main="Density",  xlab = expression(error[i]), ylab=expression(error[j]), zlab=expression('density'))
+#contour plot
+contour(x,y,z, main="Contour", axes=FALSE)
+
+
+```
+
+Similarly, we would also get an elliptic contours if the errors are homoskedastic but there is autocorrelation. The slope of the main axis of the ellipse would depend on the sign of the correlation between the errors. Suppose now the variance-covariance matrix is as follows:
+\begin{equation*}
+Var
+\begin{pmatrix}
+u_i \\
+u_j
+\end{pmatrix}
+=
+\begin{pmatrix}
+0.1 & -0.5 \\
+-0.5 & 1
+\end{pmatrix}
+\end{equation*}
+
+```{r echo=FALSE}
+#build bivariate normal distribution
+x <- seq(-3,3,0.25)
+y <- seq(-3,3,0.25)
+mu <- c(0,0)
+sigma <- matrix(c(1,-0.5,-0.5,1), nrow = 2)
+f <- function(x,y) dmnorm(cbind(x,y),mean = mu, varcov = sigma)
+z <- outer(x,y,f)
+
+#plot side by side
+par(mfrow = c(1,2))
+#density plot
+persp(x,y,z, main="Density",  xlab = expression(error[i]), ylab=expression(error[j]), zlab=expression('density'))
+#contour plot
+contour(x,y,z, main="Contour", axes=FALSE)
+
+
+```
 
 \bigskip\bigskip
 ***
 \bigskip\bigskip
+
+
+### (b) How should equation \ref{eq:SQ1} be transformed so that the OLS estimates of $\alpha$ and $\beta$ are BLUE?
+\begin{description}
+\item[Answer:] We need to estimate using the \textit{generalized least squares (GLS)} estimation method where we minimize a \textit{weighted sum of squared residuals.}
+
+The variances of the error terms are given in the question, thus \textit{known}. 
+\[
+Var(\varepsilon_i) = \frac{\sigma^2}{N_i} = \sigma_i^2
+\]
+So we transform equation \ref{eq:SQ1} on page \pageref{eq:SQ1} by dividing it with theses known variances
+\[
+\frac{Y_i}{\sigma_i} = \frac{\alpha}{\sigma_i} + \beta \frac{X_i}{\sigma_i} + \frac{\varepsilon_i}{\sigma_i}
+\]
+so that
+\begin{align*}
+Var(\frac{\varepsilon_i}{\sigma_i}) 
+  &= \mathbb{E}\Bigg[ \bigg( \frac{\varepsilon_i}{\sigma_i} \bigg)^2 \Bigg] - \Bigg[ \mathbb{E}\bigg( \frac{\varepsilon_i}{\sigma_i} \bigg) \Bigg]^2 \\[6pt]
+  &= \mathbb{E}\Bigg[ \bigg( \frac{\varepsilon_i}{\sigma_i} \bigg)^2 \Bigg] \ \ \ \ \text{since } \mathbb{E}\bigg( \frac{\varepsilon_i}{\sigma_i} \bigg) = 0 \\[6pt]
+  &= \frac{1}{\sigma_i^2}\mathbb{E}(\varepsilon_i^2) \ \ \ \ \text{since $\sigma_i^2$ is known, thus it is a collection of constants} \\[6pt] 
+  &= \frac{1}{\sigma_i^2}\sigma_i^2 = 1
+\end{align*}
+which is a constant. This means, the variance of the transformed disturbance term $\frac{\varepsilon_i}{\sigma_i}$ is now homoskedastic. Since all the other assumptions of classical model still hold true, this means that if we apply OLS method to the transformed model, we will get estimators that are BLUE.
+
+Thus, GLS is OLS on the transformed variables that satisfy the standard least-squares assumptions. The estimators that are obtained these way are GLS estimators which are BLUE.
+\end{description}
