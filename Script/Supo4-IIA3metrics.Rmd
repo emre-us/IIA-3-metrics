@@ -551,7 +551,7 @@ par(mfrow = c(1,2))
 #density plot
 persp(x,y,z, main="Density",  xlab = expression(error[i]), ylab=expression(error[j]), zlab=expression('density'))
 #contour plot
-contour(x,y,z, main="Contour", axes=FALSE)
+contour(x,y,z, main="Contour", axes=TRUE, xlab=expression(error[i]),ylab=expression(error[j]))
 
 
 ```
@@ -585,9 +585,9 @@ par(mfrow = c(1,2))
 #density plot
 persp(x,y,z, main="Density",  xlab = expression(error[i]), ylab=expression(error[j]), zlab=expression('density'))
 #contour plot
-contour(x,y,z, main="Contour", axes=FALSE)
+contour(x,y,z, main="Contour", axes=TRUE, xlab=expression(error[i]),ylab=expression(error[j]))
 
-
+?contour
 ```
 
 Similarly, we would also get an elliptic contours if the errors are homoskedastic but there is autocorrelation. The slope of the main axis of the ellipse would depend on the sign of the correlation between the errors. Suppose now the variance-covariance matrix is as follows:
@@ -618,10 +618,12 @@ par(mfrow = c(1,2))
 #density plot
 persp(x,y,z, main="Density",  xlab = expression(error[i]), ylab=expression(error[j]), zlab=expression('density'))
 #contour plot
-contour(x,y,z, main="Contour", axes=FALSE)
+contour(x,y,z, main="Contour", axes=TRUE, xlab=expression(error[i]),ylab=expression(error[j]))
 
 
 ```
+
+
 
 \bigskip\bigskip
 ***
@@ -636,7 +638,7 @@ The variances of the error terms are given in the question, thus \textit{known}.
 \[
 Var(\varepsilon_i) = \frac{\sigma^2}{N_i} = \sigma_i^2
 \]
-So we transform equation \ref{eq:SQ1} on page \pageref{eq:SQ1} by dividing it with theses known variances
+So we transform equation \ref{eq:SQ1} on page \pageref{eq:SQ1} by dividing it with theses known standard deviations, $\sigma_i$:
 \[
 \frac{Y_i}{\sigma_i} = \frac{\alpha}{\sigma_i} + \beta \frac{X_i}{\sigma_i} + \frac{\varepsilon_i}{\sigma_i}
 \]
@@ -651,4 +653,53 @@ Var(\frac{\varepsilon_i}{\sigma_i})
 which is a constant. This means, the variance of the transformed disturbance term $\frac{\varepsilon_i}{\sigma_i}$ is now homoskedastic. Since all the other assumptions of classical model still hold true, this means that if we apply OLS method to the transformed model, we will get estimators that are BLUE.
 
 Thus, GLS is OLS on the transformed variables that satisfy the standard least-squares assumptions. The estimators that are obtained these way are GLS estimators which are BLUE.
+\end{description}
+
+
+
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
+
+### (c) Derive $\hat{\alpha}$ in terms of $\hat{\beta}$ in this case.
+
+\begin{description}
+\item[Answer:]
+In this case, what we want is a transformation of the equation \ref{eq:SQ1} on page \pageref{eq:SQ1} in such a way that the variance of the transformed error, $Var(\varepsilon_i*)$, is constant $\sigma^2$. 
+
+For this, we can work backwards. We know that $Var(\varepsilon_i) = \mathbb{E}(\varepsilon_i^2) = \frac{\sigma^2}{N_i}$ so if the transformation resulted in $Var(\varepsilon_i^*)=N_i\mathbb{E}(\varepsilon_i^2)$ then it would equal to constant $\sigma^2$. Fro that to happen, we can set $\varepsilon_i^* = \varepsilon_i\sqrt{N_i}$, so that
+\[
+Var(\varepsilon_i^*) = \mathbb{E}\big((\varepsilon_i^*)^2\big) - \big[\mathbb{E}(\varepsilon_i^*)\big]^2 = \mathbb{E}\big((\varepsilon_i^*)^2\big) = \mathbb{E}\Big((\varepsilon_i\sqrt{N_i})^2\Big) = N_i\mathbb{E}(\varepsilon_i^2) = N_i\frac{\sigma^2}{N_i} = \sigma^2
+\]
+as desired.
+
+Thus using the weighting of $\sqrt{N_i}$ the sample regression function becomes:
+\[
+Y_i\sqrt{N_i} = \alpha\sqrt{N_i} + \beta \sqrt{N_i}X_i + \varepsilon_i\sqrt{N_i} \\
+Y_i^* = \alpha^* + \beta^* X_i + \varepsilon^*
+\]
+In general, to obtain the estimators for the coefficients, the weighted least-squares method minimizes the weighted residual sum of squares:
+\[
+\sum w_i\hat{\varepsilon}_i^2 = \sum w_i(Y_i - \hat{\alpha}^* - \hat{\beta}^* X_i)^2
+\]
+where $\alpha^*$ and $\beta^*$ are the weighted least squares estimators. Differentiating these with respect to $\hat{\alpha}^*$ and $\hat{\beta}^*$ gives us:
+\begin{align*}
+\frac{\partial}{\partial\hat{\alpha}^*}\sum w_i\hat{\varepsilon}_i^2 &= 2 \sum w_i(Y_i - \hat{\alpha}^* - \hat{\beta}^* X_i)(-1) \\[6pt]
+\frac{\partial}{\partial\hat{\beta}^*}\sum w_i\hat{\varepsilon}_i^2 &= 2 \sum w_i(Y_i - \hat{\alpha}^* - \hat{\beta}^* X_i)(-X_i)
+\end{align*}
+Setting these equal to $0$ gives us:
+\begin{align*}
+\sum w_iY_i &= \hat{\alpha}^*\sum w_i + \hat{\beta}^* \sum w_iX_i \\
+\sum w_iX_iY_i &= \hat{\alpha}^*\sum w_iX_i + \hat{\beta}^*\sum w_iX_i^2
+\end{align*}
+Solving these simultaneously, we get:
+\begin{align*}
+\hat{\alpha}^* 
+  &= \frac{\sum w_iY_i}{\sum w_i} - \hat{\beta}^* \frac{\sum w_iX_i}{\sum w_i} \\[6pt]
+  &= \bar{Y}^* - \hat{\beta}^*\bar{X}^* \\[18pt]
+\hat{\beta}^*
+  &= \frac{(\sum w_i)(\sum w_iX_iY_i) - (\sum w_iX_i)(\sum w_iY_i)}{(\sum w_i)(\sum w_iX_i^2) - (\sum w_iX_i)^2}
+\end{align*}
+Notice that in this question $w_i = N_i$ and not $\sqrt{N_i}$.  
 \end{description}
