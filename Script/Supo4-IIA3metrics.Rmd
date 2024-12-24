@@ -4,7 +4,7 @@ author: "Emre Usenmez"
 date: "Christmas Break 2024"
 output: pdf_document
 header-includes: 
-  - \usepackage{amsmath, tcolorbox, dashrule, booktabs}
+  - \usepackage{amsmath, tcolorbox, dashrule, booktabs, fancyhdr}
   - \tcbuselibrary{listings,most}
   - \allowdisplaybreaks
 ---
@@ -19,7 +19,9 @@ blockquote {
     border-left: 5px solid #eee;
 }
 ```
-
+\pagestyle{fancy}
+\fancyhead[L]{2024-25 Part IIA Paper 3}
+\fancyhead[R]{Supervision 4 Solutions}
 
 \small Very grateful to Dr Oleg Kitov and Dr Clive Lawson for the very informative stylized answers to previous iterations of the supervision questions.
 \normalsize
@@ -703,3 +705,112 @@ Solving these simultaneously, we get:
 \end{align*}
 Notice that in this question $w_i = N_i$ and not $\sqrt{N_i}$.  
 \end{description}
+
+
+
+
+
+
+
+
+
+
+\bigskip\bigskip\bigskip
+\hdashrule[0.5ex]{\textwidth}{1pt}{3mm}
+\bigskip\bigskip\bigskip
+
+## QUESTION 2
+\textbf{Using the Heteroskedasticity worksheet in sup4.xls}
+
+Load the data in R:
+```{r, eval=FALSE}
+property_df <- read_excel("../Data/sup4.xls")
+
+# You can use any of the following to examine data frame (df): 
+# `dim()`: for its dimensions, by row and column
+# `str()`: for its structure
+# `summary()`: for summary statistics on its columns
+# `colnames()`: for the name of each column
+# `head()`: for the first 6 rows of the data frame
+# `tail()`: for the last 6 rows of the data frame
+# `View()`: for a spreadsheet-like display of the entire data frame
+```
+
+
+\bigskip\bigskip
+
+
+### (a) Estimate the following and comment on your results:
+\begin{equation} \label{eq:SQ2a}
+PRICE_t = \beta_0 + \beta_1LOTSIZE_t + \beta_2SQRFT_t + \beta_3BDRMS_t + u_t
+\end{equation}
+
+In R run the following:
+```{r, eval=FALSE}
+SQ2a_lm <- lm(PRICE ~ BDRMS + LOTSIZE + SQRFT, data = property_df)
+print(summary(SQ2a_lm), digits=7)
+```
+
+and in STATA run the following:
+```{stata}
+/* load the data */
+quietly cd ..
+import excel using Data/sup4.xls, ///
+  sheet("heteroscedasticity") firstrow
+
+/* `firstrow` indicates that the first row contains the variable names */
+/* `describe` command would give basic information about the data set */
+
+/* run the regression */
+regress PRICE LOTSIZE SQRFT BDRMS
+```
+
+We see that the $F$-stat is high at $57.46$ with its $p$ value being $0$. We also see that both $LOTSIZE$ and $SQRFT$ are significant with $t$-values $3.22$ and $9.28$ with near $0$, or $0$, $p$-values, respectively. On the other hand, $BDRMS$ look insignificant with $t$-value at $1.54$, though it may perhaps be due to multicollinearity.
+
+To check for heteroskedasticity, usually the first thing to do is to plot the residuals against the estimated values of the independent variable as an amalgamation of all the dependent variables.
+
+In R we do this with the following:
+```{r eval=FALSE}
+# the following will provide four important plots that are usually needed
+# since there are four graphs, we want to display in 2x2 format first then plot
+par(mfrow = c(2,2))
+plot(SQ2a_lm)
+
+# if it is only the residuals vs fitted that we are interested, then
+plot(SQ2a_lm, which=1)
+# or
+plot(fitted(SQ2a_lm), resid(SQ2a_lm))
+# we can also add a horizontal line at 0
+abline(0,0)
+
+# to make this look nicer, we can  also use `autoplot` command from `ggfortify` library
+library(ggfortify)
+autoplot(SQ2a_lm)
+```
+
+In STATA we instead use the following:
+```{stata, eval=FALSE}
+/* plot residuals against fitted values */
+rvfplot, yline(0)
+```
+
+In either case we get the following plot:
+
+```{r, echo=FALSE}
+property_df <- read_excel("../Data/sup4.xls")
+SQ2a_lm <- lm(PRICE ~ BDRMS + LOTSIZE + SQRFT, data = property_df)
+plot(SQ2a_lm, which=1)
+abline(0,0)
+```
+
+There seems to be a downward trend which can suggest heteroskedasticity but it is difficult to tell, as it could be due to outliers.
+
+
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
+
+### (b) Calculate robust standard errors for the equation \ref{eq:SQ2a} specified on page \pageref{eq:SQ2a} and compare your results.
+
+
