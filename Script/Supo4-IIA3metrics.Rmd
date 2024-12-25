@@ -641,6 +641,7 @@ contour(x,y,z, main="Contour", axes=TRUE, xlab=expression(error[i]),ylab=express
 ### (b) How should equation \ref{eq:SQ1} on page \pageref{eq:SQ1} be transformed so that the OLS estimates of $\alpha$ and $\beta$ are BLUE?
 \begin{description}
 \item[Answer:] The variances of the error terms are given in the question, thus \textit{known}. We can therefore estimate using the \textit{generalized least squares (GLS)} estimation method where we minimize a \textit{weighted sum of squared residuals.}
+
 $\hookrightarrow$ For remedial measures when $\sigma_i^2$ is unknown, see Question 2 below.
 
  
@@ -762,7 +763,7 @@ and in STATA run the following:
 ```{stata}
 /* load the data */
 quietly cd ..
-import excel using Data/sup4.xls, ///
+quietly import excel using Data/sup4.xls, ///
   sheet("heteroscedasticity") firstrow
 
 /* `firstrow` indicates that the first row contains the variable names */
@@ -870,7 +871,8 @@ We can now calculate this in R as follows:
 library(lmtest) #for `coeftest` function
 library(sandwich) #for `vcovHC` function
 
-coeftest(SQ2a_lm, vcov = vcovHC(SQ2a_lm, "HC1")) #the default in vcovHC is "HC3" but to get the exact result as STATA we use "HC1"
+coeftest(SQ2a_lm, vcov = vcovHC(SQ2a_lm, "HC1")) 
+#the default in vcovHC is "HC3" but to get the exact result as STATA we use "HC1"
 ```
 
 Similarly, we can calculate this in STATA as follows:
@@ -885,7 +887,7 @@ However, to present the "robust" and "nonrobust" results side by side in a table
 ```{stata}
 /* load the data */
   quietly cd ..
-  import excel using Data/sup4.xls, ///
+  quietly import excel using Data/sup4.xls, ///
     sheet("heteroscedasticity") firstrow
 
 /* run the regression with `robust` command */
@@ -977,7 +979,7 @@ In STATA there are more steps involved. First we need to order the data and remo
 ```{stata}
 /* load the data */
   quietly cd ..
-  import excel using Data/sup4.xls, ///
+  quietly import excel using Data/sup4.xls, ///
     sheet("heteroscedasticity") firstrow
  
 /* Step 1: Order the data according to LOTSIZE values */  
@@ -992,7 +994,7 @@ In STATA there are more steps involved. First we need to order the data and remo
   reg PRICE BDRMS LOTSIZE SQRFT if index>56
   
 /* Derive F-stat by dividing RSS of each (since df cancel out) */
-  display 1.3970e+11/8.5839e+10
+  display e(rss)/8.5839e+10
   
 /* compute critical F value */
   display invfprob(28,28,0.025)
@@ -1017,9 +1019,239 @@ Goldfeld-Quandt test depends not only on the number of observations we omit but 
 \begin{tcolorbox}[breakable, title=Breusch-Pagan / Breusch-Pagan-Godfrey Test, skin=enhancedlast]
 
 \textbf{What are the reasoning and mechanics of the test?}\footnote{Gujarati and Porter (2009), Section 11.5; Wooldridge (2021), Section 8.3}
+Consider the model
+\[
+Y = \beta_0 + \beta_1X_{1} + \beta_2X_{2} + \dots + \beta_kX_{k} + u
+\]
+and assume that $\mathbb{E}(u | X_1. X_2, \dots, X_k) = 0$ so that OLS is unbiased and consistent. 
 
+The null hypothesis is that homoskedasticity holds and we require the data to tell us otherwise. That is, $\mathbb{H}_0: Var(u|X_1,X_2,\dots,X_k) = \sigma^2$; and since $Var(u|X_1,X_2,\dots,X_k) = \mathbb{E}(u^2|X_1,X_2,\dots,X_k)$ the null hypothesis can be expressed as:
+\[
+\mathbb{H}_0: Var(u|X_1,X_2,\dots,X_k) = \mathbb{E}(u^2|X_1,X_2,\dots,X_k) = \mathbb{E}(u^2) = \sigma^2.
+\]
+This shows that in order to test for violation of the homoskedasticity assumption we want to test whether $u^2$ is related in expected value to one or more of the explanatory variables. Therefore, if $\mathbb{H}_0$ is false, then the expected value of $u^2$ given the independent variables, i.e. $\mathbb{E}(u^2|X_1, X_2,\dots,X_k)$ can be any function of the $X_j$. A simple approach is to assume a linear function:
+\[
+u^2 = \gamma_0 + \gamma_1X_1 + \gamma_2X_2 + \dots + \gamma_kX_k + v
+\]
+The null hypothesis then becomes
+\[
+\mathbb{H}_0: \gamma_1 = \gamma_2 = \dots = \gamma_k = 0.
+\]
 
+Under the null hypothesis we can assume that the error $v$ is independent of $X_1, \dots X_k$. Then, either the $F$ or $Lagrange Multiplier (LM)$ statistics can be used to test for the overall significance of the independent variables in explaining $u^2$. Both statistics would have asymptotic justification, even though $u^2$ cannot be normally distributed.
+
+$\hookrightarrow$ e.g. if $u$ is normally distributed then $\frac{u^2}{\sigma^2}$ is distributed $\chi_1^2$.
+
+If we could observe the $u^2$ in the sample, then we could compute this statistic by running the OLS regression of $u^2$ on $X_1,\dots,X_k$ using all $n$ observations, which would give us the maximum likelihood (ML) of $\sigma^2$ (as opposed to . Since we do not know $u$, we can instead estimate the equation:
+\[
+\hat{u}^2 = \gamma_0 + \gamma_1 X_1 + \gamma_2 X_2 + \dots + \gamma_k X_k + \epsilon
+\]
+
+and compute $F$ or $LM$ statistics for the joint significance of $X_1, \dots, X_k$. The $F$ and $LM$ statistic both depend on the $R$-squared value of this regression, $R_{\hat{u}^2}^2$.
+
+The $F$-statistic for heteroskedasticity is
+\[
+F = \frac{\displaystyle\frac{R_{\hat{u}^2}^2}{k}}{\displaystyle\frac{1-R_{\hat{u}^2}^2}{n-(k+1)}}
+\]
+where $k$ is the number of regressors. This $F$ statistic has approximately an $F_{k, n-(k+1)}$ distribution under the null hypothesis of homoskedasticity.
+
+The $LM$ statistic for heteroskedasticity is
+\[
+LM = n \times R_{\hat{u}^2}^2
+\]
+which is the $R$-squared of the error regression multiplied by the sample size. Under the null hypothesis, $LM$ is distributed asymptotically as $\chi_k^2$.
+
+The $LM$ version of the test is called the \textbf{Breusch-Pagan test} for heteroskedasticity, or BP-test; though the $LM$-statistic form was suggested by Koenker (1981).\footnote{Koenker, R (1981) "A Note on Studentizing a Test for Heteroskedasticity", \textit{Journal of Econometrics} 17:107-112.}
+
+\bigskip
+
+\textbf{What is Lagrange Multiplier Statistic?}\footnote{Wooldridge (2021), Section 5.2a}
+Consider again the multiple regression model with $k$ independent variables:
+\[
+Y = \beta_0 + \beta_1X_{1} + \beta_2X_{2} + \dots + \beta_kX_{k} + u
+\]
+We want to test whether, say, the last $q$ of these variables all have $0$ population parameters. The null hypothesis is therefore
+\[
+\mathbb{H}_0: \beta_{k-q+1} = \beta_{k-q+2} = \dots = \beta_k = 0, 
+\]
+which puts $q$ exclusion restrictions on the model. The alternatively hypothesis is that at least one of the parameters is dofferent from $0$.
+
+The LM statistic requires the estimation of the restricted model only. So we run the regression
+\[
+Y = \beta_0^{res} + \beta_1^{res} X_1 + \dots + \beta_{k-q}^{res} X_{k-q} + u^{res}
+\]
+where $u^{res}$ indicate that the residuals are from the restricted model. Note that this is a shorthand to indicate that we obtain restricted residual for each observation in the sample, but didn't use the $i$ subscript to avoid crowding of subscripts.
+
+The idea is that if the omitted variables $X_{k-q+1}$ through $X_{k}$ truly have $0$ population coefficients, then $u^{res}$ should at least be approximately uncorrelated with each of these variables in the sample. In fact, it should be uncorrelated with all regressors because the omitted regressors in the restricted model are correlated with the regressors that appear in the restricted model.
+
+This means, we run the regression of $u^{res}$ on $X_1, \dots, X_k$.
+
+$\hookrightarrow$ this is an example of \textit{auxiliary regression} which is a regression used to compute a test statistic but whose coefficients are not of direct interest.
+
+If the null hypothesis is true, the $R$-squared from this regression should be "close" to zero, subject to sampling error. This is because $u^{res}$ will be approximately uncorrelated with all the independent variables. What is interesting with this test is that, under the null hypothesis, the sample size multiplied by the $R$-squared from the auxiliary regression is distributed asymptotically as a chi-square random variable with $q$ degrees of freedom. That is, $n\times R_{\hat{u}^2}^2 \ \overset{a}{\sim} \ \chi_q^2$.
+
+Because of its form, the $LM$ statistic is also referred to as the \textbf{n-R-squared statistic}.
 \end{tcolorbox}
 
 \end{description}
 
+\bigskip
+
+We can obtain the BP-statistic that has a $Chi_3^2$ distribution in R as follows:
+
+```{r eval=FALSE}
+bptest(SQ2a_lm)
+```
+
+In STATA, we can do the same using the `hettest()` command:
+
+```{stata}
+/* load the data */
+quietly cd ..
+quietly import excel using Data/sup4.xls, ///
+  sheet("heteroscedasticity") firstrow
+
+/* run the regression */
+quietly regress PRICE LOTSIZE SQRFT BDRMS
+
+/* apply hettest */
+  hettest, rhs fstat
+  hettest, rhs iid
+
+/* manual calculation to compare the results */
+  predict u, r
+  generate U2 = u^2
+  quietly regress U2 LOTSIZE SQRFT BDRMS
+
+/* display the F-statistic and LM-statistic */
+  display e(F)
+  display e(r2)*e(N)
+```
+
+it is often the case that $\chi^2$-tests have better properties but are harder to explain. So here we use the $F$ initially to give the intuition then point out which $\chi^2$-tests do roughly the same things. Based on the $p$-values we can reject the null hypothesis. The Breusch-Pagan test suggests the presence of heteroskedasticity.
+
+However, the BP test assumes that the form of the heteroskedasticity is linear. To try out different forms of the relations, we can use the White test.
+
+\begin{tcolorbox}[breakable, title=White Test, skin=enhancedlast]
+
+\textbf{What are the reasoning and mechanics of the test?}\footnote{Gujarati and Porter (2009), Section 11.5; Wooldridge (2021), Section 8.3a}
+
+Unlike Goldfeld-Quandt test, which requires reordering the observations with respect to the $X$ variable that supposedly caused heteroskedasticity, or the BP test, which is sensitive to the normality and linearity assumptions, the general heteroskedasticity test proposed by White (1980)\footnote{White H (1980) "A Heteroskedasticity Consistent Covariance Matrix Estimator and a Direct Test of Heteroskedasticity", \textit{Econometrica}, 48:817-818} does not rely on the normality assumption. 
+
+White test uses the insight that the homoskedasticity assumption can be replaced with the weaker assumption that the squared error $\hat{u}_i^2$ is \textit{uncorrelated} with all the independent variables, $X_j$, the squares of the independent variables, $X_j^2$, and all the cross products, $X_jX_h$ for $j\neq h$. 
+
+The test is explicitly intended to test for forms of heteroskedasticity that invalidate the usual OLS standard errors and test statistics. Consider a model with $k=3$ independent variables. The White test process is as follows:
+\begin{itemize}
+\item[Step 1:] Estimate $Y_i = \beta_0 + \beta_1 X_{1i} + \beta_2 X_{2i} + \beta_3 X_{3i} + u_i$ and obtain the residuals, $\hat{u}_i$;
+
+\item[Step 2:] Obtain the $R_{\hat{u}^2}^2$ from following auxiliary regression:
+\[
+\hat{u}_i^2 = \gamma_0 + \gamma_1 X_{1i} + \gamma_2 X_{2i} + \gamma_3 X_{3i} + \gamma_4 X_{1i}^2 + \gamma_5 X_{2i}^2 + \gamma_6 X_{3i}^2 + \gamma_7 X_{1i}X_{2i} + \gamma_8 X_{1i}X_{3i} + \gamma_9 X_{2i}X_{3i} + \epsilon_i 
+\]
+That is, we are regressing the squared residuals from the original regression on the original variables, their squared values, and the cross products of the regressors. We can also introduce higher powers of regressors if necessary.
+
+\item[Step 3:] Under the null hypothesis that there is no heteroskedasticity, $n\times R_{\hat{u}^2}^2 \ \overset{a}{\sim} \ \chi_{df}^2$. In this example we have $9$ regressors, so $df=9$. 
+
+\item[Step 4:] If the $\chi_{df}^2$ value obtained is higher than the critical $\chi_{df}^2$ at the chosen level of significance, then this test would suggest a presence of heteroskedasticity. If it does not exceed the critical value, then we cannot reject $\mathbb{H}_0: \gamma_1 = \dots = \gamma_9 = 0$.
+\end{itemize}
+
+One final point is that this approach of White test uses many degrees of freedom. We can have a slightly different approach to White test that can conserve on degrees of freedom. To create the test, notice that the difference between White and BP tests is that the White test includes the squares and cross-products of the independent variables, whereas BP doesn't. We can preserve the spirit of the White test while conserving on degrees of freedom by using the OLS fitted values in a test for heteroskedasticity. 
+
+Recall the fitted values are defined for each observation $i$ by
+\[
+\hat{Y}_i = \hat{\beta}_0 + \hat{\beta}_1 X_{1i} + \dots + \hat{\beta}_k X_{ki}
+\]
+These are just linear functions of the independent variables. If we square the fitted values, we get a particular function of all the squares and cross products of the independent variables. This suggests testing for heteroskedasticity by estimating the equation
+\[
+\hat{u}_i^2 = \eta_0 + \eta_1 \hat{Y}_i + \eta_2 \hat{Y}_i^2 + \epsilon
+\]
+where $\hat{Y}_i$ stand for fitted values. We can use $F$ or $LM$ statistic for the null hypothesis $\mathbb{H}_0: \eta_1=0, \eta_2=0$. This results in two restrictions in testing the null og homoskedasticity, regardless of the number of independent variables in the original model. This can be thought of as a special case of White test.
+\end{tcolorbox}
+
+We can run the White test in R manually as follows:
+```{r eval=FALSE}
+SQ2a_lm_u2 <- SQ2a_lm$residuals^2
+Ru2_SQ2 <- summary(lm(SQ2a_lm_u2 ~ fitted(SQ2a_lm) + I(fitted(SQ2a_lm)^2)))$r.squared
+LM_SQ2 <- nrow(property_df)*Ru2_SQ2
+p_value_SQ2 <- 1-pchisq(LM_SQ2,2)
+p_value_SQ2
+```
+
+or we can use the `bptest()` function from `lmtest` package:
+```{r eval=FALSE}
+bptest(SQ2a_lm, ~ BDRMS + LOTSIZE + SQRFT + I(BDRMS)^2 + I(LOTSIZE)^2 + I(SQRFT)^2 + BDRMS*LOTSIZE + BDRMS*SQRFT + SQRFT*LOTSIZE, data = property_df)
+
+#Special case of White test that conserves on degrees of freedom
+bptest(SQ2a_lm, ~ fitted(SQ2a_lm) + poly(fitted(SQ2a_lm),2))
+```
+
+```{stata}
+/* load the data */
+quietly cd ..
+quietly import excel using Data/sup4.xls, ///
+  sheet("heteroscedasticity") firstrow
+
+/* run the regression */
+quietly regress PRICE LOTSIZE SQRFT BDRMS
+
+/* manual calculation for White Test */
+  predict u, r
+  generate U2 = u^2
+  generate B2 = BDRMS^2
+  generate L2 = LOTSIZE^2
+  generate S2 = SQRFT^2
+  generate BL = BDRMS*LOTSIZE
+  generate BS = BDRMS*SQRFT
+  generate LS = LOTSIZE*SQRFT
+  
+  quietly regress U2 BDRMS LOTSIZE SQRFT B2 L2 S2 BL BS LS
+  
+/* calculate the chi-square statistic */
+  display e(N)*e(r2)
+```
+or we can use the `imtest, white` command in STATA after the original regression:
+
+```{stata}
+/* load the data */
+quietly cd ..
+quietly import excel using Data/sup4.xls, ///
+  sheet("heteroscedasticity") firstrow
+
+/* run the regression */
+quietly regress PRICE LOTSIZE SQRFT BDRMS
+
+/* run the White test */
+imtest, white
+```
+
+In all of these approaches we obtain a chi-squared value of $33.73$ with $0.001$ p-value. Thus we can reject the null hypothesis of the homoskedasticity.
+
+However, there is sure to be lots of multicollinearity here so it is difficult to tell if there is a non-linear relationship with any of the variables. We can run individual regressions and see what we can find. For example, with $LOTSIZE$:
+
+```{stata}
+/* load the data */
+quietly cd ..
+quietly import excel using Data/sup4.xls, ///
+  sheet("heteroscedasticity") firstrow
+
+/* run the regression */
+quietly regress PRICE LOTSIZE SQRFT BDRMS
+
+/* obtain residual squareds and create LOTSIZE squared */
+  predict u, r
+  generate U2 = u^2
+  generate LOTSIZE2 = LOTSIZE^2
+  
+/* regress residuals on lotsize for nonlinearity */
+  regress U2 LOTSIZE LOTSIZE2
+```
+There appears to be a non-linear relationship to LOTSIZE, in which case the White test may be better than the Breusch-Pagan test.
+
+
+
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
+
+### (e)
