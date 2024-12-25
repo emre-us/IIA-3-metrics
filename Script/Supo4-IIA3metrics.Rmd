@@ -22,6 +22,8 @@ blockquote {
 \pagestyle{fancy}
 \fancyhead[L]{2024-25 Part IIA Paper 3}
 \fancyhead[R]{Supervision 4 Solutions}
+\fancyfoot[L]{University of Cambridge}
+\fancyfoot[R]{Emre Usenmez}
 
 \small Very grateful to Dr Oleg Kitov and Dr Clive Lawson for the very informative stylized answers to previous iterations of the supervision questions.
 \normalsize
@@ -490,7 +492,9 @@ Var(\hat{\beta})
 
 and its variance when heteroskedasticity is present is
 \[
-Var(\hat{\beta}) = \left( \frac{\displaystyle\sum_{i=1}^m (X_i - \bar{X})^2\sigma_i^2}{SST_X^2} \right) = \left( \frac{\displaystyle\sum_{i=1}^m (X_i - \bar{X})^2\sigma_i^2}{\displaystyle\sum_{i=1}^m(X_i - \bar{X})^2} \right).
+Var(\hat{\beta}) 
+  = \Big( \frac{1}{SST_X} \Big)^2 \Big( \displaystyle\sum_{i=1}^m (X_i - \bar{X})^2\sigma_i^2 \Big) 
+  = \frac{\displaystyle\sum_{i=1}^m (X_i - \bar{X})^2\sigma_i^2}{\Big( \displaystyle\sum_{i=1}^m(X_i - \bar{X})^2 \Big)^2}.
 \]
 
 \underline{Spherical Errors}
@@ -537,7 +541,9 @@ u_j
 \end{equation*}
 
 where errors are homoskedastic and there is no autocorrelation.
+
 \end{description}
+
 
 ```{r echo=FALSE}
 #build bivariate normal distribution
@@ -632,11 +638,12 @@ contour(x,y,z, main="Contour", axes=TRUE, xlab=expression(error[i]),ylab=express
 \bigskip\bigskip
 
 
-### (b) How should equation \ref{eq:SQ1} be transformed so that the OLS estimates of $\alpha$ and $\beta$ are BLUE?
+### (b) How should equation \ref{eq:SQ1} on page \pageref{eq:SQ1} be transformed so that the OLS estimates of $\alpha$ and $\beta$ are BLUE?
 \begin{description}
-\item[Answer:] We need to estimate using the \textit{generalized least squares (GLS)} estimation method where we minimize a \textit{weighted sum of squared residuals.}
+\item[Answer:] The variances of the error terms are given in the question, thus \textit{known}. We can therefore estimate using the \textit{generalized least squares (GLS)} estimation method where we minimize a \textit{weighted sum of squared residuals.}
+$\hookrightarrow$ For remedial measures when $\sigma_i^2$ is unknown, see Question 2 below.
 
-The variances of the error terms are given in the question, thus \textit{known}. 
+ 
 \[
 Var(\varepsilon_i) = \frac{\sigma^2}{N_i} = \sigma_i^2
 \]
@@ -813,4 +820,206 @@ There seems to be a downward trend which can suggest heteroskedasticity but it i
 
 ### (b) Calculate robust standard errors for the equation \ref{eq:SQ2a} specified on page \pageref{eq:SQ2a} and compare your results.
 
+\begin{description}
+\item[Answer:]
+White (1980)\footnote{White, H (1980) "A Heteroscedasticity Consistent Covariance Matrix Estimator and a Direct Test of Heteroscedasticity", \textit{Econometrica}, 48:817-828. Though the possibility of such heterskedasticity-robust standard errors were previously discussed by Eicker (1967) and Huber (1967) and so sometimes these are also called \textit{White-Huber-Eicker standard errors.} See Eicker, F (1967) "Limit Theorems for Regressions with Unequal and Dependent Errors", \textit{Proceedings of the Fifth Berkeley Symposium on Mathematical Statistics nd Probability} 1:59-82, and Huber, P J (1967) "The Behavior of Maximum Likelihood Estimates under Nonstandard Conditions",\textit{Proceedings of the Fifth Berkeley Symposium on Mathematical Statistics nd Probability} 1:221-233.} has shown that asymptotically consistent estimates of variances and covariances of OLS estimators can be obtained even if there is heteroskedasticity present so that asymptotically valid statistical inferences can be made about the true paramter values. White's heteroskedasticity-corrected standard errors are also known as \textit{robust standard errors}. 
+
+\begin{tcolorbox}[breakable, title=White's robust standard errors, skin=enhancedlast]
+
+\textbf{How do we get heteroskedasticity-consistent variances and standard errors?}\footnote{Gujarati and Porter (2009), Appendix 11A.4; Wooldridge (2021), Section 8.2}
+
+Consider the simple regression model:
+\[
+Y_i = \beta_0 + \beta_1 X_1 + u_i
+\]
+where $Var(u_i)=\sigma_i$; that is, it is heteroskedastic. In Question 1 part (a) we have shown that 
+\begin{equation}\label{eq:WhiteVar1}
+Var(\hat{\beta_1}) = \frac{\displaystyle\sum_{i=1}^n (X_i - \bar{X})^2\sigma_i^2}{\Big( \displaystyle\sum_{i=1}^n(X_i - \bar{X})^2 \Big)^2}
+\end{equation}
+Since $\sigma_i^2$ are not directly observable, White argues for using the squared residual of each $i$, $\hat{u}_i^2$, instead and estimating the variance of the estimator via:
+\begin{equation}\label{eq:WhiteVar2}
+Var(\hat{\beta}_1) = \frac{\displaystyle\sum_{i=1}^n (X_i - \bar{X})^2\hat{u}_i^2}{\Big( \displaystyle\sum_{i=1}^n(X_i - \bar{X})^2 \Big)^2}
+\end{equation}
+White has shown that when this equation \ref{eq:WhiteVar2} is multiplied by the sample size $n$, it converges in probability to $\frac{\mathbb{E}[(X_i - \mu_X)^2u_i^2]}{(\sigma_X^2)^2}$ which is the probability limit of equation \ref{eq:WhiteVar1} multiplied by $n$, and where $\mu_X$ is the expected value of $X$, and $\sigma_X^2$ is the population variance of $X$. Thus, the law of large numbers and the central limit theorem are key in establishing these convergences, which are necessary for justifying the use of standard errors to construct confidence intervals and $t$-statistics.
+
+$\hookrightarrow$ One can first obtain the residuals from the usual OLS regression and then calculate the variance using equation \ref{eq:WhiteVar2}. Statistical software do this automatically.
+
+This can be extended to $k$-variable regression model
+\[
+Y_i = \beta_0 + \beta_1 X_{1i} + \beta_2 X_{2i} + \dots + \beta_kX_{ki} + u_i
+\]
+The variance of any partial regression coefficient, say $\hat{\beta}_j$ is then obtained via
+\begin{equation}\label{eq:WhiteVar3}
+Var(\hat{\beta}_j) 
+  = \frac{\displaystyle\sum_{i=1}^n \hat{v}_{ji}^2 \hat{u}_i^2}{\Big( \displaystyle\sum_{i=1}^n \hat{v}_{ji}^2 \Big)^2}
+  = \frac{\displaystyle\sum_{i=1}^n \hat{v}_{ji}^2 \hat{u}_i^2}{RSS_j^2}
+\end{equation}
+where $\hat{v}_{ji}$ denotes the $i^{th}$ residual from regressing $X_j$ on all other independent variables, and $RSS_j$ is the residual sum of squares from this regression. 
+
+The square root of this expression in equation \ref{eq:WhiteVar3} is called \textbf{heteroskedasticity-robust standard error} for $\hat{\beta}_j$.
+
+Also note that, sometimes the equation \ref{eq:WhiteVar3} is adjusted for degrees of freedom by multiplying it with $frac{n}{n-(k+1)}$ before taking the square root. This is because if $\hat{u}_i$ were the same for all $i$ then we would get the usual OLS standard errors. Since all forms of this equation has asymptotic justification, and they are asymptotically equivalent, no one form is unanimously preferred over others. Usually, we use whatever form the software we work with uses. 
+\end{tcolorbox}
+
+\end{description}
+
+We can now calculate this in R as follows:
+
+```{r eval=FALSE}
+#we need two additional libraries for this:
+library(lmtest) #for `coeftest` function
+library(sandwich) #for `vcovHC` function
+
+coeftest(SQ2a_lm, vcov = vcovHC(SQ2a_lm, "HC1")) #the default in vcovHC is "HC3" but to get the exact result as STATA we use "HC1"
+```
+
+Similarly, we can calculate this in STATA as follows:
+```{stata eval=FALSE}
+/* run the regression with additional `robust` command */
+
+regress PRICE LOTSIZE SQRFT BDRMS, robust
+```
+
+However, to present the "robust" and "nonrobust" results side by side in a table, we can use the following set of commands instead:
+
+```{stata}
+/* load the data */
+  quietly cd ..
+  import excel using Data/sup4.xls, ///
+    sheet("heteroscedasticity") firstrow
+
+/* run the regression with `robust` command */
+  quietly regress PRICE LOTSIZE SQRFT BDRMS, robust
+
+/* store the estimates under the heading "robust" */
+  estimates store robust
+  
+/* run the regression for nonrobust */
+  quietly regress PRICE LOTSIZE SQRFT BDRMS 
+  
+/* store the estimates under the heading "nonrobust" */
+  estimates store nonrobust
+  
+/* create the table for robust and nonrobust estimates of beta, s.e., and t-values */
+  estimates table robust nonrobust, b se t
+
+```
+
+Notice that all the $t$-values are lower for each variable and in the case of $LOTSIZE$ this reduction means it is no longer significant. This is at least suggestive that $LOTSIZE$ may be a major source of the heteroskedasticity.
+
+
+
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
+
+### (c) Using the specification in equation \ref{eq:SQ2a} on page \pageref{eq:SQ2a}, conduct a Goldfeld-Quandt test for heteroskedasticity in the $LOTSIZE$ dimension (exclude the middle 24 observations).
+
+\begin{description}
+\item[Answer:]
+The Goldfeld-Quandt\footnote{Goldfeld S, and Quandt R E (1972) \textit{Nonlinear Methods in Econometrics}, North Holland Publishing Company, Amsterdam.} test is applicable when we assume that the heteroskedastic variance, $\sigma_i^2$, is positively related to \textit{one} of the explanatory variables in the regression model. In this question we are assuming that the heteroskedastic variance is related to $LOTSIZE$.
+
+\begin{tcolorbox}[breakable, title=Goldfeld-Quandt Test, skin=enhancedlast]
+
+\textbf{What are the reasoning and mechanics of the test?}\footnote{Gujarati and Porter (2009), Section 11.5}
+
+Consider the simple regression model:
+\[
+Y_i = \beta_0 + \beta_1 X_1 + u_i
+\]
+and suppose $\sigma_i^2$ is monotonically related to $X_i$. One plausible assumption of this is 
+\begin{equation}\label{eq:GQTest1}
+\sigma_i^2 = \sigma^2X_i^2.
+\end{equation}
+What this assumption says is that $\sigma_i^2$ is proportional to the square of the $X$ variable. If this assumption is appropriate, it would mean the larger $X_i$ values are, the larger $\sigma_i^2$ gets. If that turns out to be the case, heteroskedasticity is most likely to be present in the model. 
+
+To test this, Goldfeld and Quandt provide the following steps:
+\begin{itemize}
+\item[Step 1:] Order or rank the observations according to the values of $X_i$ beginning with the lowest $X$ value;
+
+\item[Step 2:] Omit $c$ central observations, where $c$ is specified a priori, and divide the remaining onservations into two groups, each of $\frac{n-c}{2}$ observations;
+
+\item[Step 3:] Fit separate OLS regressions to these two groups of observations and obtain the respective residual sum of squares $RSS_1$ and $RSS_2$, where $RSS_1$ represents the $RSS$ from the regression corresponding to the smaller $X_i$ values, i.e. small variance group, and $RSS_2$ to the larger $X_i$ values, i.e. the large variance group.
+
+These $RSS$ each have $\displaystyle\frac{n-c}{2}-(k+1)$ degrees of freedom where $k$ is the number of parameters to be estimated, excluding the intercept - hence $+1$.
+
+\item[Step 4:] Compute the following ratio:
+\[
+\lambda = \frac{\frac{RSS_2}{df}}{\frac{RSS_1}{df}}
+\]
+\end{itemize}
+
+The main argument of this test is that if the assumption of homoskedasticity and $u_i$ are normally distributed both hold true, then $\lambda$ of equation \ref{eq:GQTest1} follows the $F$-distribution with $\displaystyle\frac{n-c}{k}-(k+1)$ degrees of freedom in both the numerator and denominator.
+
+As usual, if the computed $\lambda$ which is equal to $F$-statistic, is greater than the critical $F$ value at the chosen level of significance, we can reject the null hypothesis of homoskedasticity.
+
+\textbf{Why we ommit $c$ central observations?}
+These observations are omitted to accentuate the difference between the small variance group, $RSS_1$, and the large variance group $RSS_2$. However, the \textit{power} of the test depends on how $c$ is chosen. Recall that \textit{power of a test} is measured by the probability of rejecting the null hypothesis when it is false, and it is calculated by $1-prob(Type II error)$.
+
+Goldfeld and Quandt suggest $c=8$ for models with two-explanatory variables if $n=30$ and double if $n=60$.
+\end{tcolorbox}
+\end{description}
+
+In this question $c=24$ and we order $LOTSIZE$ from small to large. To run the Goldfeld-Quandt test in R we can use the `gqtest()` function from the `lmtest` library:
+
+```{r include=FALSE}
+library(lmtest)
+```
+
+```{r}
+gqtest(SQ2a_lm, order.by = property_df$LOTSIZE, fraction = 24, alternative="two.sided")
+qf(0.975, 28, 28, lower.tail = TRUE) #critical F-value
+```
+
+In STATA there are more steps involved. First we need to order the data and removed the middle 24 observations before running regression on each:
+
+```{stata}
+/* load the data */
+  quietly cd ..
+  import excel using Data/sup4.xls, ///
+    sheet("heteroscedasticity") firstrow
+ 
+/* Step 1: Order the data according to LOTSIZE values */  
+  sort LOTSIZE
+  
+/* create an index on which we will impose our condition for splitting data */  
+  gen index=_n
+
+/* run the regressions on each splitted data */  
+  reg PRICE BDRMS LOTSIZE SQRFT if index<33
+  
+  reg PRICE BDRMS LOTSIZE SQRFT if index>56
+  
+/* Derive F-stat by dividing RSS of each (since df cancel out) */
+  display 1.3970e+11/8.5839e+10
+  
+/* compute critical F value */
+  display invfprob(28,28,0.025)
+
+```
+
+Both R and STATA give the same result that the $F$-statistic of $1.6275654$ is smaller than the critical $F$-value of $2.1299243$ which means we cannot reject the null of homoskedasticity. Therefore, it seems as though there is no heteroskedasticity according to the Goldfeld-Quandt test. However, the form of heteroskedasticity may be more complicated.
+
+
+
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
+
+### (d) Test for heteroskedasticity by first estimating an equation that regresses the squared residuals from equation \ref{eq:SQ2a} on page \pageref{eq:SQ2a} against all of the independent variables used to estimate equation \ref{eq:SQ2a}. (Calculate both F and LM versions of this test). Verify your results using the 'hettest' command in Stata. Compare these results with the results of the White Test in Stata.
+
+\begin{description}
+\item[Answer:]
+Goldfeld-Quandt test depends not only on the number of observations we omit but also on identifying the correct $X$ variable that needs to be ordered. These limitations of this test can be avoided with \textit{Breusch-Pagan Test},\footnote{Breusch, T and Pagan A (1979) "A Simple Test for Heteroscedasticity and Random Coefficient Variation", \textit{Econometrica}, 47:1287-1294.} or BP test, which is also called \textit{Breusch-Pagan-Godfrey Test},\footnote{Godfrey L (1978) "Testing for Multiplicative Heteroscedasticity" \textit{Journal of Econometrics}, 8:227-236.} or BPG test.  
+
+\begin{tcolorbox}[breakable, title=Breusch-Pagan / Breusch-Pagan-Godfrey Test, skin=enhancedlast]
+
+\textbf{What are the reasoning and mechanics of the test?}\footnote{Gujarati and Porter (2009), Section 11.5; Wooldridge (2021), Section 8.3}
+
+
+\end{tcolorbox}
+
+\end{description}
 
