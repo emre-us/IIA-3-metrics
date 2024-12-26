@@ -4,7 +4,7 @@ author: "Emre Usenmez"
 date: "Christmas Break 2024"
 output: pdf_document
 header-includes: 
-  - \usepackage{amsmath, tcolorbox, dashrule, booktabs, fancyhdr}
+  - \usepackage{amsmath, tcolorbox, dashrule, booktabs, fancyhdr, multirow}
   - \tcbuselibrary{listings,most}
   - \allowdisplaybreaks
 ---
@@ -640,7 +640,7 @@ contour(x,y,z, main="Contour", axes=TRUE, xlab=expression(error[i]),ylab=express
 
 ### (b) How should equation \ref{eq:SQ1} on page \pageref{eq:SQ1} be transformed so that the OLS estimates of $\alpha$ and $\beta$ are BLUE?
 \begin{description}
-\item[Answer:] The variances of the error terms are given in the question, thus \textit{known}. We can therefore estimate using the \textit{generalized least squares (GLS)} estimation method where we minimize a \textit{weighted sum of squared residuals.}
+\item[Answer:] The variances of the error terms are given in the question, thus \textit{known}. We can therefore estimate using the generalized least squares (GLS) estimators for correcting heteroskedasticity where we minimize a \textit{weighted sum of squared residuals.}
 
 $\hookrightarrow$ For remedial measures when $\sigma_i^2$ is unknown, see Question 2 below.
 
@@ -1114,7 +1114,7 @@ quietly import excel using Data/sup4.xls, ///
 /* run the regression */
 quietly regress PRICE LOTSIZE SQRFT BDRMS
 
-/* apply hettest */
+/* apply hettest where rhs mean right-hand-side */
   hettest, rhs fstat
   hettest, rhs iid
 
@@ -1170,8 +1170,7 @@ where $\hat{Y}_i$ stand for fitted values. We can use $F$ or $LM$ statistic for 
 
 We can run the White test in R manually as follows:
 ```{r eval=FALSE}
-SQ2a_lm_u2 <- SQ2a_lm$residuals^2
-Ru2_SQ2 <- summary(lm(SQ2a_lm_u2 ~ fitted(SQ2a_lm) + I(fitted(SQ2a_lm)^2)))$r.squared
+Ru2_SQ2 <- summary(lm(resid(SQ2a_lm) ~ fitted(SQ2a_lm) + I(fitted(SQ2a_lm)^2)))$r.squared
 LM_SQ2 <- nrow(property_df)*Ru2_SQ2
 p_value_SQ2 <- 1-pchisq(LM_SQ2,2)
 p_value_SQ2
@@ -1179,7 +1178,10 @@ p_value_SQ2
 
 or we can use the `bptest()` function from `lmtest` package:
 ```{r eval=FALSE}
-bptest(SQ2a_lm, ~ BDRMS + LOTSIZE + SQRFT + I(BDRMS)^2 + I(LOTSIZE)^2 + I(SQRFT)^2 + BDRMS*LOTSIZE + BDRMS*SQRFT + SQRFT*LOTSIZE, data = property_df)
+bptest(SQ2a_lm, ~ BDRMS + LOTSIZE + SQRFT 
+       + I(BDRMS)^2 + I(LOTSIZE)^2 + I(SQRFT)^2 
+       + BDRMS*LOTSIZE + BDRMS*SQRFT + SQRFT*LOTSIZE, 
+       data = property_df)
 
 #Special case of White test that conserves on degrees of freedom
 bptest(SQ2a_lm, ~ fitted(SQ2a_lm) + poly(fitted(SQ2a_lm),2))
@@ -1249,9 +1251,399 @@ There appears to be a non-linear relationship to LOTSIZE, in which case the Whit
 
 
 
+***
+\bigskip\bigskip
+
+### (e) Researcher A decides to try 'scaling' to remove the heterosekdasticity and so reestimates the equation in part (a) by dividing \ref{eq:SQ2a} on page \pageref{eq:SQ2a} by $BDRMS$ and then, as an alternative, by $LOTSIZE$. Discuss the reasoning behind using such variable to scale in this way (what must the form of heteroskedasticity be in each case? - note the $1/X$ term in each regression you have to estimate!). Which gives the best results?
+
+\begin{description}
+\item[Answer:]
+Recall in Question 2(b) we calculated White's robust standard errors. That method has some drawbacks, however. In addition to being a large-sample procedure, the estimators obtained using White's robust standard errors may not be so efficient compared to those obtained by transforming the data to reflect specific types of heteroskedasticity. 
+
+To see this, consider the simple regression
+\[
+Y_i = \beta_0 + \beta_1 X_i + u_i
+\]
+and assume that the error variance is proportional to square of the explanatory variable, $X_i^2$:
+\[
+\mathbb{E}(u_i^2) = \sigma^2X_i^2.
+\]
+If this is the case, the original model can be transformed to yield a homoskedastic error variance as follows.
+
+First, divide the original model by $X_i$ so that
+\begin{align*}
+\frac{Y_i}{X_i} 
+  = \frac{\beta_0}{X_i} + \beta_1 \frac{X_i}{X_i} + \frac{u_i}{X_i} \\[6pt]
+  = \frac{\beta_0}{X_i} + \beta_1 + v_i
+\end{align*}
+where $v_i = u_i / X_i$ is the transformed disturbance term. Then,
+\[
+\mathbb{E}(v_i^2) = \mathbb{E}\Bigg[\Big(\frac{u_i}{X_i}\Big)^2\Bigg] = \frac{1}{X_i^2}\mathbb{E}(u_i^2) = \frac{1}{X_i^2}\sigma^2X_i^2 = \sigma^2.
+\]
+That is, the variance of $v_i$ is homoskedastic and OLS can be applied to the transformed equation.
+
+This is exactly what the question is asking us to do. In the first part we will estimate the following:
+\[
+\frac{PRICE_i}{BDRMS_i} = \beta_0\frac{1}{BDRMS_i} + \beta_1 \frac{LOTSIZE_i}{BDRMS_i} + \beta_2 \frac{SQRFT_i}{BDRMS_i} + \beta_3 + u_i\frac{1}{BDRMS_i} 
+\]
+\end{description}
+
+In R we can run the transformed regression and run the BP and White tests as follows:
+
+```{r eval=FALSE}
+SQ2e_lm_bdrms <- lm(I(PRICE/BDRMS) ~ I(LOTSIZE/BDRMS) + I(SQRFT/BDRMS) + I(1/BDRMS), 
+     data=property_df)
+summary(SQ2e_lm_bdrms)
+
+# Breusch-Pagan test
+bptest(SQ2e_lm_bdrms)
+
+# White test
+bptest(SQ2e_lm_bdrms, ~ I(LOTSIZE/BDRMS) + I(SQRFT/BDRMS) + I(1/BDRMS)
+       + I((LOTSIZE/BDRMS)^2) + I((SQRFT/BDRMS)^2) + I((1/BDRMS)^2)
+       + I(LOTSIZE/BDRMS)*I(SQRFT/BDRMS) + I(LOTSIZE/BDRMS)*I(1/BDRMS)  
+       + I(SQRFT/BDRMS)*I(1/BDRMS), data=property_df)
+
+#Special case of White test that conserves on degrees of freedom
+bptest(SQ2e_lm_bdrms, ~ fitted(SQ2e_lm_bdrms) + poly(fitted(SQ2e_lm_bdrms),2))
+```
+
+and in STATA as follows:
+```{stata}
+/* load the data */
+  quietly cd ..
+  quietly import excel using Data/sup4.xls, ///
+    sheet("heteroscedasticity") firstrow
+
+/* generate the transformations */
+  generate PRBD = PRICE/BDRMS
+  generate LTBD = LOTSIZE/BDRMS
+  generate FTBD = SQRFT/BDRMS
+  generate BD = 1/BDRMS
+
+/* run the regression */
+  regress PRBD LTBD FTBD BD
+  
+/* run the Breusch-Pagan test */
+  hettest LTBD FTBD BD, iid
+  
+/* run the White test */
+  imtest, white
+```
+
+From the chi-squared values and their associated p-values we cannot reject the null hypothesis of homoskedasticity.
+
+Note that we can also obtain the same using the GLS, or weighted least squares, approach discussed in question 1(b). Here the weights are $1/BDRMS_i$. 
+
+If we do the same transformation with $LOTSIZE$ we get:
+```{stata}
+* load the data */
+  quietly cd ..
+  quietly import excel using Data/sup4.xls, ///
+    sheet("heteroscedasticity") firstrow
+
+/* generate the transformations */
+  generate PRLT = PRICE/LOTSIZE
+  generate LT = 1/LOTSIZE
+  generate FTLT = SQRFT/LOTSIZE
+  generate BDLT = BDRMS/LOTSIZE
+
+/* run the regression */
+  regress PRLT LT FTLT BDLT
+  
+/* run the Breusch-Pagan test */
+  hettest LT FTLT BDLT, iid
+  
+/* run the White test */
+  imtest, white
+```
+
+Once again, from the chi-squared values and their associated p-values we cannot reject the null hypothesis of homoskedasticity.
+
+
+
 
 \bigskip\bigskip
 ***
 \bigskip\bigskip
 
-### (e)
+### (f) Researcher B decides to pursue the following strategies to remove heteroskedasticity:
+\begin{itemize}
+\item[i)] \textbf{Use logged data for PRICE, LOTSIZE, SQRFT (N.B. don't drop BDRMS)}
+\item[ii)] \textbf{Remove outliers (observations 42,73,76,77)}
+\end{itemize}
+\textbf{Discuss the reasoning behind each of these strategies, and the results obtained in each case.}
+
+\begin{description}
+\item[Answer (i):]
+A log transformation such as $ln Y_i = \beta_0 + \beta_1 \ lnX_i + u_i$ often reduces heteroskedasticity because log transformation compresses the scales, reducing say a ten-fold difference between two values to a two-fold difference. This transformation, of course, would not be possible if some of the $Y$ and $X$ values are zero or negative. Though in this case, we can use $ln(Y_i + m)$ or $ln(X_i+m)$ where $m$ is a postive value large enough to make all the values of $Y$ or $X$ positive.
+
+In this question, our transformation is as follows:
+\[
+ln(PRICE_i) = \beta_0 + \beta_1 \ ln(LOTSIZE_i) +\beta_2 \ ln(SQRFT_i) + \beta_3 \ BDRMS_i + u_i
+\]
+
+\end{description}
+
+In R we can transform and obtaint he BP nad White tests as follows:
+
+```{r eval=FALSE}
+SQ2f_lm_log <- lm(log(PRICE) ~ log(LOTSIZE) + log(SQRFT) + BDRMS, data=property_df)
+summary(SQ2f_lm_log)
+
+# Breusch-Pagan test
+bptest(SQ2f_lm_log)
+
+# White test
+bptest(SQ2f_lm_log, ~ log(LOTSIZE) + log(SQRFT) + BDRMS
+       + I(log(LOTSIZE)^2) + I(log(SQRFT)^2) + I(BDRMS^2)
+       + log(LOTSIZE)*log(SQRFT) + log(LOTSIZE)*BDRMS + log(SQRFT)*BDRMS, data=property_df)
+
+#Special case of White test that conserves on degrees of freedom
+bptest(SQ2f_lm_log, ~ fitted(SQ2f_lm_log) + poly(fitted(SQ2f_lm_log),2))
+```
+
+Similarly, in STATA:
+
+```{stata}
+/* load the data */
+  quietly cd ..
+  quietly import excel using Data/sup4.xls, ///
+    sheet("heteroscedasticity") firstrow
+
+/* generate the transformations */
+  generate lnPR = ln(PRICE)
+  generate lnLT = ln(LOTSIZE)
+  generate lnFT = ln(SQRFT)
+
+/* run the regression */
+  regress lnPR lnLT lnFT BDRMS
+  
+/* run the Breusch-Pagan test */
+  hettest lnLT lnFT BDRMS, iid
+  
+/* run the White test */
+  imtest, white
+```
+
+From the chi-squared values and their associated p-values we fail to reject the null hypothesis of homoskedasticity.
+
+\bigskip
+
+\begin{description}
+\item[Answer (ii):]
+Heteroskedasticity can also arise as a result of the presence of outliers. An outlier "is an observation from a different population to that generating the remaining sample observations."\footnote{Gujarati and Porter (2009), Section 11.1} Whether those outliers are included in the regression or not can substantially alter the results of the regression analysis. This is because OLS gives equal weight to every observation in the sample. 
+
+To see why these points were picked in the question first let's look at the scatter plot of $LOTSIZE$
+\end{description}
+
+```{r}
+plot(SQ2a_lm$residuals^2 ~ property_df$LOTSIZE, 
+     xlab="Lot Size ft-sq", ylab = "residuals squared")
+text(SQ2a_lm$residuals^2 ~ property_df$LOTSIZE, label=property_df$Date)
+```
+
+Here we can see that the 42nd, 73rd, 76th, and 77th data points are outliers.
+
+We can now remove these and run the regression in R:
+
+```{r eval=FALSE}
+# create a new dataframe with outliers removed
+property_df_nooutl <- property_df[-c(42,73,76,77),]
+
+# run the regression using this new dataframe
+SQ2f_lm_nooutl <- lm(PRICE ~ LOTSIZE + SQRFT + BDRMS, data = property_df_nooutl)
+summary(SQ2f_lm_nooutl)
+
+# run the BP test
+bptest(SQ2f_lm_nooutl)
+
+# run the White test
+bptest(SQ2f_lm_nooutl, ~ BDRMS + LOTSIZE + SQRFT 
+       + I(BDRMS^2) + I(LOTSIZE^2) + I(SQRFT^2) 
+       + BDRMS*LOTSIZE + BDRMS*SQRFT + SQRFT*LOTSIZE, 
+       data = property_df_nooutl)
+
+#Special case of White test that conserves on degrees of freedom
+bptest(SQ2f_lm_nooutl, ~ fitted(SQ2f_lm_nooutl) + poly(fitted(SQ2f_lm_nooutl),2))
+```
+
+and in STATA
+
+```{stata}
+/* load the data */
+  quietly cd ..
+  quietly import excel using Data/sup4.xls, ///
+    sheet("heteroscedasticity") firstrow
+
+/* run the regression removing the outliers */    
+  regress PRICE LOTSIZE BDRMS SQRFT if Date != 42 & Date != 73 & Date != 76 & Date != 77
+
+  /* run the Breusch-Pagan test */  
+  hettest LOTSIZE BDRMS SQRFT, iid
+  
+/* run the White test */
+  imtest, white
+```
+
+From the chi-squared values and their associated p-values we fail to reject the null hypothesis of homoskedasticity.
+
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
+
+### (g) Considering your results from parts (e) and (f), which strategy for removing heteroskedasticity do you believe to be the best and why?
+
+\begin{description}
+\item[Answer:]
+Table below summarizes the results of the BP and White tests for each strategy:
+
+\begin{center}
+\begin{tabular}{|| c | c | c | c c c | ||}
+\multicolumn{6}{r}{Heteroskedasticity Test} \\
+ \hline
+ &  F & Adj $R^2$ & & BP & White \\
+\hline\hline
+\multirow{2}{8em}{Scaling by BDRMS} & \multirow{2}{3em}{37.39} & \multirow{2}{3em}{0.557} & $\chi^2$ & 2.59 & 14.13 \\
+ & & & $p$-value & 0.459 & 0.118 \\
+\hline
+\multirow{2}{8em}{Scaling by LOTSIZE} & \multirow{2}{3em}{480.77} & \multirow{2}{3em}{0.943} & $\chi^2$ & 5.96 & 8.74 \\
+ & & & $p$ value & 0.113 & 0.462 \\
+\hline
+\multirow{2}{8em}{log transformation} & \multirow{2}{3em}{50.42} & \multirow{2}{3em}{0.63} & $\chi^2$ & 4.22 & 9.55 \\
+ & & & $p$ value & 0.238 & 0.388 \\
+\hline
+\multirow{2}{8em}{remove outliers in LOTSIZE} & \multirow{2}{3em}{65.83} & \multirow{2}{3em}{0.701} & $\chi^2$ & 5.97 & 9.26 \\
+ & & & $p$ value & 0.113 & 0.414 \\
+\hline
+\end{tabular}
+\end{center}
+
+Looking at the table, we can see that in all approaches we are able to tackle heteroskedasticity since in all of them we fail to reject the null hypothesis of homoskedasticity. However, the $F$ value and the adjusted $R^2$ is considerably higher for "scaling by $LOTSIZE$" strategy. This may be because the error variance is proportional to $LOTSIZE$ and there are outliers in the $LOTSIZE$ dimension. Scaling gets rid of both problems. 
+
+\end{description}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+\bigskip\bigskip\bigskip
+\hdashrule[0.5ex]{\textwidth}{1pt}{3mm}
+\bigskip\bigskip\bigskip
+
+## QUESTION 3
+
+### (a) Briefly discuss the problem of autocorrelation - why might such a problem arise and what problems follow from the use of OLS?
+
+\begin{description}
+  \item[Answer:] We will briefly discuss the nature of the problem, why it occurs, and what problems arise from use of OLS with serially correlated errors.
+  \underline{What is the problem of autocorrelation?} 
+  
+  Classical linear regression model assumes autocorrelation does not exist in the disturbances. That is, it assumes $Cov(u_i,u_j | X_i, X_j) = 0, \ i\neq j$. What this means is that the disturbance term relating to any observation is not influenced by the disturbance term relating to any other observation. If there is such a dependence, then autocorrelation is present. That is, $\mathbb{E}(u_i,u_j)\neq 0$.
+  \underline{Why autocorrelation occurs?} 
+  
+  There are several reasons as to why autocorrelation occurs including inertia, specification bias, cobweb phenomenon, lags, 'manipulation' of data, data transformation, and nonstationarity.\footnote{Gujarati and Porter (2009), Section 12.1}
+    \begin{itemize}
+      \item[inertia:] Most econometrics time series has inertia or sluggishness in that the variables exhibit cyclicality where successive observations are likely to be interdependent.
+      \item[specification bias:] It may be the case that one of the variables of the true model is omitted or excluded from the model used. The omitted variable would then be part of the error or disturbance term, which would in turn reflect a systematic patternd.
+      \item[cobweb phenomenon:] The supply of many agricultural commodities reflect the cobweb phenomenon where supply reacts to price with a lag of one time period because supply decisions take time to implement. Thus at the beginning of this year's planting of crops, farmers are influenced by the price prevailing last year.
+      \item[lags:] In a time series regression, it is not uncommon to find that the dependent variable in the current variable also depends on the value of itself in the previous period. That is, $Y_t = \beta_0 + \beta_1 X_t + \beta_2 Y_{t-1} + u_t$. This is known as \textit{autoregression}. If we omit the lagged term in this equation, the resulting error term will reflect a systematic pattern due to the influence of the lagged variable on the dependent variable.
+      \item['manipulation' of data:] Smoothing out the data, say by averaging three monthly observations to obtain quarterly figures, may itself lend to a systematic pattern in the disturbances, thereby introducing autocorrelation. Similarly, interpolation or extrapolating from data for the missing values, or any data 'massaging' techniques may also introduce autocorrelation.
+      \item[data transformation:] Even if the level form $Y_t = \beta_1 + \beta_2X_t + u_t$ satisfies the OLS assumptions including no autocorrelation, in its first difference form $\Delta Y_i = \beta_2 \ \Delta X_i + v_i$ the error term $v_i = \Delta u_i$ is autocorrelated. Thus, certain transformations may induce autocorrelation.
+      \item[nonstationarity:] A time series is stationary if its characteristics such as mean, variance, and covariance are time invariant. If, however, they do change over time, then the time series are nonstationary, and the error term will exhibit autocorrelation.
+    \end{itemize}
+  \underline{Problems in estimating with autocorrelated errors:} 
+  
+  Lets look at what happens in terms of unbiasedness, consistency, efficiency and goodness of fit.
+    \begin{itemize}
+      \item[Unbiasedness:] Unbiasedness assumes nothing about the serial correlation of errors. As long as the explanatory variables are strictly exogenous then the $\hat{\beta}_j$ are unbiased, regardless of the degree of serial correlation in the errors. This is analogous to the observation that heteroskedasticity in the errors does not cause bias in the $\hat{\beta}_j$.
+      \item[consistency:] Even when the data are weakly dependent, the $\hat{\beta}_j$ are still consistent, though not necessarily unbiased if there is that dependency. Just like unbiasedness, this result does not depend on autocorrelation in the errors.
+      \item[efficiency:] Since the Gauss-Markov requires both homoskedasticity and serially uncorrelated errors, presence of autocorrelation in errors would make the OLS no longer BLUE. Even more importantly, the usual OLS standard errors and test statistics are not valid, \textit{even asymptotically}.
+    \end{itemize}
+     
+\begin{tcolorbox}[breakable, title=Why not BLUE?, skin=enhancedlast]
+To see why OLS is no longer BLUE in the presence of serially correlated errors, consider the simple regression model $Y_t = \beta_0+\beta_1X_t + u_t$ and assume that the error, or disturbance, terms are generated by the following mechanism:
+\[
+u_t = \rho u_{t-1} + \varepsilon_t, \ \ -1 < \rho < 1
+\]
+where $\rho$ is the \textit{coefficient of autocovariance}, and $\varepsilon_t$ are uncorrelated random variables that satisfies the OLS assumptions:
+\[
+\mathbb{E}(\varepsilon_t) = 0 \ \ ; \ \ Var(\varepsilon_t) = \sigma^2 \ \ ; \ \ Cov(\varepsilon_t, \varepsilon_{t-s}) = 0 \ , \ s\neq 0.
+\]
+Thus the error term in period $t$ is equal to $\rho$ times its value in the preceding period plus a white noise error term. This scheme is known as a \textit{Markov first-order autoregressive scheme}, or just a \textit{first-order autoregressive scheme}, and usually denoted as \textbf{AR(1)}.
+
+Also note that the population correlation coefficient between $u_t$ and $u_{t-1}$ is given by
+\[
+\rho 
+= \frac{\mathbb{E}\Big( \big[ u_t - \mathbb{E}(u_t) \big] \big[ u_{t-1} - \mathbb{E}(u_{t-1}) \big] \Big) }{\sqrt{Var(u_t)}\sqrt{Var(u_{t-1})}} 
+= \frac{\mathbb{E}(u_tu_{t-1})}{Var(u_{t-1})}
+\]
+the latter equality is due to $\mathbb{E}(u_t) = 0$ and $Var(u_t) = Var(u_{t-1})$ because of the homoskedasticity assumption. $\rho$ is also the slope coefficient in the regression of $u_t$ on $u_{t-1}$.
+
+Under the AR(1) scheme we have 
+\begin{align*}
+Var(u_t) &= \mathbb{E}(u_t^2) = \frac{\sigma_\varepsilon^2}{1-\rho^2} \\[6pt]
+Cov(u_t, u_{t-s}) &= \mathbb{E}(u_tu_{t-s}) = \rho^2\frac{\sigma_\varepsilon^2}{1-\rho^2} \\[6pt]
+Corr(u_t, u_{t-s}) &= \rho^s
+\end{align*}
+Since $\rho$ is a constant between $-1$ and $1$, $Var(u_t)$ is still homoskedastic. Notice, however, $u_t$ is correlated not only with its immediate past value but its values several periods in the past. 
+
+If $|\rho| = 1$ then the variances and covariances above are not defined. If $|\rho| < 1$ then the AR(1) process is \textit{stationary}, i.e. mean, variance, and covariance do not change over time. If $|\rho| < 1$ it is also the case that the value of the covariance will decline as we go into distant past.
+
+Considering the simple regression model $Y_t = \beta_0+\beta_1X_t + u_t$ we know from previous supervisions that the OLS estimator of the slope coefficient is
+\[
+\hat{\beta}_1 = \frac{\sum(X_t - \bar{X})(Y_t - \bar{Y})}{\sum(X_t-\bar{X})^2}
+\]
+and its variance is
+\[
+Var(\hat{\beta}_1) = \frac{\sigma^2}{\sum(X_t - \bar{X})^2}
+\]
+Whereas under the AR(1) scheme, the variance of this estimator is
+\begin{align*}
+Var(\hat{\beta}_1)^{AR(1)} &= \frac{\sigma^2}{\sum(X_t - \bar{X})^2} \bigg[ 1 \ +\ 2\rho \frac{\sum(X_t - \bar{X})(X_{t-1} - \bar{X})}{\sum(X_t-\bar{X})^2} \ +\ 2\rho^2 \frac{\sum(X_t - \bar{X})(X_{t-2} - \bar{X})}{\sum(X_t-\bar{X})^2} \\
+& \qquad + \dots + \ 2\rho^{n-1}\frac{(X_1 - \bar{X})(X_n - \bar{X})}{\sum(X_t-\bar{X})^2} \bigg]
+\end{align*}
+That is, the variance of $\hat{\beta}_1$ under an $AR(1)$ scheme is equal to its variance under the OLS times a term that depends on $\rho$ as well as the sample autocorrelations between the values taken by the regressor $X$ at various lags. In general, we cannot foretell whether $Var(\hat{\beta}_1)$ is greater or less than $Var(\hat{\beta}_1)^{AR(1)}$.
+
+If we assume that the regressor $X$ also follows AR(1) scheme with a coefficient of autocorrelation, i.e. correlation between $X_t$ and $X_{t-1}$ given as
+\[
+r = \frac{\sum(X_t - \bar{X})(X_{t-1} - \bar{X})}{\sum(X_t-\bar{X})^2}
+\]
+then, $Var(\hat{\beta}_1)^{AR(1)}$ reduces to
+\begin{align*}
+Var(\hat{\beta}_1)^{AR(1)} 
+  &= \frac{\sigma^2}{\sum(X_t - \bar{X})^2}\bigg( \frac{1+r\rho}{1-r\rho} \bigg) \\
+  &= Var(\hat{\beta}_1)^{OLS}\bigg( \frac{1+r\rho}{1-r\rho} \bigg)
+\end{align*}
+If we continue to use the OLS estimator $\hat{\beta}_1$ and adjust the usual variance formula by taking account of the AR(1) scheme, $\hat{\beta}_1$ will still be linear and unbiased, but not efficient.
+
+This finding is very similar to the finding that $\hat{\beta}_1$ is less efficient in the presence of heteroskedasticity.
+\end{tcolorbox} 
+\end{description}
+
+
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
+
+### (b) If $Y_t = \alpha + \beta X_t + \varepsilon_t$ and $\varepsilon_t = \rho\varepsilon_{t-1} + v_t$, where $\mathbb{E}(\varepsilon_t) = 0, \ \rho\neq 0, \ Cov(\varepsilon_t,v_t)=0$ and $v_t \sim i.i.d. N(0, \sigma^2)$, show that:
+\begin{itemize}
+\item{i)} \textbf{if $\varepsilon_t$ is homoskedastic, $Var(\varepsilon_t) = \sigma^2/(1-\rho^2)$};
+\item{ii)} \textbf{$Cov(\varepsilon_t, \varepsilon_{t-1}) \neq 0$};
+\item{iii)} \textbf{$Corr(\varepsilon_t,\varepsilon_{t-1})=\rho$, where $Corr$ is the correlation coefficient.}
+\end{itemize}
+
+\begin{description}
+\item[Answer (i):]
+\end{description}
