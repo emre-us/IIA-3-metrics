@@ -1646,4 +1646,65 @@ This finding is very similar to the finding that $\hat{\beta}_1$ is less efficie
 
 \begin{description}
 \item[Answer (i):]
+Under AR(1) we have $\varepsilon_t = \rho \varepsilon_{t-1} + v_t$ where $v_t$ is a white noise error term. Since $\varepsilon_t$ is homoskedastic, then
+\[
+\mathbb{E}(\varepsilon_t) = \rho\mathbb{E}(\varepsilon_{t-1}) + \mathbb{E}(v_t) = 0
+\]
+which means
+\begin{align*}
+\mathbb{E}(\varepsilon_t^2) = \rho^2\mathbb{E}(\varepsilon_{t-1}^2) + \mathbb{E}(v_t^2) \\
+Var(\varepsilon_t) = \rho^2Var(\varepsilon_{t-1}) + Var(v_t)
+\end{align*}
+since $\varepsilon$s and $v$s are uncorrelated.
+
+Because of homoskedasticity, notice that $Var(u_t) = Var(u_{t-1}) = \sigma^2$, and since $v_t \sim i.i.d. N(0, \sigma^2)$ its variance is $Var(v_t)= \sigma_v^2$. Plugging these back into the expression above we get
+\begin{align*}
+Var(\varepsilon_t) 
+  &= \rho^2Var(\varepsilon_{t-1}) + Var(v_t) \\
+  &= \rho^2Var(\varepsilon_{t}) + \sigma_v^2 \\
+Var(\varepsilon_t) - \rho^2Var(\varepsilon_{t})  &= \sigma_v^2 \\
+Var(\varepsilon_t)(1-\rho^2) &= \sigma_v^2 \\
+Var(\varepsilon_t) &= \frac{\sigma_v^2}{1 - \rho^2}.
+\end{align*}
+as desired.
+
+\bigskip
+
+\item[Answer (ii):] 
+To obtain the covariance, first we need to multiply the AR(1) scheme by $\varepsilon_{t-1}$ and then we can take the expectations of the resulting expression, since that is the covariance. Accordingly,
+\begin{align*}
+\varepsilon_t &= \rho\varepsilon_{t-1} + v_t \\
+\varepsilon_t\varepsilon_{t-1} &= \rho\varepsilon_{t-1}^2 + v_t\varepsilon_{t-1} \\[6pt]
+\mathbb{E}(\varepsilon_t\varepsilon_{t-1}) &= \mathbb{E}(\rho\varepsilon_{t-1}^2 + v_t\varepsilon_{t-1}) \\[6pt]
+Cov(\varepsilon_t,\varepsilon_{t-1}) = \mathbb{E}(\varepsilon_t\varepsilon_{t-1}) &= \rho\mathbb{E}(\varepsilon_{t-1}^2) + \mathbb{E}(v_t\varepsilon_{t-1}) \\[6pt]
+Cov(\varepsilon_t,\varepsilon_{t-1}) &= \rho\mathbb{E}(\varepsilon_{t-1}^2) \ \ \ \ \ \ \text{since } Cov(v_t,\varepsilon_{t-1})=0 \\[6pt]
+Cov(\varepsilon_t,\varepsilon_{t-1}) &= \rho\frac{\sigma_v^2}{1 - \rho^2} \ \ \ \ \ \ \text{since } Var(\varepsilon_t) = \frac{\sigma_v^2}{1 - \rho^2}.
+\end{align*}
+We can then continue in this fashion for the further past periods:
+\begin{align*}
+Cov(\varepsilon_t,\varepsilon_{t-2}) &= \rho^2 \frac{\sigma_v^2}{1 - \rho^2} \\[6pt]
+Cov(\varepsilon_t,\varepsilon_{t-3}) &= \rho^3 \frac{\sigma_v^2}{1 - \rho^2} \\
+\vdots
+\end{align*}
+
+\bigskip
+
+\item[Answer (iii):] 
+Since the correlation coefficient is the ratio of covariance to variance, we get
+\[
+Corr(\varepsilon_t, \varepsilon_{t-1}) = \frac{Cov(\varepsilon_t,\varepsilon_{t-1})}{Var(\varepsilon_t)} = \frac{\rho\displaystyle\frac{\sigma_v^2}{1 - \rho^2}}{\displaystyle\frac{\sigma_v^2}{1 - \rho^2}} = \rho
+\]
+and in future periods a similar approach would yield $Corr(\varepsilon_t, \varepsilon_{t-2}) = \rho^2, \ Corr(\varepsilon_t, \varepsilon_{t-3}) = \rho^3, \dots$
 \end{description}
+
+
+
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
+
+### (c) Using the data from the worksheet 'Autocorrelation' estimate the following
+\[
+gprice = \beta_0 + \beta_1 \ gwage_t + u_t
+\]
