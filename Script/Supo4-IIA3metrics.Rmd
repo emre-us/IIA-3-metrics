@@ -19,6 +19,13 @@ blockquote {
     border-left: 5px solid #eee;
 }
 ```
+
+<!-- below ensures the output are not presented in Scientific mode (e.g. 0.023+e4) but regular decimals -->
+```{r, echo=FALSE}
+options(scipen = 999)
+```
+
+
 \pagestyle{fancy}
 \fancyhead[L]{2024-25 Part IIA Paper 3}
 \fancyhead[R]{Supervision 4 Solutions}
@@ -763,8 +770,7 @@ and in STATA run the following:
 ```{stata}
 /* load the data */
 quietly cd ..
-quietly import excel using Data/sup4.xls, ///
-  sheet("heteroscedasticity") firstrow
+quietly import excel using Data/sup4.xls, sheet("heteroscedasticity") firstrow
 
 /* `firstrow` indicates that the first row contains the variable names */
 /* `describe` command would give basic information about the data set */
@@ -887,8 +893,7 @@ However, to present the "robust" and "nonrobust" results side by side in a table
 ```{stata}
 /* load the data */
   quietly cd ..
-  quietly import excel using Data/sup4.xls, ///
-    sheet("heteroscedasticity") firstrow
+  quietly import excel using Data/sup4.xls, sheet("heteroscedasticity") firstrow
 
 /* run the regression with `robust` command */
   quietly regress PRICE LOTSIZE SQRFT BDRMS, robust
@@ -979,8 +984,7 @@ In STATA there are more steps involved. First we need to order the data and remo
 ```{stata}
 /* load the data */
   quietly cd ..
-  quietly import excel using Data/sup4.xls, ///
-    sheet("heteroscedasticity") firstrow
+  quietly import excel using Data/sup4.xls, sheet("heteroscedasticity") firstrow
  
 /* Step 1: Order the data according to LOTSIZE values */  
   sort LOTSIZE
@@ -1108,8 +1112,7 @@ In STATA, we can do the same using the `hettest()` command:
 ```{stata}
 /* load the data */
 quietly cd ..
-quietly import excel using Data/sup4.xls, ///
-  sheet("heteroscedasticity") firstrow
+quietly import excel using Data/sup4.xls, sheet("heteroscedasticity") firstrow
 
 /* run the regression */
 quietly regress PRICE LOTSIZE SQRFT BDRMS
@@ -1190,8 +1193,7 @@ bptest(SQ2a_lm, ~ fitted(SQ2a_lm) + poly(fitted(SQ2a_lm),2))
 ```{stata}
 /* load the data */
 quietly cd ..
-quietly import excel using Data/sup4.xls, ///
-  sheet("heteroscedasticity") firstrow
+quietly import excel using Data/sup4.xls, sheet("heteroscedasticity") firstrow
 
 /* run the regression */
 quietly regress PRICE LOTSIZE SQRFT BDRMS
@@ -1216,8 +1218,7 @@ or we can use the `imtest, white` command in STATA after the original regression
 ```{stata}
 /* load the data */
 quietly cd ..
-quietly import excel using Data/sup4.xls, ///
-  sheet("heteroscedasticity") firstrow
+quietly import excel using Data/sup4.xls, sheet("heteroscedasticity") firstrow
 
 /* run the regression */
 quietly regress PRICE LOTSIZE SQRFT BDRMS
@@ -1233,8 +1234,7 @@ However, there is sure to be lots of multicollinearity here so it is difficult t
 ```{stata}
 /* load the data */
 quietly cd ..
-quietly import excel using Data/sup4.xls, ///
-  sheet("heteroscedasticity") firstrow
+quietly import excel using Data/sup4.xls, sheet("heteroscedasticity") firstrow
 
 /* run the regression */
 quietly regress PRICE LOTSIZE SQRFT BDRMS
@@ -1312,8 +1312,7 @@ and in STATA as follows:
 ```{stata}
 /* load the data */
   quietly cd ..
-  quietly import excel using Data/sup4.xls, ///
-    sheet("heteroscedasticity") firstrow
+  quietly import excel using Data/sup4.xls, sheet("heteroscedasticity") firstrow
 
 /* generate the transformations */
   generate PRBD = PRICE/BDRMS
@@ -1339,8 +1338,7 @@ If we do the same transformation with $LOTSIZE$ we get:
 ```{stata}
 * load the data */
   quietly cd ..
-  quietly import excel using Data/sup4.xls, ///
-    sheet("heteroscedasticity") firstrow
+  quietly import excel using Data/sup4.xls, sheet("heteroscedasticity") firstrow
 
 /* generate the transformations */
   generate PRLT = PRICE/LOTSIZE
@@ -1408,8 +1406,7 @@ Similarly, in STATA:
 ```{stata}
 /* load the data */
   quietly cd ..
-  quietly import excel using Data/sup4.xls, ///
-    sheet("heteroscedasticity") firstrow
+  quietly import excel using Data/sup4.xls, sheet("heteroscedasticity") firstrow
 
 /* generate the transformations */
   generate lnPR = ln(PRICE)
@@ -1473,8 +1470,7 @@ and in STATA
 ```{stata}
 /* load the data */
   quietly cd ..
-  quietly import excel using Data/sup4.xls, ///
-    sheet("heteroscedasticity") firstrow
+  quietly import excel using Data/sup4.xls, sheet("heteroscedasticity") firstrow
 
 /* run the regression removing the outliers */    
   regress PRICE LOTSIZE BDRMS SQRFT if Date != 42 & Date != 73 & Date != 76 & Date != 77
@@ -1705,6 +1701,791 @@ and in future periods a similar approach would yield $Corr(\varepsilon_t, \varep
 \bigskip\bigskip
 
 ### (c) Using the data from the worksheet 'Autocorrelation' estimate the following
-\[
+\begin{equation}\label{eq:SQ3c}
 gprice = \beta_0 + \beta_1 \ gwage_t + u_t
+\end{equation}
+
+\begin{description}
+\item[Answer:]
+The question is asking for us to regress "growth of price" on "growth of wages". First, lets import the data and look at its summary.
+\end{description}
+
+In R:
+
+```{r results = 'hide'}
+property_autocorr_df <- read_excel("../Data/sup4.xls", sheet = "autocorrelation")
+str(property_autocorr_df)
+```
+
+and in STATA via the command `describe`.
+
+```{stata eval = !knitr::is_latex_output()}
+/* load the data and describe it*/
+  quietly cd ..
+  quietly import excel using Data/sup4.xls, sheet("autocorrelation") firstrow
+
+  describe
+```
+
+In R we see that the all the variables that start with $g$, i.e. all the growth columns, are coded as characters and in STATA the same are called strings. The data also seems to have missing values so we need to remove those as well.
+
+In R we can do this with
+
+```{r warning=FALSE, results='hide'}
+# convert all characters to numeric
+property_autocorr_df <- property_autocorr_df %>% mutate_if(is.character, as.numeric)
+
+# remove N/As from `gprice` and `gwage` only
+property_autocorr_df <- property_autocorr_df[!with(property_autocorr_df, 
+                                                   is.na(gprice) & is.na(gwage)),]
+
+# look at the structure of the data again to confirm
+str(property_autocorr_df)
+```
+
+and we see that the number of observations for `gprice` and `gwage` now have reduced to 285 each.
+
+The same can be done in STATA with
+
+```{stata eval = !knitr::is_latex_output()}
+/* load the data*/
+  quietly cd ..
+  quietly import excel using Data/sup4.xls, sheet("autocorrelation") firstrow
+  
+/* change from string to numeric, and replace N/As */
+  quietly destring, replace
+```
+
+Now we can run the regression. In R
+
+```{r}
+SQ3c_lm <- lm(gprice ~ gwage, data = property_autocorr_df)
+summary(SQ3c_lm)
+```
+
+and in STATA
+
+```{stata eval = !knitr::is_latex_output()}
+/* load the data*/
+  quietly cd ..
+  quietly import excel using Data/sup4.xls, sheet("autocorrelation") firstrow
+  
+/* change from string to numeric, and replace N/As */
+  quietly destring, replace
+  
+/* run the regression */
+  regress gprice gwage
+```
+
+
+### (d) Test for serial correlation by (i) computing the Durbin-Watson $d$ statistic, (ii) running a regression of $\hat{u}_t$ on $\hat{u}_{t-1}$ using residuals from part (c), (iii) using the Breusch-Godfrey test in Stata, (iv) using the alternative Durbin test in Stata (durbinalt). Discuss the relative advantages of each method.
+
+\begin{description}
+\item[Answer (i):]
+A commonly used test for AR(1) autocorrelation is the Durbin-Watson $d$ test\footnote{Durbin, J and Watson G S (1951) "Testing for Serial Correlation in Least-Squares Regression" \textit{Biometrika} 38:159-177.} which is based on the OLS residuals. 
+
+\begin{tcolorbox}[breakable, title=Durbin-Watson $d$ test, skin=enhancedlast]
+
+The $d$ statistic is the ratio of the sum of squared differences between successive residuals to the RSS:
+\[
+DW = d = \frac{\displaystyle\sum_{i=2}^n(\hat{u}_t - \hat{u}_{t-1})^2}{\sum_{i=1}^n\hat{u_t}^2}
 \]
+Note that the number of observations in the numerator of the $d$ statistic is one less than the numerator, i.e. $n-1$, because one observation is lost in taking successive differences.
+
+\bigskip
+
+\underline{Test procedure:}
+
+Unlike the $t, F$ or $\chi^2$ tests, there is no unique critical value against which we would compare the $d$ statistic for rejection decision. This is because, it is difficult to derive probability distribution of $d$ statistic since it depends on $\hat{u}$ which in turn depends on the $X$s.
+
+To understand the decision process first expand the $d$ statistic to get
+\[
+d = \frac{\displaystyle\sum_{i=2}^n\hat{u}_t^2 + \displaystyle\sum_{i=2}^n\hat{u}_{t-1}^2 - 2\displaystyle\sum_{i=2}^n\hat{u}_t\hat{u}_{t-1}}{\displaystyle\sum_{i=1}^n\hat{u}_t^2}
+\]
+
+One thing to notice is that $\sum\hat{u}_t^2$ and $\sum\hat{u}_{t-1}^2$ differ in only one observation, so they are approximately equal. That is, $\sum\hat{u}_t^2 \approx \sum\hat{u}_{t-1}^2$. We can use this to rewrite the expression for $d$ statistic:
+\[
+d \approx 1 + 1 - 2\left( \frac{\displaystyle\sum_{i=2}^n\hat{u}_t\hat{u}_{t-1}}{\displaystyle\sum_{i=1}^n\hat{u}_t^2} \right) = 2\left(1 - \frac{\displaystyle\sum_{i=2}^n\hat{u}_t\hat{u}_{t-1}}{\displaystyle\sum_{i=1}^n\hat{u}_t^2} \right)
+\]
+Also recall that in part (a) when discussing why OLS with autocorrelation is not BLUE, we noted that the definition of population correlation between $u_t$ and $u_{t-1}$ is
+\[
+\rho 
+= \frac{\mathbb{E}\Big( \big[ u_t - \mathbb{E}(u_t) \big] \big[ u_{t-1} - \mathbb{E}(u_{t-1}) \big] \Big) }{\sqrt{Var(u_t)}\sqrt{Var(u_{t-1})}} 
+= \frac{\mathbb{E}(u_tu_{t-1})}{Var(u_{t-1})}
+\]
+the latter equality is due to $\mathbb{E}(u_t) = 0$ and $Var(u_t) = Var(u_{t-1})$ because of the homoskedasticity assumption. $\rho$ is also the slope coefficient in the regression of $u_t$ on $u_{t-1}$.
+
+If we define $\hat{\rho}$ as
+\[
+\hat{\rho} = \frac{\displaystyle\sum_{i=2}^n\hat{u}_t\hat{u}_{t-1}}{\displaystyle\sum_{i=1}^n\hat{u}_t^2}
+\]
+then the $d$ statistic can be expressed as
+\[
+d \approx 2(1-\hat{\rho})
+\]
+Since $-1 \leq \hat{\rho} \leq 1$, this means the bounds of $d$ are
+\[
+0 \leq d \approx 2(1-\hat{\rho}) \leq 4.
+\]
+That is, any estimated $d$ statistic has to be between $0$ and $4$. We can use this for decision heuristics:
+\begin{itemize}
+\item If there are no autocorrelation in the residuals then $\hat{\rho} = 0$ and $d \approx 2$. Therefore, if $d=2$ we can assume that there is no first-order autocorrelation;
+\item If there is perfect positive autocorrelation in the residuals then $\hat{\rho}=1$ and $d \approx 0$. Therefore, the closer $d$ is to $0$, the greater evidence of positive serial correlation.
+\item If there is perfect negative autocorrelation in the residuals then $\hat{\rho}=-1$ and $d \approx 4$. Therefore, the closer $d$ is to $4$, the greater evidence of negative serial correlation.
+\end{itemize}
+Durbin-Watson then derived a lower bound $d_L$ and an upper bound $d_U$ within these limits of $0$ and $4$ such that if the computed $d$ statistic lies outside of these bounds a decision can be made regarding the presence of negative or positive serial correlation as below:
+\bigskip
+\begin{center}
+\begin{tabular}{| l | c | c |}
+\hline
+If & Decision & Null Hypothesis \\
+\hline\hline
+$0 < d < d_L$ & Reject & No positive autocorrelation \\
+$d_L \leq d \leq d_U$ & No decision & No positive autocorrelation \\
+$4-d_L < d < 4$ & Reject & No negative autocorrelation \\
+$4-d_u \leq d \leq 4-d_L$ & No decision & No negative autocorrelation \\
+$d_U < d < 4 - d_U$ & Do not reject & No autocorrelation \\
+\hline
+\end{tabular}
+\end{center}
+
+The upper and lower bounds depend on the number of observations, $n$, and the number of explanatory variables only. They do not depend on the values they take.
+
+Accordingly, the steps for Durbin-Watson test is as follows:
+\begin{enumerate}
+\item Run the OLS and obtain the residuals;
+\item Calculate $d$;
+\item For the given sample size $n$ and the number of explanatory variables, $k$, obtain the critical values $d_L$ and $d_U$ from the manually published tables.
+\item Follow the decision rules given in the table above.
+\end{enumerate}
+
+\bigskip
+
+\underline{Assumptions of $d$ statistic:}
+\begin{enumerate}
+\item The regression model includes the intercept term;
+\item The explanatory variables, i.e. the $X$s, are nonstochastic, or fixed in repeated sampling;
+\item The disturbances are generated by AR(1) scheme, i.e. it cannot be used to detect higher order autoregressive schemes;
+\item The error term $u_t$ is assumed to be normally distributed;
+\item The regression model does not include lagged value(s) of the dependent variable as one of the explanatory variables, i.e. the test cannot be used for autoregressive models
+\item There are no missing observations in the data.
+\end{enumerate}
+
+\bigskip
+
+\underline{Drawbacks of DW Test:}
+\begin{itemize}
+\item It is only applicable when the above assumptions hold true;
+\item It cannot be used for testing for higher-autocorrelations than first-order;
+\item It contains zones of indecision where presence or absence of aotocorrelation cannot be conclusively determined
+
+\end{itemize}
+
+\end{tcolorbox}
+
+\bigskip
+
+We have already completed step 1 above in part (c) sn we can now move to step 2 and compute the Durbin-Watson statistic.
+
+For this, in R we use `durbinWatsonTest()` function from the `car` package, or `dwtest` from the `lmtest` package:
+
+\end{description}
+
+```{r}
+car::durbinWatsonTest(SQ3c_lm)
+dwtest(SQ3c_lm)
+```
+
+
+
+which gives us $d=0.8032315$ with a $p$-value of essentially $0$. 
+
+Step 3 involves looking up the Durbin-Watson critical value table. It is difficult to find exact $n=285$ but we can approximate. For $n=280, k=2$ we see that the critical values are $d_L = 1.7969$ and $d_U=1.81123$, and for $n=290, k=2$ we see that the critical values are $d_L = 1.80053$ and $d_U=1.81436$. The values for $n=285,k=2$ will be somewhere between these. In any case, Since $d=0.8032315$ is closer to 0 and lower than either of the $d_L$, i.e. $0 < d < d_L$, we reject the null hypothesis and conclude that there seems to be a positive autocorrelation. 
+
+
+The same calculation in STATA can be done via the `estat dwatson` command
+
+```{stata eval = !knitr::is_latex_output()}
+/* load the data*/
+  quietly cd ..
+  quietly import excel using Data/sup4.xls, sheet("autocorrelation") firstrow
+  
+/* change from string to numeric, and replace N/As */
+  quietly destring, replace
+  
+/* run the regression */
+  quietly regress gprice gwage
+  
+/* run Durbin-Watson test */
+  estat dwatson
+```
+
+
+
+\bigskip
+
+\begin{description}
+\item[Answer (ii):]
+The second part of the question is asking us to regress the residuals to their one-lagged values.
+\end{description}
+
+In R:
+
+```{r}
+SQ3d_ii_lm <- lm(SQ3c_lm$residuals ~ lag(SQ3c_lm$residuals, n=1))
+summary(SQ3d_ii_lm)
+```
+
+Since $d = 2(1 - \hat{\rho})$ and since $\hat{\rho}$ is the slope of the regression coefficient of $u_t$ on $u_{t-1}$ - here $0.5945888$ - we can calculate the $d$ statistic as follows:
+
+```{r}
+# rho is the slope coefficient
+rho <- SQ3d_ii_lm$coefficients[2]
+
+# calculate d
+2*(1 - rho)
+```
+
+Here we get a very similar $d$ value of $0.8108223$ to $0.8032315$ obtained in part (i), and would conclude the same way as we did in part (i) - reject the null hypothesis of no postiive autocorrelation.
+
+
+\bigskip
+
+\begin{description}
+\item[Answer (iii):] 
+To avoid some of the pitfalls of the Durbin-Watson $d$ test of autocorrelation, a general test has been developed by Breusch-Godfrey.\footnote{Breusch, T S (1978) "Testing for Autocorrelation in Dynamic Linear Models", \textit{Australian Economic Papers} 17:334-355 and Godfrey, L G (1978) "Testing Against General Autoregressive and Moving Average Error Models When the Regressor Includes Lagged Dependent Variables", \textit{Econometrica} 46:1293-1302.} The BG test can also be used if we think $gwage$ is not strictly exogenous - a condition for the DW test. 
+
+\begin{tcolorbox}[breakable, title=Breusch-Godfrey (BG) test, skin=enhancedlast]
+
+Also known as Lagrange multiplier (LM) test, the BG test is a general test in the sense that it allows for
+\begin{itemize}
+\item nonstochastic regressors, such as the lagged values of the dependent variable;
+\item higher order autoregressive schemes such as AR(2), AR(3) etc; and
+\item simple or higher order \textit{moving averages} of white noise errors terms; e.g. in regression $Y_t = \beta_1 + \beta_2 X_t + u_t$, the error term can be represented as $u_t = \varepsilon_t + \eta_1\varepsilon_{t-1} + \eta_2\varepsilon_{t-2} + \dots + \eta_p\varepsilon_{t-p}$, which represents a $p$-period moving average of the white noise error term $\varepsilon_t$.
+\end{itemize}
+
+\bigskip
+
+\underline{Test procedure}
+
+Although the discussion can be extended to multiple regression, consider the simple regression model $Y_t = \beta_0 + \beta_1 X_t + u_t$ with the error term following the $p^{th}$-order autoregressive, AR($p$),\footnote{if $p=1$ then this test is called \textit{Durbin's $M$ test}.} scheme:
+\[
+u_t = \rho_1u_{t-1} + \rho_2u_{t-2} + \dots + \rho_pu_{t-p} + \varepsilon_t
+\]
+where $\varepsilon_t$ is the white noise error term. The null hypothesis is that there is no autocorrelation of any order:
+\[
+\mathbb{H}_0: \rho_1 = \rho_2 = \dots = \rho_p = 0
+\]
+The BG or LM test is carried out via the following steps:
+\begin{enumerate}
+\item Run the OLS and obtain the residuals;
+\item Regress the residuals, $\hat{u}_t$, on the original $X_t$ and on its lagged values $\hat{u}_{t-1}, \hat{u}_{t-2}, \dots, \hat{u}_{t-p}$. If there are more than one $X$ variable in the original model, then include them in this auxiliary regression also;
+\item Obtain $R^2$ from this auxiliary regression;
+\item Since this auxiliary regression of the residuals have $(n-p)$ observations given that $p$ of them are used up in the model, Breusch and Godfrey have shown that $R^2$ of this regression multiplied by the sample size $(n-p)$ asymptotically follows the chi-square distribution with $p$ degrees of freedom. Therefore, if $(n-p)R^2$ exceeds the critical $\chi_p^2$ at the chosen level of significance, we reject the null hypothesis and conclude that at least one $\rho$ is statistically significantly different from zero.
+\[
+(n-p)R^2 \sim \chi_p^2
+\]
+\end{enumerate}
+
+
+\underline{Drawbacks:}
+
+One drawback of the BG test is that the length of lag, $p$, cannot be specified a priori, which means some experimentation with $p$ happens. Sometimes, Akaike and Schwarz information criteria can be used to select the lag length.
+
+Another drawback is that the test assumes that the variance of disturbance is homoskedastic, i.e. $Var(u_t)=\sigma^2$.
+\end{tcolorbox}
+
+\bigskip
+
+To conduct the Breusch-Godfrey test for this question, we can follow these steps. step 1 has aleady been completed in part (i), so we will continue from step 2 onwards. 
+
+This can be done in R via `bgtest()` function in `lmtest` library:
+\end{description}
+
+```{r}
+bgtest(SQ3c_lm, order=1, data = property_autocorr_df)
+```
+
+which gives us a $\chi^2$ statistic of $105.4$ with a $p$ value of essentially $0$. The critical value at $\alpha=0.05$ is $\chi_1^2 = 3.84146$. Since our test statistic exceeds that, we can reject the null hypothesis and conclude that $\rho_1 \neq 0$ at 95% significance.
+
+The same can be done in STATA using the `bgodfrey` command:
+
+```{stata eval = !knitr::is_latex_output()}
+/* load the data*/
+  quietly cd ..
+  quietly import excel using Data/sup4.xls, sheet("autocorrelation") firstrow
+  
+/* change from string to numeric, and replace N/As */
+  quietly destring, replace
+  
+/* run the regression */
+  quietly regress gprice gwage
+  
+/* set variable `t` in the spreadsheet as time variable */
+  tsset t
+
+/* run the Breusch-Godfrey test */  
+  bgodfrey
+```
+
+
+
+\bigskip
+
+\begin{description}
+\item[Answer (iii):] 
+This final part of the question asks us to run the alternative Durbin test. The box below discusses the test briefly.
+
+\begin{tcolorbox}[breakable, title=Durbin's alternative test, skin=enhancedlast]
+
+Durbin's alternative test is in fact a Lagrange multiplier (LM) test but it is most easily computed with a Wald test on the coefficients of the lagged residuals in an auxiliary OLS regression. The auxiliary OLS regression regresses the residuals on their lags and all the explanatory variables in the original regression.
+
+Consider the linear regression model
+\[
+Y_t = \beta_1 X_{1t} + \dots + \beta_k X_{kt} + u_t
+\]
+where the covariates $X_1$ through $X_k$ are not assumed to be strictly exogeneous\footnote{Note that when there are only strictly exogeneous regressors and $p=1$, then this test is asymptotically equivalent to Durbin-Watson test.} and $u_t$ is assumed to be i.i.d. with finite variance. The process is also assumed to be stationary.
+
+\underline{Test procedure}
+\begin{enumerate}
+\item Run the OLS and obtain the residuals;
+\item Run the auxiliary regression whereby the residuals $\hat{u}_t$ are regressed on its lagged values and on the other regressors:
+\[
+\hat{u}_t = \eta_1\hat{u}_{t-1}+\dots+\eta_p\hat{u}_{t-p}+\beta_1X_{1t}+\dots+\beta_kX_{kt} + \varepsilon_t
+\]
+\item Durbin's alternative test is obtained by performing a Wald test that on the null hypothesis that $\mathbb{H}_0:\eta_1 = \dots = \eta_p = 0$ 
+\end{enumerate}
+
+\end{tcolorbox}
+
+In STATA we can run this test as follows:
+\end{description}
+
+
+```{stata}
+/* load the data*/
+  quietly cd ..
+  quietly import excel using Data/sup4.xls, sheet("autocorrelation") firstrow
+  
+/* change from string to numeric, and replace N/As */
+  quietly destring, replace
+  
+/* run the regression */
+  quietly regress gprice gwage
+
+/* set variable `t` in the spreadsheet as time variable */
+  tsset t
+
+/* run Durbin's alternative test */  
+  estat durbinalt
+```
+
+which gives us a $\chi^2$ value of $165.492$.
+
+The table below compares the results of each of the test:
+
+\begin{center}
+\begin{tabular}{|| c | c | c ||}
+\hline
+Test & Statistic & Result \\
+\hline\hline
+Durbin Watson  & $d=0.803$ & Reject null \\
+Manual calculation of DW  & $d=0.810$ & Reject null \\
+Breusch Godfrey & $\chi^2=105.39$ & Reject null \\
+Durbin's alternative & $\chi^2=165.49$ & Reject null \\
+\hline
+\end{tabular}
+\end{center}
+
+Given that $X$s are not exogeneous, BG test is more appropriate here. However, it $F$-tests all slopes including all $X$s which not really that interesting. So it may be preferable to use Durbin's alternative test instead, which is almost identical to the BG test but it does not test whether all the slope coefficients are zero, only whether the coefficients of the lagged residuals are zero.
+
+
+
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
+
+###(e) Estimate the model using the Cochrane-Orcutt (two step) method. Check that these results are the same as those obtained by using the `prais` command in Stata (with the `corc` and `twostep` options). Does any autocorrelation remain?
+
+\begin{description}
+\item[Answer:]
+This question is looking at the ways in which we can deal with autocorrelation, especially the lack of efficiency of the OLS estimators. Consider a simple regression model $Y_t = \beta_0 + \beta_1 X_t + u_t$ with the errors following the AR(1) process
+\[
+u_t = \rho u_{t-1}+\varepsilon_t
+\]
+Since there is autocorrelation in the disturbance term, we can transform the equation to try to eliminate the problem. We can do this in such a way that the error term of our transformed equation is the white noise $\varepsilon_t$. To obtain that, the error term of the transformed equation then has to equal to $u_t-\rho u_{t-1}$. Therefore, for $t \geq 2$ we can lag the equation by one period, multiply it by $\rho$, and subtract it from the original equation.
+\begin{align*}
+\rho Y_{t-1} &= \beta_0 \rho + \beta_1 \rho X_{t-1} + \rho u_{t-1} \\
+Y_t - \rho Y_{t-1} &= \beta_0 - \beta_0 \rho + \beta_1 X_t - \beta_1 \rho X_{t-1} + u_t - \rho u_{t-1} \\
+Y_t - \rho Y_{t-1} &= \beta_0(1 - \rho) + \beta_1 (X_t - \rho X_{t-1}) + \varepsilon_t \\
+Y_t^* &= \beta_0^* + \beta_1 X_t^* + \varepsilon_t
+\end{align*}
+where $Y_t^* = Y_t - \rho Y_{t-1} \ , \ X_t^* = X_t - \rho X_{t-1} \ , \ \beta_0^* = \beta_0(1-\rho)$, and $-1 < \rho < 1$. With the white noise error, the model is now free from autocorrelation, as desired.
+
+With multiple regressors with $u_t$ following an AR(1) process, the transformed model can be expressed as
+\[
+Y_t^* = \beta_0^* + \beta_1 X_{1t}^* + \beta_2 X_{2t}^* + \dots + \beta_k X_{kt}^* + \varepsilon_t.
+\]
+Since now the error term satisfies the Gauss-Markov assumptions which means that if we knew $\rho$, we could estimate $\beta_0*$ and $\beta_1$ by regressing $Y_t^*$ on $X_t^*$. In effect, running $Y_t^* = \beta_0^* + \beta_1 X_t^* + \varepsilon_t$ is tantamount to using generalized least squares (GLS) discussed in the Supplementary Questions 1(b) above, where it was posited that GLS is the application of OLS to a transformed model that satisfies the Gauss-Markov assumptions.
+
+This equation, $Y_t^* = \beta_0^* + \beta_1 X_t^* + \varepsilon_t$, is known as \textit{generalized difference equation}, or \textit{quasi-differenced equation}. 
+
+\begin{tcolorbox}[breakable, title=Prais-Winsten transformation, skin=enhancedlast]
+
+Notice that in the differencing procedure above we loose one observation because the lagged variables are not defined for the first observation.This loss of observation may not be a too serious in large samples but can make considerable difference in the results of small samples. However, the OLS estimators from $Y_t^* = \beta_0^* + \beta_1 X_t^* + \varepsilon_t$ is not quite BLUE because the first period is not used.
+
+A quick and straight-forward fix for this is to write the equation for $t=1$ as
+\[
+Y_1 = \beta_0 + \beta_1 X_1 + u_1.
+\]
+This is a fix because the error term of the first observation, $u_1$, is uncorrelated with the white noise error $\varepsilon_t$. Therefore we can add this equation to $Y_t^* = \beta_0^* + \beta_1 X_t^* + \varepsilon_t$. 
+
+However, this introduces a problem. With the inclusion of the first observation, the error variances will not be homoskedastic. This is because the variance of $u_t$ is
+\[
+Var(u_t) = \frac{\sigma_\varepsilon^2}{1-\rho^2}
+\]
+as derived in Supplementary Question 3(b). Since $|\rho|<1$, 
+\[
+Var(u_t) = \frac{\sigma_\varepsilon^2}{1-\rho^2} > \sigma_\varepsilon^2 = Var(\varepsilon_t)
+\]
+In order to equate the two variances therefore, we need to adjust the equation of the first observation by $\sqrt{1-\rho^2}$ whereby
+\[
+\sqrt{1-\rho^2} \ Y_1 = \beta_0 \sqrt{1-\rho^2} + \beta_1 \sqrt{1-\rho^2} \  X_1 + \sqrt{1-\rho^2} \ u_1
+\]
+so that the error variance of this equation becomes
+\[
+Var(\sqrt{1-\rho^2} \ u_1) = (1-\rho^2)Var(u_t) = (1-\rho^2) \frac{\sigma_\varepsilon^2}{1-\rho^2} = \sigma_\varepsilon^2 = Var(\varepsilon_t).
+\]
+Adding this adjusted equation for first observation to $Y_t^* = \beta_0^* + \beta_1 X_t^* + \varepsilon_t$ then yields OLS estimators that are BLUE.
+\end{tcolorbox}
+
+\bigskip
+
+One of the points that was made in the box above was that if we knew $\rho$, we could estimate $\beta_0*$ and $\beta_1$ by regressing $Y_t^*$ on $X_t^*$. Cochrane-Orcutt method is a way to estimate $\rho$.
+
+\bigskip
+
+\begin{tcolorbox}[breakable, title=Cochrane-Orcutt Two-Step Procedure, skin=enhancedlast]
+
+Early regression applications tended to use the Cochrane-Orcutt iterative process to provide an estimate for $\rho$. One advantage of this process is that it can be used to estimate not only AR(1) scheme but higher order autoregressive schemes such as $\hat{u}_t = \hat{\rho}_1\hat{u}_{t-1} + \hat{\rho}\hat{u}_{t-2} + v_t$, which is AR(2).
+
+The procedure for this method is as follows:
+\begin{enumerate}
+\item Run the OLS on the untransformed model;
+\item Regress $\hat{u}_t = \rho\hat{u}_{t-1} + \varepsilon_t$ to obtain an estimate of $\rho$;
+\item Use this estimation, $\hat{\rho}$, to fit $Y_t^* = \beta_0^* + \beta_1 X_t^* + \varepsilon_t$.    
+\end{enumerate}
+
+By using two linear regressions, we can obtain a BLUE estimate.
+\end{tcolorbox}
+
+\bigskip
+
+For this question, therefore we need to transform the following model:
+\begin{align*}
+{gprice}_t^* &= \beta_0^* + \beta_1 {gwage}_t^* + \varepsilon_t  \\
+{gprice}_t - \hat{\rho} \ {gprice}_{t-1} &= \beta_0 (1-\hat{\rho}) + \beta_2 ({gwage}_t - \hat{\rho} \ {gwage}_{t-1}) + u_t - \hat{\rho}u_{t-1}
+\end{align*}
+
+In supplementary question 3(d)(ii) above we already obtained an estimate for $\rho$ as $0.5945888$. We can use this to transform the model and run the regression.
+\end{description}
+
+In R:
+
+```{r eval = FALSE}
+# transform the data
+property_autocorr_df <- property_autocorr_df %>%
+  mutate(gprice_star = gprice - rho*lag(gprice, 1),
+         gwage_star = gwage - rho*lag(gwage,1))
+
+# next we need to adjust this for the first observation
+property_autocorr_df$gprice_star[property_autocorr_df$t == 2] <- 
+  sqrt((1- rho^2))*property_autocorr_df$gprice[property_autocorr_df$t == 2]
+
+property_autocorr_df$gwage_star[property_autocorr_df$t == 2] <- 
+  sqrt((1- rho^2))*property_autocorr_df$gwage[property_autocorr_df$t == 2]
+
+# run the regression on the transformed variables
+SQ3e_lm <- lm(gprice_star ~ gwage_star + beta0_star, data = property_autocorr_df)
+summary(SQ3e_lm)
+
+# or alternatively use `prais_winsten()` formula from `prais` package
+library(prais)
+prais_winsten(gprice ~ gwage, data = property_autocorr_df, index = "t", twostep = TRUE)
+```
+
+and in STATA:
+
+```{stata eval = !knitr::is_latex_output()}
+/* load the data*/
+  quietly cd ..
+  quietly import excel using Data/sup4.xls, sheet("autocorrelation") firstrow
+  
+/* change from string to numeric, and replace N/As */
+  quietly destring, replace
+  
+/* transform the variables */
+  generate gprice_star = gprice - 0.5945888 * gprice_1
+  generate gwage_star = gwage - 0.5945888 * gwage_1
+  generate beta0_star = 1 - 0.5945888
+  
+/* adjust the first observation */
+  replace gprice_star=((1 - 0.5945888^2)^(1/2))*gprice if t==2
+  replace gwage_star=((1 - 0.5945888^2)^(1/2))*gwage if t==2
+  replace beta0_star=((1 - 0.5945888^2)^(1/2)) if t==2
+    
+/* run the regression */
+  regress gprice_star gwage_star beta0_star, noc
+```
+
+But this can instead be done automatically with the `prais` command in STATA:
+
+```{stata}
+/* load the data*/
+  quietly cd ..
+  quietly import excel using Data/sup4.xls, sheet("autocorrelation") firstrow
+  
+/* change from string to numeric, and replace N/As */
+  quietly destring, replace
+  
+/* set the time index with volumn "t" */
+  tsset t
+  
+/* run the `prais` command */  
+  prais gprice gwage, twostep
+```
+
+and to obtain the Cochrane-Orcutt Two-Step Procedure:
+```{stata}
+/* load the data*/
+  quietly cd ..
+  quietly import excel using Data/sup4.xls, sheet("autocorrelation") firstrow
+  
+/* change from string to numeric, and replace N/As */
+  quietly destring, replace
+  
+/* set the time index with volumn "t" */
+  tsset t
+  
+/* run the `prais` command */  
+  prais gprice gwage, corc twostep
+```
+
+
+Thus, we obtain $\beta_1 = 0.0388568$ and $\beta_0(1 - 0.5945888) = 0.0018121$, which means $\beta_0 = 0.00446978$.
+
+Notice that the transformed DW $d$ statistic is $2.194615$. The critical values are $d_L = 2.1887$ and $d_U = 2.203$ which means this falls within the "No decision" rule.
+
+To see if we reduced autocorrelation we can first regress the residuals from the transformed model's regression against their 1-lagged values, i.e. $\varepsilon_t = \gamma_0 + \gamma_1 \varepsilon_{t-1} + v_t$:
+
+```{r}
+summary(lm(SQ3e_lm$residuals ~ lag(SQ3e_lm$residuals, 1)))
+```
+
+The estimate of the coefficient of the lagged value, $\gamma_1$, does not seem to be significant since it is significant only at $\alpha=0.05$. We can check if this is also the case for higher-order lags, i.e. $\varepsilon_t = \gamma_0 + \gamma_1 \varepsilon_{t-1} + \gamma_2 \varepsilon_{t-2} + \gamma_3 \varepsilon_{t-3} + v_t$:
+
+```{r}
+summary(lm(SQ3e_lm$residuals ~ lag(SQ3e_lm$residuals, 1) 
+           + lag(SQ3e_lm$residuals, 2) + lag(SQ3e_lm$residuals, 3)))
+```
+
+We see that the second and third lags, $\gamma_2$ and $\gamma_3$, are significant at $\alpha=0.01$. which suggests there may be AR(2) and AR(3) process in the error terms. We can also cheeck this via Breusch-Godfrey test:
+
+```{r}
+bgtest(SQ3e_lm, order = 1, data = property_autocorr_df)
+bgtest(SQ3e_lm, order = 2, data = property_autocorr_df)
+bgtest(SQ3e_lm, order = 3, data = property_autocorr_df)
+```
+
+which gives a $\chi^2$ values of $8.8743$ and $16.137$ for lags 2 and 3, with $p$ values suggesting significance at least at $\alpha=0.05$ level.
+
+So based on the above tests it is possible that some autocorrelation may still be present.
+
+The STATA equivalent of above commands are:
+
+```{stata  eval = !knitr::is_latex_output()}
+/* load the data*/
+  quietly cd ..
+  quietly import excel using Data/sup4.xls, sheet("autocorrelation") firstrow
+  
+/* change from string to numeric, and replace N/As */
+  quietly destring, replace
+  
+/* transform the variables */
+  generate gprice_star = gprice - 0.5945888 * gprice_1
+  generate gwage_star = gwage - 0.5945888 * gwage_1
+  
+/* run the regression */
+  quietly regress gprice_star gwage_star
+  
+/* regress residuals against its lags */
+  tsset t
+  predict U, residuals
+  regress U L.U L2.U L3.U
+  
+/* Run Breusch-Godfrey manually */  
+  display e(N)*e(r2)
+  
+/* run regression with residuals and regressors */
+  regress gprice_star gwage_star L.U L2.U L3.U 
+  
+/* Run Breusch-Godfrey */
+  bgodfrey, lags (1 2 3)
+```
+
+
+
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
+
+### (f) Use the 'ac' command to graph the autocorrelations of the residuals from equation (\ref{eq:SQ3c}) on page \pageref{eq:SQ3c} that you used in part (c), and comment on the relevance of this graph for the results above.
+
+```{stata  eval = !knitr::is_latex_output()}
+/* load the data*/
+  quietly cd ..
+  quietly import excel using Data/sup4.xls, sheet("autocorrelation") firstrow
+  
+/* change from string to numeric, and replace N/As */
+  quietly destring, replace
+  
+/* transform the variables */
+  generate gprice_star = gprice - 0.5945888 * gprice_1
+  generate gwage_star = gwage - 0.5945888 * gwage_1
+  
+/* run the regression */
+  quietly regress gprice_star gwage_star
+  
+/* regress residuals against its lags */
+  tsset t
+  predict U, residuals
+  
+/* generate autocorrelations and obtain the graph */
+  quietly corrgram U, lags(40)
+  ac U, lags(40)
+
+```
+
+and in R we use the `Acf()` function from the `forecast` package:
+
+```{r message=FALSE}
+library(forecast)
+acf(SQ3c_lm$residuals)
+```
+
+Which shows that there is a lot of autocorrelation present in the residuals of equation \ref{eq:SQ3c}, and much of it is of a higher order than the ones we have attempted to deal with so far.
+
+Note that the dashed lines are the Bartlett's standard errors for MA(q) 95% confidence intervals.
+
+
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
+
+### (g) Now estimate the following distributed lag model:
+\begin{equation}\label{eq:SQ3g}
+{gprice}_t = \beta_0 + \beta_1 {gwage}_t + \beta_2 {gwage}_{t-1} + \dots + \beta_13 {gwage}_{t-12} + \varepsilon_t
+\end{equation}
+\textbf{Comment on your results. Is there autocorrelation in this model?}
+
+\begin{description}
+\item[Answer:]
+The spreadsheet has these lagged values as columns already. So we just need to regress them.
+\end{description}
+
+In R:
+
+```{r}
+SQ3g_lm <- lm(gprice ~ gwage + gwage_1 + gwage_2 + gwage_3 + gwage_4 + gwage_5 
+              + gwage_6 + gwage_7 + gwage_8 + gwage_9 + gwage_10 + gwage_11 
+              + gwage_12, data = property_autocorr_df)
+Acf(SQ3g_lm$residuals)
+```
+
+We can see that the autocorrelation is reduced but not eliminated, especially in lower lags. 
+
+As before, we can also use Breusch Godfrey to check for autocorrelation:
+
+```{r}
+bgtest(SQ3g_lm)
+```
+
+with $chi^2=70.241$ and a $p$ value that is practically zero, we would reject the null hypothesis that there is no autocorrelation in the residuals.
+
+
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
+
+### (h) Run model \ref{eq:SQ3g} on page \pageref{eq:SQ3g} again, this time including the residuals from this equation as lagged values. Experiment with the number of lagged terms you include. How many lagged terms are required to make the autocorrelation disappear?
+
+```{r eval = FALSE}
+SQ3h_lm <- update(SQ3g_lm, . ~ . + SQ3g_lm_residuals + lag(SQ3g_lm_residuals, 1))
+Acf(SQ3h_lm$residuals)
+```
+
+```{stata}
+  quietly cd ..
+  quietly import excel using Data/sup4.xls, sheet("autocorrelation") firstrow
+
+  quietly destring, replace
+
+  tsset t
+  
+  quietly regress gprice gwage gwage_1 gwage_2 gwage_3 gwage_4 gwage_5 gwage_6 gwage_7 gwage_8 gwage_9 gwage_10 gwage_11 gwage_12
+  
+  predict E, residuals
+  
+/* run the regression again with its residuals and their lags */
+  
+  regress gprice gwage gwage_1 gwage_2 gwage_3 gwage_4 gwage_5 gwage_6 gwage_7 gwage_8 gwage_9 gwage_10 gwage_11 gwage_12 L.E L2.E 
+    
+/* Breusch Godfrey */
+  bgodfrey, lags (1 2 3 4)
+    
+/* Durbin's alternative test */
+  estat durbinalt, lags (1 2 3 4) 
+```
+
+Notice that the $\chi^2$ statistics are getting larger for higher-order lags but this is mainly because of degrees of freedom being used up and not because they are becoming less significant (notice the $p$-values are increasing too.)
+
+Overall, we used residuals and its one lag as well for the model. 
+
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
+
+### (i) Using this last specification estimate the long-run elasticity between prices and wages and test that it is unity.
+
+```{stata}
+ quietly cd ..
+  quietly import excel using Data/sup4.xls, sheet("autocorrelation") firstrow
+  quietly destring, replace
+  tsset t
+  quietly regress gprice gwage gwage_1 gwage_2 gwage_3 gwage_4 gwage_5 gwage_6 gwage_7 gwage_8 gwage_9 gwage_10 gwage_11 gwage_12
+  predict E, residuals
+  
+/* run the regression again with its residuals and their lags */
+  quietly regress gprice gwage gwage_1 gwage_2 gwage_3 gwage_4 gwage_5 gwage_6 gwage_7 gwage_8 gwage_9 gwage_10 gwage_11 gwage_12 L.E L2.E 
+  
+/* obtain the linear combination of parameter estimates */
+lincom gwage + gwage_1 + gwage_2 + gwage_3 + gwage_4 + gwage_5 + gwage_6 + gwage_7 + gwage_8 + gwage_9 + gwage_10 + gwage_11 + gwage_12
+  
+/* carry out a Wald test that linear combination equals to 1 */
+    test gwage + gwage_1 + gwage_2 + gwage_3 + gwage_4 + gwage_5 + gwage_6 + gwage_7 + gwage_8 + gwage_9 + gwage_10 + gwage_11 + gwage_12 = 1 
+```
+
+or alternatively we can carry out a $t$-test on the coefficient which should be the square root of the Wald's F statistic above:
+
+```{r}
+(1.139599-1)/0.0940975
+((1.139599-1)/0.0940975)^2
+```
+
+
+In either approach, we cannot reject the null hypothesis that the long run elasticity between prices and wages is unity.
