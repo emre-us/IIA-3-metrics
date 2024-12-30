@@ -1,0 +1,117 @@
+---
+title: "IIA-3 Econometrics: Supervision 5"
+author: "Emre Usenmez"
+date: "Christmas Break 2024"
+output: pdf_document
+header-includes: 
+  - \usepackage{amsmath, tcolorbox, dashrule, booktabs, fancyhdr, multirow}
+  - \tcbuselibrary{listings,most}
+  - \allowdisplaybreaks
+---
+
+<!-- This comment will not be displayed in the output. Below change to CSS style is to ensure the blocktexts are in the same form size as the rest of the text.-->
+
+```{css style settings, echo = FALSE} 
+blockquote {
+    padding: 10px 20px;
+    margin: 0 0 20px;
+    font-size: 14px;
+    border-left: 5px solid #eee;
+}
+```
+
+<!-- below ensures the output are not presented in Scientific mode (e.g. 0.023+e4) but regular decimals -->
+```{r, echo=FALSE}
+options(scipen = 999)
+```
+
+
+\pagestyle{fancy}
+\fancyhead[L]{2024-25 Part IIA Paper 3}
+\fancyhead[R]{Supervision 4 Solutions}
+\fancyfoot[L]{Gonville \& Caius}
+\fancyfoot[R]{Emre Usenmez}
+
+
+\textbf{\underline{Topics Covered}}
+\begin{description}
+\item[Faculty Qs:] 
+\item[Supplementary Qs:] Endogeneity, measurement errors; simultaneous equations;
+\end{description}
+
+\small Very grateful to Dr Oleg Kitov and Dr Clive Lawson for the very informative stylized answers to previous iterations of the supervision questions.
+\normalsize
+
+\bigskip\bigskip
+
+# FACULTY QUESTIONS
+
+\bigskip\bigskip
+ 
+
+## QUESTION 1
+
+
+
+
+
+
+\pagebreak
+
+# SUPPLEMENTARY QUESTIONS
+
+\bigskip\bigskip
+
+## QUESTION 1
+
+### (a) Explain what is meant when it is said that the explanatory variables and the disturbance term in a regression equation are not independent. What can be said about the properties of the OLS estimates in this case?
+
+\begin{description}
+\item[Answer:] 
+If the disturbance term and the explanatory variables are not independent then they are correlated. Those explanatory variables that are correlated with the error term are called \textit{endogenous variables}. 
+
+Since unibasedness depends on $Cov(\varepsilon_i, X_i)=0$, this dependency between the error term and the explanatory variables would yield biased estimates.
+\end{description}
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
+
+### (b) Suppose that $Y_i = \alpha + \beta X_i + \lambda W_i + \varepsilon_i$ where there also exists a relationship between $X_i$ and $W_i$ of the form $W_i = \rho + \phi X_i + v_i$. Show that if $Y_i$ is estimated using only the $X_i$ variable then the estimate of $\beta$ obtained is biased. Under what circumstances would this estimate of $\beta$ be biased downwards?
+
+\begin{description}
+\item[Answer:] 
+Let's start by substituting in the latter expression into the former:
+\begin{align*}
+Y_i 
+  &= \alpha + \beta X_i + \lambda W_i + \varepsilon_i \\
+  &= \alpha + \beta X_i + \lambda (\rho + \phi X_i + v_i) + \varepsilon_i \\
+  &= (\alpha + \lambda\rho) + (\beta + \lambda\phi) X_i + (\lambda v_i + \varepsilon_i) \\
+  &= \gamma_0 + \gamma_1 X_i + u_i
+\end{align*}
+Now notice that both $W_i$ and $u_i$ depend on $v_i$. This means the assumption of exogeneity, i.e. independence between the explanatory variable and the disturbance term, would be violated when $Y$ is regressed on $X$. As a result, $\hat{\gamma_1}$ would be \textit{inconsistent} and \textit{biased}.
+
+To see this, start by looking at the expression for the regression coefficient $\gamma_1$
+\[
+\hat{\gamma_1} = \frac{\displaystyle\sum_{i=1}^n(X_i - \bar{X})(Y_i - \bar{Y})}{\displaystyle\sum_{i=1}^n(X_i - \bar{X})^2} = \gamma_1 + \frac{\displaystyle\sum_{i=1}^n(X_i - \bar{X})(u_i - \bar{u})}{\displaystyle\sum_{i=1}^n(X_i - \bar{X})^2}
+\]
+Since $X$ and $u$ are not distributed independently of each other, we can't summarize the distribution of the error term, or obtain an expresssion for its expected value. The most we can do is to determine how the error term would behave if the sample were very large.
+
+However, neither the numerator nor the denominator tends to a particular limit as $n$ increases. To get around this, we can divide both the numerator and the denominator by $n$. Then the probability limit of $\hat{\gamma_1}$ as $n$ tends to infinity becomes
+\begin{align*}
+plim(\hat{\gamma_1}) 
+  &= \gamma_1 +  \frac{plim \bigg( \displaystyle \frac{1}{n}\sum_{i=1}^n(X_i - \bar{X})(u_i - \bar{u}) \bigg)}{plim \bigg( \displaystyle \frac{1}{n}\sum_{i=1}^n(X_i - \bar{X})^2 \bigg)} \\[6pt]
+  &= \gamma_1 + \frac{Cov(X, u)}{Var(X)} \\[6pt]
+  &= \gamma_1 + \frac{\displaystyle Cov\bigg((\frac{W-\rho-v}{\phi}),(\lambda v+\varepsilon)\bigg)}{Var\bigg(\displaystyle\frac{W-\rho-v}{\phi}\bigg)} \\[6pt]
+  &= \gamma_1 + \frac{\displaystyle Cov\bigg(\frac{W-\rho}{\phi}, \lambda v \bigg)+Cov\bigg(\frac{W-\rho}{\phi}, \varepsilon\bigg) +  Cov\bigg(\frac{-v}{\phi}, \lambda v\bigg) + Cov\bigg(\frac{-v}{\phi},\varepsilon\bigg)}{Var\bigg(\displaystyle\frac{W-\rho-v}{\phi}\bigg)}
+\end{align*}
+If we then assume that the error term in the original model, $\varepsilon$, is distributed independently of $W$, and the error term in the second model, $v$, is distributed independently of $W$ and $\varepsilon$, then the first, second and fourth terms of the numerator are zero. Then
+\begin{align*}
+plim(\hat{\gamma_1})
+  &= \gamma_1 + \frac{\displaystyle 0 + 0 +  Cov\bigg(\frac{-v}{\phi}, \lambda v\bigg) + 0}{Var\bigg(\displaystyle\frac{W-\rho-v}{\phi}\bigg)} \\[6pt]
+  &= \gamma_1 + \frac{\displaystyle-\frac{\lambda}{\phi}Var(v)}{Var\bigg(\displaystyle\frac{W - \rho}{\phi}\bigg) + Var\bigg(\frac{-v}{\phi}\bigg) + 2Cov\bigg(\frac{W - \rho}{\phi},\frac{-v}{\phi}\bigg)} \\[6pt]
+  &= \gamma_1 + \frac{\displaystyle-\frac{\lambda}{\phi}Var(v)}{\displaystyle\frac{1}{\phi^2}Var(W) + \frac{1}{\phi^2} Var(v) + 0} \\[6pt]
+  &= \gamma_1 - \lambda\phi \frac{Var(v)}{Var(W)+Var(v)}
+\end{align*}
+Thus $\hat{\gamma_1}$ is subject to bias whereby the bias is negative if $\lambda\phi$ is positive, and the bias is positive if $\lambda\phi$ is negative.
+\end{description}

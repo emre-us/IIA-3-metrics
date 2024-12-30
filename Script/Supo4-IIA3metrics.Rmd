@@ -29,12 +29,20 @@ options(scipen = 999)
 \pagestyle{fancy}
 \fancyhead[L]{2024-25 Part IIA Paper 3}
 \fancyhead[R]{Supervision 4 Solutions}
-\fancyfoot[L]{University of Cambridge}
+\fancyfoot[L]{Gonville \& Caius}
 \fancyfoot[R]{Emre Usenmez}
+
+
+\textbf{\underline{Topics Covered}}
+\begin{description}
+\item[Faculty Qs:] Endogeneity; proxy variable; instrumental variable
+\item[Supplementary Qs:] Heteroskedasticity; White's robust standard errors; Goldfeld-Quandt test; Breusch-Pagan test; Lagrange Multiplier test; White test; autocorrelation; Durbin-Watson $d$ test; Breusch-Godfrey test; Durbin's alternative test; Prais-Winsten transformation; Cochrane-Orcutt Two-Step Procedure
+\end{description}
 
 \small Very grateful to Dr Oleg Kitov and Dr Clive Lawson for the very informative stylized answers to previous iterations of the supervision questions.
 \normalsize
 
+\bigskip\bigskip
 
 # FACULTY QUESTIONS
 
