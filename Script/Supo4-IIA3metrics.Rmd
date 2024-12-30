@@ -39,10 +39,35 @@ options(scipen = 999)
 \item[Supplementary Qs:] Heteroskedasticity; White's robust standard errors; Goldfeld-Quandt test; Breusch-Pagan test; Lagrange Multiplier test; White test; autocorrelation; Durbin-Watson $d$ test; Breusch-Godfrey test; Durbin's alternative test; Prais-Winsten transformation; Cochrane-Orcutt Two-Step Procedure
 \end{description}
 
+bigskip
+
+\textbf{\underline{Related Reading:}}
+\begin{description}
+\item Dougherty, \textit{Introduction to Econometrics}, $5^{th}$ ed, OUP
+  \subitem Chapter 7: Heteroskedasticity
+  \subitem Chapter 8: Stochastic Regressors and Measurement Errors 
+  \subitem Chapter 9: Simultaneous Equations Estimation
+  \subitem Chapter 12: Autocorrelation
+\item Wooldridge J M (2021) \textit{Introductory Econometrics: A Modern Approach}, $7^{th}$ ed,
+  \subitem Chapter 8: Heteroskedasticity
+  \subitem Chapter 9: More on Specification and Data Issues 
+  \subitem Chapter 12: Serial Correlation and Heteroskedasticity in Time Series Regressions
+  \subitem Chapter 16: Simultaneous Equations Models
+\item Gujarati, D N and Porter, D (2009) \textit{Basic Econometrics} $7^{th}$ International ed, McGraw Hill
+  \subitem Chapter 11 Heteroscdasticity: WHat Happens If the Error Variance is Nonconstant?
+  \subitem Chapter 12: Autocorrelation: What Happens If the Error Terms are Correlated?
+  \subitem Chapter 13: Econometric Modeling: Model Specification and Diagnostic Testing 
+  \subitem Chapter 20: Simultaneous-Equation Methods
+\end{description}
+
+\bigskip
+
 \small Very grateful to Dr Oleg Kitov and Dr Clive Lawson for the very informative stylized answers to previous iterations of the supervision questions.
 \normalsize
 
-\bigskip\bigskip
+
+
+\pagebreak
 
 # FACULTY QUESTIONS
 

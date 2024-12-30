@@ -1,7 +1,7 @@
 ---
 title: "IIA-3 Econometrics: Supervision 5"
 author: "Emre Usenmez"
-date: "Christmas Break 2024"
+date: "Lent Term 2025"
 output: pdf_document
 header-includes: 
   - \usepackage{amsmath, tcolorbox, dashrule, booktabs, fancyhdr, multirow}
@@ -39,10 +39,29 @@ options(scipen = 999)
 \item[Supplementary Qs:] Endogeneity, measurement errors; simultaneous equations;
 \end{description}
 
+\bigskip
+
+\textbf{\underline{Related Reading:}}
+\begin{description}
+\item Dougherty, \textit{Introduction to Econometrics}, $5^{th}$ ed, OUP 
+  \subitem Chapter 8: Stochastic Regressors and Measurement Errors 
+  \subitem Chapter 9: Simultaneous Equations Estimation
+\item Wooldridge J M (2021) \textit{Introductory Econometrics: A Modern Approach}, $7^{th}$ ed, 
+  \subitem Cengage Chapter 9: More on Specification and Data Issues 
+  \subitem Chapter 16: Simultaneous Equations Models
+\item Gujarati, D N and Porter, D (2009) \textit{Basic Econometrics} $7^{th}$ International ed, McGraw Hill 
+  \subitem Chapter 13: Econometric Modeling: Model Specification and Diagnostic Testing 
+  \subitem Chapter 20: Simultaneous-Equation Methods
+\end{description}
+
+\bigskip
+
 \small Very grateful to Dr Oleg Kitov and Dr Clive Lawson for the very informative stylized answers to previous iterations of the supervision questions.
 \normalsize
 
-\bigskip\bigskip
+
+
+\pagebreak
 
 # FACULTY QUESTIONS
 
@@ -115,3 +134,75 @@ plim(\hat{\gamma_1})
 \end{align*}
 Thus $\hat{\gamma_1}$ is subject to bias whereby the bias is negative if $\lambda\phi$ is positive, and the bias is positive if $\lambda\phi$ is negative.
 \end{description}
+
+
+
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
+
+### (c) Explain why measurement errors and simultaneous equations might also involve correlation of this kind (give simple algebraic examples of each).
+
+\begin{description}
+\item[Measurement Error:] Relatively frequently in economics, the variables we use have not been measured precisely. These may be due to inaccuracies in the surveys or a data available corresponds to a slightly different concept than the variable in our model. Milton Friedman's critique of the consumption function is an example of the latter.\footnote{Firedman, M (1957) \textit{A Theory of the Consumption Function}, Princeton University Press} 
+
+Consider the following model
+\[
+Y_i = \beta_0 + \beta_1 X_i + u_i
+\]
+where $Y_i$ is the permanent consumption expenditure,\footnote{permanent consumption expenditure is a term used by Milton Friedman to refer to the level of consumption justified by the level of permanent income. Permanent income can be thought of as a medium term income in that it is the amount that the individual can can more or less depend on for the foreseeable future.} $X_i$ current income, and $u_i$ stochastic disturbance term. 
+
+Since $Y_i$ is not measurable because it is subjectively determined by individual's recent experience and future expectations, we can instead use an observable consumption expenditure variable $Y_i^*$ such that
+\[
+Y_i^* = Y_i + \varepsilon_i
+\]
+where $\varepsilon_i$ are the errors of measurement in $Y_i$. Therefore, we instead estimate the following:
+\begin{align*}
+Y_i* 
+  = (\beta_0 + \beta_1 X_i + u_i) + \varepsilon_i \\
+  = \beta_0 + \beta_1 X_i + (u_i + \varepsilon_i) \\
+  = \beta_0 + \beta_1 X_i + v_i 
+\end{align*}
+where $v_i = u_i + \varepsilon_i$ is a composite error term that contains both the population error term and the measurement error term.
+
+If the classical linear regression assumptions, specifically $\mathbb{E}(u_i) = \mathbb{E}(v_i)=0$ and $Cov(X_i, u_i)$, as well as $Cov(X_i, \varepsilon_i)$ hold true, then $\hat{\beta}_1$ will be an \underline{unbiased} estimator of the true $\beta_1$ but the variances, and therefore the standard errors, of $\beta_1$ estimated from this equation will be different because
+\[
+Var(\hat{\beta}_1) = \frac{Var(v)}{\sum(X_i - \bar{X})^2} = \frac{Var(u_i) + Var(\varepsilon_i)}{\sum(X_i - \bar{X})^2} \ > \ \frac{Var(u_i)}{\sum(X_i - \bar{X})^2}
+\]
+
+Therefore, if there is measurement error in the dependent variable, we will still obtain unbiased estimates of the parameters and their variances, but the estimated variances will be bigger than in the case where there are no such measurement errors.
+
+The situation is different if there is a measurement error in the dependent variable instead. Consider again the model
+\[
+Y_i = \beta_0 + \beta_1 X_i + u_i
+\]
+but this time $Y-i$ is the \textit{current} consumption expenditure, $X_i$ is \textit{permanent} income, and $u_i$ is the stochastic disturbance term.
+
+Since this time $X_i$ is not measurable, we can instead use an observable income variable $X_i^*$ such that
+\[
+X_i^* = X_i + \varepsilon_i
+\]
+where $\varepsilon_i$ are the errors of measurement in $X_i$. Therefore, we instead estimate the following:
+\begin{align*}
+Y_i 
+  = \beta_0 + \beta_1 X_i + u_i \\
+  = \beta_0 + \beta_1 X_i^* - \beta_1\varepsilon_i + u_i \\
+  = \beta_0 + \beta_1 X_i^* + v_i 
+\end{align*}
+where $v_i = u_i - \beta_1\varepsilon_i$ is a composite error term that contains both the population error term and the measurement error term.
+
+In this case, even if we assume that the assumptions $\mathbb{E}(u_i) = \mathbb{E}(v_i)=0$ and $Cov(v_i, u_i)$ hold, we cannot assume that the composite error term $v_i$ is independent of $X_i^*$ because
+\begin{align*}
+Cov(X_i^*, v_i) 
+  = \mathbb{E}[v_i - \mathbb{E}(v_i)][X_i^*-\mathbb{E}(X_i^*)] \\
+  = \mathbb{E}(u_i - \beta_1\varepsilon_i - 0)(X_i + \varepsilon_i - X_i) \\
+  = \mathbb{E}(u_i - \beta_1\varepsilon_i)(\varepsilon_i) \\
+  = \mathbb{E}(-\beta_1\varepsilon_i^2) \\
+  = -\beta_1Var(\varepsilon_i)
+\end{align*}
+Thus $X_i^*$ and $v_i$ are correlated which violates the exogeneity assumption. If this assumption is violated, as shown in part(b) above, the OLS estimators are \underline{biased} and \underline{inconsistent}, meaning that they remain biased even if the sample size increases indefinitely.
+
+\item[Simultaneous Equations:]
+\end{description}
+ 
