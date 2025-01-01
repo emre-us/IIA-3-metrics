@@ -32,6 +32,7 @@ options(scipen = 999)
 \fancyfoot[L]{Gonville \& Caius}
 \fancyfoot[R]{Emre Usenmez}
 
+\bigskip\bigskip
 
 \textbf{\underline{Topics Covered}}
 \begin{description}
@@ -43,23 +44,26 @@ options(scipen = 999)
 
 \textbf{\underline{Related Reading:}}
 \begin{description}
-\item Dougherty, \textit{Introduction to Econometrics}, $5^{th}$ ed, OUP 
+\item Dougherty, \textit{Introduction to Econometrics}, $5^{th}$ ed, OUP
+  \subitem Chapter 6: Specification of Regression Variables
   \subitem Chapter 8: Stochastic Regressors and Measurement Errors 
   \subitem Chapter 9: Simultaneous Equations Estimation
 \item Wooldridge J M (2021) \textit{Introductory Econometrics: A Modern Approach}, $7^{th}$ ed, 
-  \subitem Cengage Chapter 9: More on Specification and Data Issues 
+  \subitem Chapter 9: More on Specification and Data Issues 
+  \subitem Chapter 15: Instrumental Variables in Estimation and Two Stage Least Squares
   \subitem Chapter 16: Simultaneous Equations Models
-\item Gujarati, D N and Porter, D (2009) \textit{Basic Econometrics} $7^{th}$ International ed, McGraw Hill 
+\item Gujarati, D N and Porter, D (2009) \textit{Basic Econometrics}, $7^{th}$ International ed, McGraw-Hill 
   \subitem Chapter 13: Econometric Modeling: Model Specification and Diagnostic Testing 
   \subitem Chapter 20: Simultaneous-Equation Methods
+\item Gujarati, D (2022) \textit{Essentials of Econometrics}, $5^{th}$ ed, Sage
+  \subitem Chapter 7: Model Selection: Criteria and Tests 
+
 \end{description}
 
 \bigskip
 
 \small Very grateful to Dr Oleg Kitov and Dr Clive Lawson for the very informative stylized answers to previous iterations of the supervision questions.
 \normalsize
-
-
 
 \pagebreak
 
@@ -108,17 +112,17 @@ Y_i
   &= (\alpha + \lambda\rho) + (\beta + \lambda\phi) X_i + (\lambda v_i + \varepsilon_i) \\
   &= \gamma_0 + \gamma_1 X_i + u_i
 \end{align*}
-Now notice that both $W_i$ and $u_i$ depend on $v_i$. This means the assumption of exogeneity, i.e. independence between the explanatory variable and the disturbance term, would be violated when $Y$ is regressed on $X$. As a result, $\hat{\gamma_1}$ would be \textit{inconsistent} and \textit{biased}.
+Now notice that both $W_i$ and $u_i$ depend on $v_i$. This means the assumption of exogeneity, i.e. independence between the explanatory variable and the disturbance term, would be violated when $Y$ is regressed on $X$. As a result, $\hat{\gamma}_1$ would be \textit{inconsistent} and \textit{biased}.
 
 To see this, start by looking at the expression for the regression coefficient $\gamma_1$
 \[
-\hat{\gamma_1} = \frac{\displaystyle\sum_{i=1}^n(X_i - \bar{X})(Y_i - \bar{Y})}{\displaystyle\sum_{i=1}^n(X_i - \bar{X})^2} = \gamma_1 + \frac{\displaystyle\sum_{i=1}^n(X_i - \bar{X})(u_i - \bar{u})}{\displaystyle\sum_{i=1}^n(X_i - \bar{X})^2}
+\hat{\gamma}_1 = \frac{\displaystyle\sum_{i=1}^n(X_i - \bar{X})(Y_i - \bar{Y})}{\displaystyle\sum_{i=1}^n(X_i - \bar{X})^2} = \gamma_1 + \frac{\displaystyle\sum_{i=1}^n(X_i - \bar{X})(u_i - \bar{u})}{\displaystyle\sum_{i=1}^n(X_i - \bar{X})^2}
 \]
 Since $X$ and $u$ are not distributed independently of each other, we can't summarize the distribution of the error term, or obtain an expresssion for its expected value. The most we can do is to determine how the error term would behave if the sample were very large.
 
-However, neither the numerator nor the denominator tends to a particular limit as $n$ increases. To get around this, we can divide both the numerator and the denominator by $n$. Then the probability limit of $\hat{\gamma_1}$ as $n$ tends to infinity becomes
+However, neither the numerator nor the denominator tends to a particular limit as $n$ increases. To get around this, we can divide both the numerator and the denominator by $n$. Then the probability limit of $\hat{\gamma}_1$ as $n$ tends to infinity becomes
 \begin{align*}
-plim(\hat{\gamma_1}) 
+plim(\hat{\gamma}_1) 
   &= \gamma_1 +  \frac{plim \bigg( \displaystyle \frac{1}{n}\sum_{i=1}^n(X_i - \bar{X})(u_i - \bar{u}) \bigg)}{plim \bigg( \displaystyle \frac{1}{n}\sum_{i=1}^n(X_i - \bar{X})^2 \bigg)} \\[6pt]
   &= \gamma_1 + \frac{Cov(X, u)}{Var(X)} \\[6pt]
   &= \gamma_1 + \frac{\displaystyle Cov\bigg((\frac{W-\rho-v}{\phi}),(\lambda v+\varepsilon)\bigg)}{Var\bigg(\displaystyle\frac{W-\rho-v}{\phi}\bigg)} \\[6pt]
@@ -126,13 +130,13 @@ plim(\hat{\gamma_1})
 \end{align*}
 If we then assume that the error term in the original model, $\varepsilon$, is distributed independently of $W$, and the error term in the second model, $v$, is distributed independently of $W$ and $\varepsilon$, then the first, second and fourth terms of the numerator are zero. Then
 \begin{align*}
-plim(\hat{\gamma_1})
+plim(\hat{\gamma}_1)
   &= \gamma_1 + \frac{\displaystyle 0 + 0 +  Cov\bigg(\frac{-v}{\phi}, \lambda v\bigg) + 0}{Var\bigg(\displaystyle\frac{W-\rho-v}{\phi}\bigg)} \\[6pt]
   &= \gamma_1 + \frac{\displaystyle-\frac{\lambda}{\phi}Var(v)}{Var\bigg(\displaystyle\frac{W - \rho}{\phi}\bigg) + Var\bigg(\frac{-v}{\phi}\bigg) + 2Cov\bigg(\frac{W - \rho}{\phi},\frac{-v}{\phi}\bigg)} \\[6pt]
   &= \gamma_1 + \frac{\displaystyle-\frac{\lambda}{\phi}Var(v)}{\displaystyle\frac{1}{\phi^2}Var(W) + \frac{1}{\phi^2} Var(v) + 0} \\[6pt]
   &= \gamma_1 - \lambda\phi \frac{Var(v)}{Var(W)+Var(v)}
 \end{align*}
-Thus $\hat{\gamma_1}$ is subject to bias whereby the bias is negative if $\lambda\phi$ is positive, and the bias is positive if $\lambda\phi$ is negative.
+Thus $\hat{\gamma}_1$ is subject to bias whereby the bias is downwards if $\lambda\phi$ is positive.
 \end{description}
 
 
@@ -145,7 +149,8 @@ Thus $\hat{\gamma_1}$ is subject to bias whereby the bias is negative if $\lambd
 ### (c) Explain why measurement errors and simultaneous equations might also involve correlation of this kind (give simple algebraic examples of each).
 
 \begin{description}
-\item[Measurement Error:] Relatively frequently in economics, the variables we use have not been measured precisely. These may be due to inaccuracies in the surveys or a data available corresponds to a slightly different concept than the variable in our model. Milton Friedman's critique of the consumption function is an example of the latter.\footnote{Firedman, M (1957) \textit{A Theory of the Consumption Function}, Princeton University Press} 
+\item[Measurement Error:] 
+Relatively frequently in economics, the variables we use have not been measured precisely. These may be due to inaccuracies in the surveys or a data available corresponds to a slightly different concept than the variable in our model. Milton Friedman's critique of the consumption function is an example of the latter.\footnote{Firedman, M (1957) \textit{A Theory of the Consumption Function}, Princeton University Press} 
 
 Consider the following model
 \[
@@ -160,18 +165,18 @@ Y_i^* = Y_i + \varepsilon_i
 where $\varepsilon_i$ are the errors of measurement in $Y_i$. Therefore, we instead estimate the following:
 \begin{align*}
 Y_i* 
-  = (\beta_0 + \beta_1 X_i + u_i) + \varepsilon_i \\
-  = \beta_0 + \beta_1 X_i + (u_i + \varepsilon_i) \\
-  = \beta_0 + \beta_1 X_i + v_i 
+  &= (\beta_0 + \beta_1 X_i + u_i) + \varepsilon_i \\
+  &= \beta_0 + \beta_1 X_i + (u_i + \varepsilon_i) \\
+  &= \beta_0 + \beta_1 X_i + v_i 
 \end{align*}
 where $v_i = u_i + \varepsilon_i$ is a composite error term that contains both the population error term and the measurement error term.
 
 If the classical linear regression assumptions, specifically $\mathbb{E}(u_i) = \mathbb{E}(v_i)=0$ and $Cov(X_i, u_i)$, as well as $Cov(X_i, \varepsilon_i)$ hold true, then $\hat{\beta}_1$ will be an \underline{unbiased} estimator of the true $\beta_1$ but the variances, and therefore the standard errors, of $\beta_1$ estimated from this equation will be different because
 \[
-Var(\hat{\beta}_1) = \frac{Var(v)}{\sum(X_i - \bar{X})^2} = \frac{Var(u_i) + Var(\varepsilon_i)}{\sum(X_i - \bar{X})^2} \ > \ \frac{Var(u_i)}{\sum(X_i - \bar{X})^2}
+Var(\hat{\beta}_1) = \frac{Var(v)}{\sum(X_i - \bar{X})^2} = \frac{Var(u_i) + Var(\varepsilon_i)}{\sum(X_i - \bar{X})^2} \ \ \ > \ \frac{Var(u_i)}{\sum(X_i - \bar{X})^2}
 \]
 
-Therefore, if there is measurement error in the dependent variable, we will still obtain unbiased estimates of the parameters and their variances, but the estimated variances will be bigger than in the case where there are no such measurement errors.
+Therefore, if there is measurement error in the explanatory variable, we will still obtain unbiased estimates of the parameters and their variances, but the estimated variances will be bigger than in the case where there are no such measurement errors.
 
 The situation is different if there is a measurement error in the dependent variable instead. Consider again the model
 \[
@@ -186,23 +191,945 @@ X_i^* = X_i + \varepsilon_i
 where $\varepsilon_i$ are the errors of measurement in $X_i$. Therefore, we instead estimate the following:
 \begin{align*}
 Y_i 
-  = \beta_0 + \beta_1 X_i + u_i \\
-  = \beta_0 + \beta_1 X_i^* - \beta_1\varepsilon_i + u_i \\
-  = \beta_0 + \beta_1 X_i^* + v_i 
+  &= \beta_0 + \beta_1 X_i + u_i \\
+  &= \beta_0 + \beta_1 X_i^* - \beta_1\varepsilon_i + u_i \\
+  &= \beta_0 + \beta_1 X_i^* + v_i 
 \end{align*}
 where $v_i = u_i - \beta_1\varepsilon_i$ is a composite error term that contains both the population error term and the measurement error term.
 
 In this case, even if we assume that the assumptions $\mathbb{E}(u_i) = \mathbb{E}(v_i)=0$ and $Cov(v_i, u_i)$ hold, we cannot assume that the composite error term $v_i$ is independent of $X_i^*$ because
 \begin{align*}
 Cov(X_i^*, v_i) 
-  = \mathbb{E}[v_i - \mathbb{E}(v_i)][X_i^*-\mathbb{E}(X_i^*)] \\
-  = \mathbb{E}(u_i - \beta_1\varepsilon_i - 0)(X_i + \varepsilon_i - X_i) \\
-  = \mathbb{E}(u_i - \beta_1\varepsilon_i)(\varepsilon_i) \\
-  = \mathbb{E}(-\beta_1\varepsilon_i^2) \\
-  = -\beta_1Var(\varepsilon_i)
+  &= \mathbb{E}[v_i - \mathbb{E}(v_i)][X_i^*-\mathbb{E}(X_i^*)] \\
+  &= \mathbb{E}(u_i - \beta_1\varepsilon_i - 0)(X_i + \varepsilon_i - X_i) \\
+  &= \mathbb{E}(u_i - \beta_1\varepsilon_i)(\varepsilon_i) \\
+  &= \mathbb{E}(-\beta_1\varepsilon_i^2) \\
+  &= -\beta_1Var(\varepsilon_i)
 \end{align*}
 Thus $X_i^*$ and $v_i$ are correlated which violates the exogeneity assumption. If this assumption is violated, as shown in part(b) above, the OLS estimators are \underline{biased} and \underline{inconsistent}, meaning that they remain biased even if the sample size increases indefinitely.
 
-\item[Simultaneous Equations:]
+Notice that this correlation between $X_i^*$ and $v_i$ will cause problems because it means $X_i$ and $\varepsilon_i$ are correlated since $v_i = u_i - \beta_1\varepsilon_i$. To determine the amount of inconsistency in the OLS we again take the probability limit of $\hat{\beta}_1$:
+\begin{align*}
+plim(\hat{\beta}_1)
+  &= \beta_1 + \frac{Cov(X_1^*, v_i)}{Var(X_1^*)} \\[6pt]
+  &= \beta_1 + \frac{-\beta_1Var(\varepsilon_i)}{Var(X_1) + Var(\varepsilon_i)} \\[6pt]
+  &= \beta_1 \bigg( 1 - \frac{\sigma_\varepsilon^2}{\sigma_{X_1}^2 + \sigma_\varepsilon^2} \bigg) \\[6pt]
+  &= \beta_1 \bigg( \frac{\sigma_{X_1}^2 + \sigma_\varepsilon^2 - \sigma_\varepsilon^2}{\sigma_{X_1}^2 + \sigma_\varepsilon^2} \bigg) \\[6pt]
+  &= \beta_1 \bigg( \frac{\sigma_{X_1}^2}{\sigma_{X_1}^2 + \sigma_\varepsilon^2} \bigg)
+\end{align*}
+Notice that the term multiplying $\beta_1$ is the ratio of $Var(X_1)$ to $Var(X_1^*)$. It is always less than $1$, which means $plim(\hat{\beta}_1)$ is always closer to $0$ than $\beta_1$. This is called the \underline{attenuation bias} in OLS: on average, the estimated OLS effect will be attenuated. In particular, if $\beta_1 > 0$, then $\hat{\beta}_1$ will tend to underestimate $\beta_1$.
+
+\item[Simultaneous Equations:] 
+Another important form of explanatory variables endogeneity is \textit{simultaneity}, which occurs when an explanatory variable and the dependent variable is jointly determined. The main way for estimating simultaneous equations is the same as those for the omitted variables problem and measurement error problem - instrumental variables (IV).
+
+Consider the following model
+\[
+Y_i = \beta_0 + \beta_1 X_i + u_i
+\]
+where $Y_i$ is annual prices growth rate, and $X_i$ is the wages growth rate. Suppose workers want increase in their wages as the prices rise to protect their real wages, but their ability to do so depends on the unemployment rate $J$ in a following manner
+\[
+X_i = \alpha_0 + \alpha_1 Y_i + \alpha_2 J_i + v_i
+\]
+where $u_i$ and $v_i$ are stochastic disturbance terms. Accordingly, $Y_i$ and $X_i$ are both endogeneous variables since their values are determined by the interaction of the relationships in the model, and $J_i$ is an exogeneous variable since its values are determined externally. These equations are called \textit{structural equations}, and if we write the endogeneous variables in terms of exogeneous ones and the disturbance terms, then they are called \textit{reduced form equations}.
+
+To derive the reduced form equation for $Y_i$ and $X_i$ we start with the structural equations, just as we did for measurement errors:
+\begin{align*}
+Y_i 
+  &= \beta_0 + \beta_1 X_i + u_i \\[6pt]
+  &= \beta_0 + \beta_1 (\alpha_0 + \alpha_1 Y_i + \alpha_2 J_i + v_i) + u_i \\[6pt]
+(1 - \beta_1\alpha_1) Y_i 
+  &= (\beta_0 + \beta_1\alpha_0) + \beta_1\alpha_2J_i + (\beta_1v_i + u_i) \\[6pt]
+Y_i 
+  &= \frac{\beta_0 + \beta_1\alpha_0 + \beta_1\alpha_2J_i + \beta_1v_i + u_i}{1 - \beta_1\alpha_1}
+\end{align*}
+and for $X_i$ the reduced form equation is
+\begin{align*}
+X_i 
+  &= \alpha_0 + \alpha_1 Y_i + \alpha_2 J_i + v_i \\[6pt]
+  &= \alpha_0 + \alpha_1 (\beta_0 + \beta_1 X_i + u_i) + \alpha_2 J_i + v_i \\[6pt]
+(1-\alpha_1\beta_1) X_i 
+  &= (\alpha_0+\alpha_1\beta_0) + \alpha_2 J_i + (\alpha_1u_i + v_i) \\[6pt]
+X_i 
+  &= \frac{\alpha_0+\alpha_1\beta_0 + \alpha_2 J_i + \alpha_1u_i + v_i}{1-\alpha_1\beta_1}
+\end{align*}
+It can be observed that $Y_i$ indirectly depends on the exogeneous variable $J_i$ and the disturbance term $v_i$ through $X_i$. Similarly, $X_i$ depends on $u_i$ indirectly, and $J_i$ and $v_i$ directly. These dependencies mean the OLS would yield inconsistent and biased estimates. To see this lets look at the expression for $\beta_1$:
+\begin{align*}
+\hat{\beta_1}^{OLS} 
+  &= \frac{\displaystyle\sum_{i=1}^n (X_i - \bar{X})(Y_i-\bar{Y})}{(X_i-\bar{X})^2} \\[6pt]
+  &= \frac{\displaystyle\sum_{i=1}^n (X_i - \bar{X})\big[(\beta_0 + \beta_1 X_i + u_i) - (\beta_0 + \beta_1 \bar{X_i} + \bar{u_i}) \big]}{(X_i-\bar{X})^2} \\[6pt]
+  &= \frac{\displaystyle\sum_{i=1}^n \Big( (X_i - \bar{X}) \beta_1(X_i - \bar{X}) + (X_i - \bar{X})(u_i - \bar{u_i}) \Big)}{(X_i-\bar{X})^2} \\[6pt]
+  &= \beta_1 + \frac{\displaystyle\sum_{i=1}^n(X_i - \bar{X})(u_i - \bar{u_i})}{(X_i-\bar{X})^2}
+\end{align*}
+Since the error term is a nonlinear function of $u_i$, directly, and $v_i$, indirectly, we cannot obtain an analytical expression for its expected value. This is why we look at its probability limit, where we use the rule that the probability limit of a ratio is equal to the ration of probability limit of the numerator to the probability limit of the denominator. In the current form the expression for $\hat{\beta_1}^{OLS}$ does not have a probability limit. For this, we need to divide both the numerator and the denominator by $n$.
+\begin{align*}
+plim(\hat{\beta}_1) 
+  &= \beta_1 +  \frac{plim \bigg( \displaystyle \frac{1}{n}\sum_{i=1}^n(X_i - \bar{X})(u_i - \bar{u}) \bigg)}{plim \bigg( \displaystyle \frac{1}{n}\sum_{i=1}^n(X_i - \bar{X})^2 \bigg)}
+  = \beta_1 + \frac{Cov(X, u)}{Var(X)} \\[6pt]
+  &= \beta_1 + \frac{\displaystyle Cov \bigg( \frac{\alpha_0+\alpha_1\beta_0 + \alpha_2 J_i + \alpha_1u_i + v_i}{1-\alpha_1\beta_1} \ , \ u_i \bigg)}{\displaystyle Var\bigg( \frac{\alpha_0+\alpha_1\beta_0 + \alpha_2 J_i + \alpha_1u_i + v_i}{1-\alpha_1\beta_1} \bigg)}
+\end{align*}
+Since $\frac{\alpha_0+\alpha_1\beta_0}{1-\alpha_1\beta_1}$ is a constant, its covariance with $u_i$ is zero: $Cov(\frac{\alpha_0+\alpha_1\beta_0}{1-\alpha_1\beta_1} , u)=0$. Similarly, $J_i$ is exogeneous, or at least we assume it is, so $Cov(\frac{\alpha_2}{1-\alpha_1\beta_1}J_i, u_i) = 0$, and if we assume that the disturbance terms in the structural equations, $u_i$ and $v_i$, are independent, then $Cov(\frac{1}{1-\alpha_1\beta_1}v_i, u_i)=0$. Then,
+\begin{align*}
+plim(\hat{\beta}_1) 
+  &= \beta_1 + \frac{\displaystyle 0 + 0 + \frac{\alpha_1}{1-\alpha_1\beta_1} Var(u_i) + 0}{\displaystyle \frac{1}{(1-\alpha_1\beta_1)^2} \Big( Var(\alpha_0+\alpha_1\beta_0) + Var(\alpha_2 J_i + \alpha_1u_i + v_i) \Big)} \\[6pt]
+  &= \beta_1 + \frac{\displaystyle \frac{\alpha_1}{1-\alpha_1\beta_1}\sigma_u^2}{\displaystyle \frac{1}{(1-\alpha_1\beta_1)^2} \begin{pmatrix} Var(\alpha_2J_i) + Var(\alpha_1u_i) + Var(v_i) \\ + 2Cov(\alpha_2J_i,\alpha_1,u_i) + 2Cov(\alpha_2J_i,v_i) + 2Cov(\alpha_1,v_i) \end{pmatrix}} \\[6pt]
+  &= \beta_1 + \frac{\displaystyle (1-\alpha_1\beta_1)(\alpha_1\sigma_u^2)}{\alpha_2^2\sigma_J^2 + \alpha_1^2\sigma_u^2 + \sigma_v^2}
+\end{align*}
+Thus $\hat{\beta_1}^{OLS}$ is an inconsistent and biased estimator of $\beta_1$. Since variances are always positive, and asusming the coefficient for annual price growth rate, $\alpha_1$ is positive, then the direction of the bias depends on $(1-\alpha_1\beta_1)$. 
 \end{description}
  
+
+
+
+
+
+
+
+
+\bigskip\bigskip\bigskip
+\hdashrule[0.5ex]{\textwidth}{1pt}{3mm}
+\bigskip\bigskip\bigskip
+
+
+## QUESTION 2
+\textbf{Consider the following population regression function (PRF) in which education and ability both positively affect the wage received:}
+\begin{equation}\label{eq:SQ2}
+log(wage) = \alpha + \beta_1 \ educ + \beta_2 \ ability + \varepsilon
+\end{equation}
+
+### (a) If there is no direct measurement of ability and equation (\ref{eq:SQ2}) is estimated simply using OLS on $educ$, would you expect your estimate $\beta_1$ to be biased upwards or downwards?
+
+\begin{description}
+\item[Answer:] If we estimate equation (\ref{eq:SQ2}) via OLS on $educ$ only, then we are estimating the model
+\[
+log(wage) = \beta_0+ \beta_1 \ educ + u
+\]
+where $u = \beta_2 \ ability + \varepsilon$ and the estimator $\hat{\beta}_1$ is
+\[
+\hat{\beta}_1 = \frac{\displaystyle \sum_{i=1}^n\Big( {educ}_i - \overline{educ} \Big)\Big( log({wage}_i) - \overline{log(wage)} \Big)}{\displaystyle \sum_{i=1}^n\Big( {educ}_i - \overline{educ} \Big)^2}
+\]
+By definition, $\hat{\beta}_1$ is an unbiased estimator if and only if $\mathbb{E}(\hat{\beta}_1) = \beta_1$. If we expand this expression for $\hat{\beta}_1$ we get:
+\begin{align*}
+\hat{\beta}_1 
+  &= \frac{\displaystyle \sum_{i=1}^n\Big( {educ}_i - \overline{educ} \Big)\Big( (\alpha + \beta_1 \ {educ}_i + \beta_2 \ {ability}_i + \varepsilon_i) - (\alpha + \beta_1 \ \overline{educ}_i + \beta_2 \ \overline{ability}_i + \bar{\varepsilon}_i) \Big)}{\displaystyle \sum_{i=1}^n\Big( {educ}_i - \overline{educ} \Big)^2} \\[6pt]
+  &= \frac{\displaystyle \beta_1\sum_{i=1}^n\Big( {educ}_i - \overline{educ} \Big)^2 + \beta_2\sum_{i=1}^n\Big( ({educ}_i - \overline{educ})({ability}_i - \overline{ability}_i) \Big) + \sum_{i=1}^n \Big( {educ}_i - \overline{educ} \Big) \Big( \varepsilon_i - \bar{\varepsilon}_i \Big)}{\displaystyle \sum_{i=1}^n\Big( {educ}_i - \overline{educ} \Big)^2} \\[6pt]
+  &= \beta_1 + \beta_2 \frac{\displaystyle \sum_{i=1}^n\Big( ({educ}_i - \overline{educ})({ability}_i - \overline{ability}_i) \Big)}{\displaystyle \sum_{i=1}^n\Big( {educ}_i - \overline{educ} \Big)^2} + \frac{\sum_{i=1}^n \Big( {educ}_i - \overline{educ} \Big) \Big( \varepsilon_i - \bar{\varepsilon}_i \Big) }{\displaystyle\sum_{i=1}^n\Big( {educ}_i - \overline{educ} \Big)^2}
+\end{align*}
+All of this analysis is conditional on the sample values of the explanatory variables. When we take expectations, the first two terms are unaffected and the third term is zero. That is,
+\[
+\hat{\beta}_1 = \beta_1 + \beta_2 \frac{\displaystyle \sum_{i=1}^n\Big( ({educ}_i - \overline{educ})({ability}_i - \overline{ability}_i) \Big)}{\displaystyle \sum_{i=1}^n\Big( {educ}_i - \overline{educ} \Big)^2}
+\]
+
+To see the intuition behind this notice that because we omit $ability$ from the regression model, $educ$ will not only have a direct effect on $log(wage)$ but also a proxy effect when it mimics the effect of $ability$. This indirect effect of $educ$ on $log(wage)$ depends on two things:
+\begin{itemize}
+\item the extent to which $educ$ can mimic $ability$, i.e. the extent to which $educ$ can explain $ability$, and
+\item effect of $ability$ on $log(wage)$, which is $\beta_2$.
+\end{itemize}
+The extent of $ability$ being explained by $educ$ is determined by the slope coefficient of
+\[
+ability = \gamma_0 + \gamma_1 \ educ + v
+\]
+where $\hat{\gamma}_1$ is given by
+\[
+\hat{\gamma}_1 = \frac{\displaystyle \sum_{i=1}^n({educ}_i - \overline{educ}_i)({ability}_i - \overline{ability}_i)}{\displaystyle \sum_{i=1}^n({educ}_i - \overline{educ}_i)^2}
+\]
+Since the effect of $ability$ on $log(wage)$ is $\beta_2$, we combine these two factors to obtain the indirect effect of $educ$ on $log(wage)$:
+\[
+\beta_2\hat{\gamma}_1 = \beta_2\frac{\displaystyle \sum_{i=1}^n({educ}_i - \overline{educ}_i)({ability}_i - \overline{ability}_i)}{\displaystyle \sum_{i=1}^n({educ}_i - \overline{educ}_i)^2}
+\]
+Finally, since the direct effect of $educ$ on $Y$ is $\beta_1$, when we regress $log(wage)$ on $educ$ only, omitting $ability$, the coefficient of $educ$ is then the combination of direct and indirect effects on $log(wage)$:
+\[
+\beta_1 + \beta_2\frac{\displaystyle \sum_{i=1}^n({educ}_i - \overline{educ}_i)({ability}_i - \overline{ability}_i)}{\displaystyle \sum_{i=1}^n({educ}_i - \overline{educ}_i)^2} + \text{sampling error}
+\]
+If $educ$ and $ability$ are nonstochastic, then the expected value of the coefficient will be the sum of the first two terms. The presence of the second term implies that in general the expected value of the coefficient will be different from the true value $\beta_1$ and therefore biased.
+
+To determine the direction of the bias, first notice that $\sum ({educ}_i - \overline{educ})^2$ will always be positive, which means the direction of the bias will depend on the signs of $\beta_2$ and $\sum({educ}_i - \overline{educ}_i)({ability}_i - \overline{ability}_i)$. 
+
+Also notice that $\sum({educ}_i - \overline{educ}_i)({ability}_i - \overline{ability}_i)$ is the same as the numerator of the sample correlation $r$ between $educ$ and $ability$:
+\[
+r_{educ,ability} = \frac{\displaystyle\sum_{i=1}^n({educ}_i - \overline{educ}_i)({ability}_i - \overline{ability}_i)}{\displaystyle\sqrt{\sum_{i=1}^n({educ}_i - \overline{educ}_i)^2\sum_{i=1}^n}({ability}_i - \overline{ability}_i)^2}
+\]
+Since the denominator of $r_{educ,ability}$ is always positive, the sign of $\sum({educ}_i - \overline{educ}_i)({ability}_i - \overline{ability}_i)$ then is the same as the sign of the correlation coefficient, $r_{educ,ability}$. Therefore, if we assume that $r_{educ,ability} >0$ and $\beta_1 > 0$ then, there will be upward bias and $\hat{\beta}_1$ will tend to overestimate $\beta_1$.
+\end{description}
+
+
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
+
+### (b) How would you obtain a reliable estimate of the slope parameter $\beta_1$ using first a proxy variable and then an instrumental variable?
+
+\begin{description}
+\item[Proxy Variable:] Suppose $P$ is an ideal proxy in that there exists a linear relationship between $ability$ and $P$ such that
+\[
+ability = \delta_0 + \delta_1P + v
+\]
+We can rewrite our model using this relationship
+\begin{align*}
+log(wage) 
+  = \alpha + \beta_1 \ educ + \beta_2 (\delta_0 + \delta_1 \ P + v) + \varepsilon \\
+  = (\alpha + \beta_2\delta_0) + \beta_1 \ educ + \beta_2\delta_2 \ P + (\beta_2v + \varepsilon) \\
+  = \gamma_0 + \beta_1 \ educ + u 
+\end{align*}
+The composite error $u$ depends on both the error in the model, $\varepsilon$, and the error in the proxy equation, $v$. 
+
+The model is now formally specified correctly in terms of observable variables. If we fit this model we will obtain the following results:
+\begin{itemize}
+\item coefficient of $educ$, i.e. $\beta_1$, its standard error, and its $t$ statistic will be the same as if $ability$ has been used instead of $P$;
+\item $R^2$ will be the same as if $ability$ has been used instead of $P$;
+\item coefficient of $P$ will be an estimate of $\beta_2\delta_2$ which means we cannot obtain an estimate of $\beta_2$, unless we are able to guess the value of $\delta_2$;
+\item the $t$ statistic for $P$ will be the same as that which would have been obtained for $ability$, so we can assess the significance of $ability$, even though we cannot estimate its coefficient;
+\item since intercept is now $\alpha + \beta_2\delta_0$ we cannot obtain an estimate of the intercept $\alpha$, though, here, intercept is not a primary interest.
+\end{itemize}
+
+For us to get a consistent estimator of $\beta_1$, the coefficient of $educ$, through the use of proxy variable method, the following two assumptions need to hold:
+\begin{itemize}
+\item The error $\varepsilon$ is uncorelated with $educ$ and $ability$ as well as $P$. That is, $\mathbb{E}(\varepsilon | educ, ability, P) = 0$. What this means is that $P$ is irrelevant in the population model and is not contained in the error term. It is $ability$ that directly affects $log(wage)$ not $P$. $P$ is just a proxy for $ability$.
+\item The error $v$ is uncorrelated with $educ$ and $P$. If $P$ is a good proxy for $ability$, then $v$ is uncorrelated with $educ$. Here, the term 'good' or 'ideal' means that $\mathbb{E}(ability | educ, P) = \mathbb{E}(ability | P) = \delta_0 + \delta_1 \ P$. That is, once $P$ is controlled for, the expected value of $ability$ does not depend on $educ$. In other words, $ability$ has zero correlation with $educ$ once $P$ is partialled out. Thus the average level of $ability$ only changes with $P$ and not with $educ$.
+\end{itemize}
+\bigskip
+\item[Instrumental Variable:] Instrumental variables are especially important when we want to fit models comprising several simultaneous equations. Suppose for this question proxy variable does not have the required properties for a consistent estimate of $\beta_1$. Then we put $ability$ in the error term since it is unobserved. This leaves us with:
+\[
+log(wage) = \beta_0 + \beta_1 \ educ + \epsilon
+\]
+where $\epsilon$ contains $ability$. If $ability$ and $educ$ are correlated, then we have a biased and inconsistent estimate of $\beta_1$. However, we can still use this equation as a basis for estimation as long as we can find an instrumental variable $Z$ for $educ$. In order for $Z$ to be used as an instrumental variable, it needs to satisfy the following conditions:
+\begin{itemize}
+\item[Instrument Relevance:] $Z$ is correlated with $educ$, i.e. $Cov(Z, educ) \neq 0$; and
+\item[Instrument Exogeneity:] $Z$ is uncorrelated with $\epsilon$, i.e. $Cov(Z, \epsilon) = 0$.
+\end{itemize}
+Then the estimator of the coefficient for $educ$ becomes:
+\begin{align*}
+\hat{\beta}_1^{IV} 
+  &= \frac{\displaystyle \sum_{i=1}^n(Z_i - \bar{Z})\Big({log(wage)}_i-\overline{log(wage)}\Big)}{\displaystyle\sum_{i=1}^n(Z_i-\bar{Z})({educ}_i - \overline{educ})} \\[6pt]
+  &= \frac{\displaystyle \sum_{i=1}^n(Z_i - \bar{Z})\Big((\beta_0 + \beta_1 \ educ_i + \epsilon_i)-(\beta_0 + \beta_1 \ \overline{educ} + \bar{\epsilon})\Big)}{\displaystyle\sum_{i=1}^n(Z_i-\bar{Z})\Big({educ}_i - \overline{educ}\Big)} \\[6pt]
+  &= \frac{\displaystyle \sum_{i=1}^n \Big( \beta_1(Z_i - \bar{Z})(educ_i - \overline{educ}) + (Z_i - \bar{Z})(\epsilon_i - \bar{\epsilon}) \Big)}{\displaystyle\sum_{i=1}^n(Z_i-\bar{Z})\Big({educ}_i - \overline{educ}\Big)} \\[6pt]
+  &= \beta_1 + \frac{\displaystyle \sum_{i=1}^n (Z_i - \bar{Z})(\epsilon_i - \bar{\epsilon} \Big)}{\displaystyle\sum_{i=1}^n(Z_i-\bar{Z})\Big({educ}_i - \overline{educ}\Big)}
+\end{align*}
+Thus the $IV$ estimator is equal to the true value plus an error term. We can't however obtain its expectation because we cannot obtain an expectation for the error term since $educ$ is not distributed independently of $\epsilon$.
+
+As a second best measure, we can investigate whether we can say anything about the error term in large samples by looking at its probability limit:
+\begin{align*}
+plim\Big(\hat{\beta}_1^{IV}\Big) 
+  &= \beta_1 + plim \left( \frac{\displaystyle \frac{1}{n} \sum_{i=1}^n (Z_i - \bar{Z})(\epsilon_i - \bar{\epsilon} \Big)}{\displaystyle \frac{1}{n}\sum_{i=1}^n(Z_i-\bar{Z})\Big({educ}_i - \overline{educ}\Big)} \right) \\[6pt]
+  &= \beta_1 + \frac{Cov(Z,\epsilon)}{Cov(Z,educ)} \\[6pt]
+  &= \beta_1 + \frac{0}{\sigma_{Z,educ}} \ \ \ \ \ \text{since } Cov(Z,\epsilon)=0 \\[6pt]
+  &= \beta_1
+\end{align*}
+That is, insofar as $\sigma_{Z,educ}\neq 0$, $\hat{\beta}_1^{IV}$ will tend to the true value of $\beta_1$ in large samples. 
+\end{description}
+
+
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
+
+### (c) Given your answer to (b), evaluate the following statement: "whilst $IQ$ is a good candidate for a proxy variable of $ability$, it cannot be used as an instrument for $education$."
+
+\begin{description}
+\item[Answer:] Even though instrumental variable is a useful method, we cannot test for "instrument exogeneity" assumption. We can only consider economic behavior in order to maintain the $Cov(Z, educ)\neq 0$ assumption. At times there may be an observable proxy for some factor contained in $\epsilon$ and we can check if $Z$ and the proxy variable are more or less uncorrelated. On the other hand, if we have a good proxy, then, we would add that variable to the equation and estimate the expanded form using OLS.
+
+This is exactly where we see a tension between a good proxy vs. a good IV:
+\begin{itemize}
+\item[good proxy:] For $IQ$ to be a good proxy, it needs to be as highly correlated with $ability$ as possible;
+\item[good IV:] For $IQ$ to be a good instrumental variable, it needs to be uncorrelated with $ability$ since $ability$ is contained in $\epsilon$ and a good IV should not covary with the error term, hence the "instrument exogeneity" condition. That is, a good IV should affect $log(wage)$ only through its influence on $educ$ and not in any other way.
+
+Therefore, in this question, it is correct to say that $IQ$ is a good candidate for a proxy variable of $ability$, it is not a good instrumental variable for $educ$.
+\end{itemize}
+\end{description}
+
+
+
+
+
+
+
+
+
+
+\bigskip\bigskip\bigskip
+\hdashrule[0.5ex]{\textwidth}{1pt}{3mm}
+\bigskip\bigskip\bigskip
+
+
+## QUESTION 3
+\textbf{Consider the following PRF where $Cov(X_i, u_i) \neq 0$:}
+\begin{equation}
+Y_i= \alpha + \beta X_i + u_i
+\end{equation}
+\textbf{Assume that there is an instrument (some variable $Z_i$) that satisfies the assumptions $Cov(Z_i,u_i)=0$ and $Cov(Z_i,X_i) \neq 0$. By deriving the expression for $Cov(Z_i,Y_i)$, show that the IV estimator for $\beta$ using $Z_i$, is given by the following:}
+\begin{equation}
+\hat{\beta}_{IV} = \frac{\sum(Z_i - \bar{Z})(Y_i - \bar{Y})}{\sum(Z_i - \bar{Z})(X_i - \bar{X})}
+\end{equation}
+
+\begin{description}
+\item[Answer:]
+We have derived this in Question 1(b) above using $educ$. We will do this again here with a slightly different approach. The question is asking us to derive the expression for $Cov(Z_i,Y_i)$, which is
+\[
+Cov(Z_i,Y_i) = Cov(Z_i \ , \ \alpha + \beta X_i + u_i) = \beta_1 Cov(Z_i,X_i) + Cov(Z_i, u_i)
+\]
+Assuming both instrument relevance, $Cov(Z_i, X_i) \neq 0$ and instrument exogeneity, $Cov(Z_i, u_i)=0$, assumptions hold true, we can solve this for $\beta_1$ as
+\[
+\beta_1 = \frac{Cov(Z_i, Y_i}{Cov(Z_i,X_i)}.
+\]
+Therefore, $\beta_1$ is the ratio of population covariance between $Z$ and $Y$ to the population covariance betweeen $Z$ and $X$, which shows that $\beta_1$ is \underline{identified}. Here, \textit{identification} of parameter means that we can write $\beta_1$ in terms of population moments that can be estimated using a sample data.
+
+Given a random sample, we estimate the population quantities by the sample analogs. After canceling the sample sizes in the numerator and the denominator, we get the IV estimator of $\beta_1$:
+\[
+\beta_1 = \frac{\displaystyle \sum_{i=1}^n(Z_i - \bar{Z})(Y_i - \bar{Y})}{\displaystyle \sum_{i=1}^n (Z_i - \bar{Z})(X_i - \bar{X})}
+\]
+as desired.
+
+Also note that the IV estimator of $\beta_0$ is $\hat{\beta}_0 = \bar{Y} - \hat{\beta}_1 \bar{X}$, where the slope estimator, $\hat{\beta}_1$ is the IV estimator.
+\end{description}
+
+
+
+
+
+
+
+
+
+
+
+
+
+\bigskip\bigskip\bigskip
+\hdashrule[0.5ex]{\textwidth}{1pt}{3mm}
+\bigskip\bigskip\bigskip
+
+
+## QUESTION 4
+
+### (a) Using the 'Phillips' data in the IV dataset, estimate the following expectations augmented Phillips Curve:
+\begin{equation}\label{eq:SQ4a}
+\Delta {inf}_t = \beta_0 + \beta_1 \ {unem}_t + e_t 
+\end{equation}
+\textbf{Obtain an estimate of the natural rate of unemployment.}
+
+\begin{description}
+\item[Answer:]
+In STATA we can do this using the following code
+\end{description}
+
+```{r include=FALSE}
+libraries <- c("haven",       # to import/export SPSS, STATA, SAS files
+               "readxl",      # to import/export Excel files   
+               "tidyverse",   # for tidy data
+               "Statamarkdown", # for using STATA commands in R
+               "ivreg", #for regressions with instrumental variables
+               "mnormt", #for creating bivariate normal distributions
+               "lmtest", #for various tests on regressions
+               "kableExtra", # for creating nice tables in R
+               "rstatix")     # converts stats functions to a tidyverse-friendly format
+
+invisible(lapply(libraries, library, character.only=TRUE))  # will load the libraries
+```
+
+
+```{stata}
+/* load the data */
+quietly cd ..
+ import excel using Data/iv.xls, sheet("Phillips") firstrow
+/* `firstrow` indicates that the first row contains the variable names */
+
+/* set the time variable */
+  tsset year
+
+/* run the regression */   
+  regress D.inf unem
+```
+
+We see that the $t$ statistic for both the intercept and the slope coefficient are significant.
+
+To get the natural rate, we can set the change in inflation, $\Delta inf_t$ equal to zero and then rearrange for unemployment to obtain the natural rate. That is,
+\begin{align*}
+\Delta {inf}_t &= 3.030581 + -0.54255769 \ {unem}_t \\
+0 &= 3.030581 + -0.54255769 \ {unem}_t \\
+\frac{-3.030581}{-0.54255769} &= {unem}_t \\
+5.585 &= {unem}_t
+\end{align*}
+Therefore we estimate that the natural rate of unemployment is about $5.585$.
+
+And in R we can use the following code to obtain the same results:
+
+```{r eval=FALSE}
+# Load the data
+phillips_df <- read_excel("../Data/iv.xls", sheet = "Phillips")
+
+# create the Delta variable of first differences
+phillips_df <- phillips_df %>% 
+  mutate(delta_inf = inf - lag(inf))
+
+# Run the regression
+SQ4a_lm <- lm(delta_inf ~ unem, data = phillips_df)
+summary(SQ4a_lm)
+
+# Obtain the natural rate
+-SQ4a_lm$coefficients[1]/SQ5a_lm$coefficients[2]
+```
+
+
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
+
+### (b) It is suspected that ${unem}_t$ is related to $e_t$. Why might this be and what implications follow if this is correct? Explain carefully why this problem might be alleviated by using ${unem}_{t-1}$ as an instrument to construct an instrumental variable (IV) for ${unem}_t$? Test your assumptions where possible.
+
+\begin{description}
+\item[Answer:] If there are supply-side shocks that occur every now and again and influence both price expectations and unemployment, then unemployment is not exogeneous. This endogeneity means we will get biased estimates. Notice that since these shocks are random and correctly put in the error term, they are not the same as omitted variable bias, but it nevertheless causes the same problems. As such, it can be helped by the use of IV estimation.
+
+The second part of the question asks why lagged unemployment can be used as an IV for unemployment. For this, recall that IV has two criteria - instrument relevance and instrument exogeneity. The former requires the IV to be related to $unem$, while the latter requires that it should not be related to $e$. Since the shocks are included in this error term, it also means that the IV should not be related to the shocks. Given that by definition 'shock' means it is unpredictable before it occurs, then using unemployment rate the year before a shock happens means it should not be related to the shock due it latter's unpredictability.
+
+We cannot test the instrument exogeneity assumption but we can test the instrument relevance assumption. For this, we can run a regression of $unem$ on its lagged values and check if the lagged variable is significant. In R,
+\end{description}
+
+```{r eval=FALSE}
+SQ4b_lm <- lm(unem ~ lag(unem,1), data = phillips_df)
+summary(SQ4b_lm)
+```
+
+and in STATA:
+
+```{stata}
+quietly cd ..
+quietly import excel using Data/iv.xls, sheet("Phillips") firstrow
+quietly tsset year
+
+regress unem L.unem
+```
+
+From the output we see that the $t$ statistic for the lagged unemployment variable is significant at $7.56$, which means the instrument relevance, i.e. identification, assumption seems to hold.
+
+
+
+
+
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
+
+### (c) Estimate the equation (\ref{eq:SQ4a}) on page \pageref{eq:SQ4a} by IV. Compare these results to those obtained using the 2SLS option in Stata. Compare your results to those obtained in part (a).
+
+\begin{description}
+\item[Answer:] There are multiple ways of doing this. For illustration, we will do the 2-stage least squares regression manually and then use specific STATA commands for IV regression.
+
+For manual calculation, notice that we have already completed the first stage in part (b) above. We will now put the fitted values from the reduced form regression into a new variable called $unemf$ using the `predict` command. For the second stage, we will then estimate the first equation again, but this time using these fitted values $unemf$ instead of $unem$.
+\end{description}
+
+
+```{stata}
+quietly cd ..
+quietly import excel using Data/iv.xls, sheet("Phillips") firstrow
+quietly tsset year
+
+quietly regress unem L.unem
+quietly predict unemf
+
+regress D.inf unemf
+```
+
+The coefficient for $unemf$ is $-0.1383374$ compared to $-0.5425869$ for $unem$. Similarly the intercept changed to $0.6935128$ from $3.030581$. This will also change the natural rate to
+```{stata}
+quietly cd ..
+quietly import excel using Data/iv.xls, sheet("Phillips") firstrow
+quietly tsset year
+quietly regress unem L.unem
+quietly predict unemf
+quietly regress D.inf unemf
+
+display -_b[_cons]/_b[unemf]
+```
+
+To obtain the same results using STATA commands instead of doing it manually, we can either use `ivreg` command or `ivregress 2sls` command. Note that `ivreg` is not short for `ivregress 2sls` - they are different commands. However, if we add the `,small` option at the end of `ivregress 2sls` command, then it will give the same result as `ivreg`. 
+
+The use of `ivreg` is limited in that we cannot make use of the post estimation options. This is not important for this question but it will be for the next one when we need to do overidentification test using the `estat overid` and endogeneity test using the `estat endog` command. These commands only work if we use `ivregress 2sls` and not `ivreg`.
+
+To estimate the model with the IV method we reference the variable that we suspect is endogeneous, i.e. $unem$ within a parenthesis and set it equal to the instrument or instruments we are using, i.e. lagged values of $unem$. If you want to obtain the reduced form equation, use the `first` option at the end of the IV regression:
+
+```{stata}
+quietly cd ..
+quietly import excel using Data/iv.xls, sheet("Phillips") firstrow
+quietly tsset year
+
+ivregress 2sls D.inf (unem = L.unem), small first
+```
+
+Notice that while the coefficients are the same as the ones we obtained manually, the standard errors and $t$ statistics are slightly different. Using STATA's commands give more correct information so use the STATA commands when possible. 
+
+In R we can use the `ivreg()` function from the `library` package. To fit the model with this function we extend the original regression formula by adding a second part after the | separator to specify the instrumental variables. If there are multiple variables, then we use three parts using the | separator. The first part is the exogeneous variables, the second part is the endogeneous variables, and the third part is the instrumental variables. Since we only have one endogeneous variable, we use one | separator.
+
+```{r eval=FALSE}
+SQ4c_lm <- ivreg(delta_inf ~ unem | lag(unem,1), data = phillips_df)
+summary(SQ4c_lm)
+```
+
+
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
+
+### (d) Estimate the equation (\ref{eq:SQ4a}) on page \pageref{eq:SQ4a} one more time, but this time add ${unem}_{t-1}$ as a second regressor. What implications follow from the results above?
+
+\begin{description}
+\item[Answer:] If we add ${unem}_{t-1}$ as a second regressor, we get the following
+\end{description}
+
+with R:
+
+```{r eval=FALSE}
+SQ4d_lm <- update(SQ4a_lm, ~ . + lag(unem,1))
+summary(SQ4d_lm)
+```
+
+and with STATA:
+
+```{stata}
+quietly cd ..
+quietly import excel using Data/iv.xls, sheet("Phillips") firstrow
+quietly tsset year
+
+regress D.inf unem L.unem
+```
+
+Notice that both $unem$ and its lagged variable are significant suggesting that lagged unemployment seems to be a regressor it its own right, and so has a direct impact on the "change in inflation". 
+
+Since this seems to be the case, the results in parts (b) and (c) are likely to be misleading. Also, this means we cannot use ${unem}_{t-1}$ as an instrument because if it is a regressor in its own right, then previously it would have been in the error term, and therefore $Cov({unem}_{t-1})\neq 0$ which would have violated the instrument exogeneity assumtion. 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+\bigskip\bigskip\bigskip
+\hdashrule[0.5ex]{\textwidth}{1pt}{3mm}
+\bigskip\bigskip\bigskip
+
+
+## QUESTION 5
+
+### (a) Using the 'regional' data from iv.xls, estimate the following equation using OLS
+\begin{equation}\label{eq:SQ5a}
+log(wage) = \alpha + \beta_1 \ educ + \varepsilon
+\end{equation}
+
+\begin{description}
+\item[Answer:]
+\end{description}
+
+In R:
+
+```{r eval=FALSE}
+regional_df <- read_excel("../Data/iv.xls", sheet = "regional")
+SQ5a_lm <- lm(lwage ~ educ, data = regional_df)
+summary(SQ5a_lm)
+```
+
+and in STATA:
+
+```{stata}
+quietly cd ..
+quietly import excel using Data/iv.xls, sheet("regional") firstrow
+regress lwage educ
+```
+
+
+
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
+
+### (b) Now estimate equation (\ref{eq:SQ5a}) on page \pageref{eq:SQ5a} again using $fatheduc$ as an instrument. Do this by (i) running a reduced form equation of $educ$ against $fatheduc$ and substituting the fitted values into equation (\ref{eq:SQ5a}); (ii) by using the IV formula derived in Question 3 above; (iii) by using `ivreg` command in STATA. Verify that the estimates of $\beta_1$ are the same in each case. Are these results what you expected (i.e. is the change in the estimate of $\beta_1$ roughly what you expected)?
+
+\begin{description}
+\item[Answer (i):] This part of the question is asking us to manually conduct the 2-stage least squares estimation using the IV method. 
+\end{description}
+
+In STATA:
+
+```{stata}
+quietly cd ..
+quietly import excel using Data/iv.xls, sheet("regional") firstrow
+
+quietly regress educ fatheduc
+
+/* put the fitted values into a new variable educf */
+quietly predict educf
+
+/* run the regression again with educf */
+regress lwage educf
+```
+
+
+\begin{description}
+\item[Answer (ii):] Next we use the formula from Question 3 to derive the coefficient for $educf$. The formula we use for this is
+\[
+\hat{\beta}^{IV} = \frac{\sum({fatheduc}_i - \overline{fatheduc})({lwage}_i - \overline{lwage})}{\sum({fatheduc}_i - \overline{fatheduc})({educ}_i - \overline{educ})}
+\]
+\end{description}
+
+```{r}
+sum((regional_df$fatheduc - mean(regional_df$fatheduc))
+    *(regional_df$lwage - mean(regional_df$lwage))) /
+  sum((regional_df$fatheduc - mean(regional_df$fatheduc))
+    *(regional_df$educ - mean(regional_df$educ)))
+```
+
+which gives us the same coefficient $\hat{\beta}_1 = 0.06834005$.
+
+
+
+\bigskip
+
+\begin{description}
+\item[Answer (iii):] Next we use the commands that do this automatically.
+\end{description}
+
+In STATA we can again use `ivreg` or `ivregress 2sls ,small` command but the question is asking specifically for us to use `ivreg`:
+
+```{stata}
+quietly cd ..
+quietly import excel using Data/iv.xls, sheet("regional") firstrow
+
+ivreg lwage (educ=fatheduc)
+```
+
+which gives us the same coefficients with slightly different $t$ statistics, though giving significant coefficients in either approach. We would accept the results from this STATA command as more correct, though.
+
+Notice that the result would not be what we would expect if $ability$ is the variable omitted since $ability$ should be positively correlated with $educ$ and therefore causing and upward bias. 
+
+In R we can obtain the same results via:
+
+```{r eval=FALSE}
+SQ5b_lm <- ivreg(lwage ~ educ | fatheduc, data = regional_df)
+summary(SQ5b_lm)
+```
+
+
+
+
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
+
+### (c) It is suggested that equation (\ref{eq:SQ5a}) is problematic because it ignores experience and that the following specification is likely to give better results:
+\begin{equation}\label{eq:SQ5c}
+log(wage) = \alpha + \beta_1 \ educ + \beta_2 \ exper + \beta_3 \ {exper}^2 + \varepsilon
+\end{equation}
+\textbf{What is the reasoning behind this new specification? Estimate equation (\ref{eq:SQ5c}) using both OLS and IV methods of estimation (using the same instrument as in part (b)). Discuss your results.}
+
+\begin{description}
+\item[Answer:] 
+We will start with OLS and then run the regression with IV method.
+\end{description}
+
+OLS in R:
+
+```{r eval=FALSE}
+SQ5c_lm <- lm(lwage ~ educ + exper + I(exper^2), data = regional_df)
+# or lm(lwage ~ educ + poly(exper, 2, raw=T), data = regional_df)
+summary(SQ5c_lm)
+```
+
+and OLS in STATA:
+
+```{stata}
+quietly cd ..
+quietly import excel using Data/iv.xls, sheet("regional") firstrow
+
+regress lwage educ exper expersq
+```
+
+Next we look at the results of regression with IV method.
+
+In R:
+
+```{r eval=FALSE}
+SQ5c_iv_lm <- ivreg(lwage ~ poly(exper,2, raw=T) | educ | fatheduc, data = regional_df)
+summary(SQ5c_iv_lm)
+```
+
+and in STATA:
+
+```{stata}
+quietly cd ..
+quietly import excel using Data/iv.xls, sheet("regional") firstrow
+
+ivregress 2sls lwage exper expersq (educ = fatheduc), small
+```
+
+Again an unexpected result from the IV, we would have expected it to fall. This suggests that the bias is in the opposite direction. One possibility is that it is being caused by experience which would be negatively related to wage. Taking this out of the error term should increase the estimate of $\beta_1$ as observed. This suggests either that there is more in the error term that is negatively related to wage, or that $fatheduc$ is not a very good instrument.
+
+
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
+
+### (d) It is now suggested that as well as $fatheduc$, $motheduc$, and $nearc4$ should be used as instruments for $educ$. Explain why these seem plausible instruments. Can you find any support for the suggestion?
+
+\begin{description}
+\item[Answer:] To check if instrument relevance condition is being met, we can regress the endogeneous variable $educ$ on these variables and check if any of them are significant. 
+\end{description}
+
+In R:
+
+```{r eval =FALSE}
+SQ5d_lm <- lm(educ ~ fatheduc + motheduc + nearc4 + exper + I(exper^2), data = regional_df)
+summary(SQ5d_lm)
+```
+
+and in STATA:
+
+```{stata}
+quietly cd ..
+quietly import excel using Data/iv.xls, sheet("regional") firstrow
+
+regress educ fatheduc motheduc nearc4 exper expersq
+```
+
+it appears all three additional variables are significant so the identification condition is being met for these as well.
+
+
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
+
+### (e) Estimate equation ($\ref{eq:SQ5c}) on page \pageref{eq:SQ5c} using all three instruments. Discuss your results.
+
+\begin{description}
+\item[Answer:] We are now treating experience as exogenous and regress with the three instruments.
+\end{description}
+In R: 
+
+```{r eval = FALSE}
+SQ5e_lm <- ivreg(lwage ~ exper + expersq | educ | fatheduc + motheduc + nearc4, 
+                 data = regional_df)
+summary(SQ5e_lm)
+```
+
+and in STATA:
+
+```{stata}
+quietly cd ..
+quietly import excel using Data/iv.xls, sheet("regional") firstrow
+
+ivregress 2sls lwage exper expersq (educ = fatheduc motheduc nearc4), small
+```
+
+We see that the estimate of $\beta_1$ increased again which is a surprising result as we would have expected the error term to contain $ability$ which would be positively related to $educ$.
+
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
+
+### (f) Use the Over-Identifying Restrictions Test to see if either $fatheduc$ or $motheduc$ and $nearc4$ might be endogeneous.
+
+\begin{description}
+\item[Answer:] Overidentification refers to having more than one potential instruments for an endogeneous variable. For this we will conduct a test that is similar to Breusch-Godfrey test though here we do not have an autoregressive error term. Here we have the model 
+\[
+log(wage) = \alpha + \beta_1 \ educ + \beta_2  \ exper + \beta_3 \ {exper}^2 + u
+\]
+where we use instrumental variables $fatheduc, motheduc$, and $nearc4$ for the endogeneous variable $educ$. For them to be a good IV they also need to be uncorrelated with the error term. So the coefficients in
+\[
+u = \gamma_1 fatheduc + \gamma_2 motheduc + \gamma_3 nearc4 + v
+\]
+where $v$ is the white noise term. The null hypothesis is that these variables satisfy instrumental exogeneity assumption, i.e. the coefficients are jointly zero:
+\[
+\mathbb{H}_0: \gamma_1 = \gamma_2 = \gamma_3 = 0.
+\]
+The $R^2$ from this regression multiplied by the sample size asymptotically follows a $\chi_3^2$ distribution.
+\end{description}
+
+In R:
+
+```{r eval=FALSE}
+SQ5f_iv_lm <- 
+  ivreg(lwage ~ poly(exper,2, raw=T) | educ | fatheduc + motheduc + nearc4, 
+        data = regional_df)
+SQ5f_res_lm <- 
+  lm(SQ5f_iv_lm$residuals ~ fatheduc + motheduc + nearc4 + exper + I(exper^2),
+     data = regional_df)
+summary(SQ5f_res_lm)
+
+# calculate n times R-squared
+length(regional_df$lwage) * summary(SQ5f_res_lm)$r.squared
+```
+
+In STATA:
+
+```{stata}
+quietly cd ..
+quietly import excel using Data/iv.xls, sheet("regional") firstrow
+
+quietly ivreg 2sls lwage (educ = fatheduc motheduc nearc4) exper expersq
+predict U, r
+reg U fatheduc motheduc nearc4 exper expersq
+
+/* calculate n times R-squared */
+display e(r2)*e(N)
+
+```
+
+We can also obtain this same $\chi^2$ statistic using `estat overid` command:
+
+```{stata}
+quietly cd ..
+quietly import excel using Data/iv.xls, sheet("regional") firstrow
+quietly ivregress 2sls lwage (educ = fatheduc motheduc nearc4) exper expersq, small
+
+estat overid
+```
+
+The Sargan score gives us the $chi^2$ statistic we are interested in, which is the same as the one we obtained manually. 
+
+At $\alpha = 0.05$ the $\chi_2$ with $3$ degrees of freedom is
+
+```{r}
+qchisq(p = 0.05, df=3, lower.tail=FALSE)
+```
+
+
+Since our statistic of $8.5379406$ exceeds this critical value of $7.814728$ we reject the null hypothesis. This means at least one of the variables is correlated with the error term and thus not a good candidate for being an instrumental variable. To find out which of these candidates are not exogeneous, we can run the same auxiliary error regression on two of the three candidates at a time. 
+
+Lets start by keeping $fatheduc$ and $motheduc$ and removing $nearc4$: 
+
+```{stata}
+quietly cd ..
+quietly import excel using Data/iv.xls, sheet("regional") firstrow
+quietly ivregress 2sls lwage (educ = fatheduc motheduc) exper expersq, small
+estat overid
+```
+
+We get a $\chi^2$ statistic of $0.319686$ which is below the critical value of $7.814728$, thus we fail to reject the null hypothesis. Therefore both of these seem to be good candidates for being an instrument.
+
+Lets now try the same by keeping $fatheduc$ and $near4c$ and removing $motheduc$:
+
+```{stata}
+quietly cd ..
+quietly import excel using Data/iv.xls, sheet("regional") firstrow
+quietly ivregress 2sls lwage (educ = fatheduc nearc4) exper expersq, small
+estat overid
+```
+
+We get a $\chi^2$ statistic of $8.46808$ which exceeds the critical value of $7.814728$, thus we reject the null hypothesis. This makes $nearc4$ a suspect, i.e. it appears $nearc4$ is endogeneous.
+
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
+
+### (g) Now regress $IQ$ on $motheduc, fatheduc$, and $nearc4$. What do these results appear to suggest about your choice of instruments?
+
+\begin{description}
+\item[Answer:] 
+What we are doing in this question is to check if these instruments are related to $IQ$ and thus to $ability$.
+
+Before we run the commands though, note that IQ is coded as "strings" in STATA and as "character" in R. We need to convert it to numerical data first. For this we use the `real` command in STATA, while we use the `transform()` function in R in combination with `as.numeric()` and `as.character()` functions. This is because the latter first converts the column into actual "character" structure, and then we convert it to numeric data.
+\end{description}
+
+```{r eval=FALSE}
+regional_df$IQ
+regional_df <- regional_df %>%
+  transform(IQ = as.numeric(as.character(IQ)))
+summary(lm(IQ ~ fatheduc + motheduc + nearc4 + exper + expersq, data=regional_df))
+```
+
+and in STATA:
+
+```{stata}
+quietly cd ..
+quietly import excel using Data/iv.xls, sheet("regional") firstrow
+
+gen iq = real(IQ)
+reg iq fatheduc motheduc nearc4 exper expersq
+```
+
+From the $t$ statistics, it looks like all instruments are related to $IQ$ including $nearc4$, and so by implication to $ability$. This would seem to explain our results in that the instruments are not passing the exogeneity condition since $ability$ is left in the error term.
+
+It is also a bit odd that the main offender above, $nearc4$ is least related to IQ with a $t$ statistic at the cusp of being rejected at $\alpha=0.05$.
+
+
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
+
+### (h) Repeat the regression from (g) but now adding the regional dummies $(reg661,\dots,669)$. Explain your results and their implications for the use of fatheduc, motheduc, and nearc4 as instruments (N.B. that the regional dummies are exhaustive, so you don't need to include a constant term).
+
+\begin{description}
+\item[Answer:] In this question we are adding the regional dummies into the regression. Since the dummies are exhaustive we can either leave all of them in the equation and take the intercept out, or leave one of the regions out and keep the intercept. However, regional dummies will be significant only if we regress without the intercept. This is because if we leave the intercept, the other dummies are not significantly different from the constant term; i.e. they are all pretty much the same.
+
+In R, it is probably easiest to do this by creating a new dataframe that is a subet of the original dataframe with only the relevant variables for this question and regress it that way. Also since, all the regions start with $reg$ we can use a shortcut to get all the variables that begin with $reg$ instead of typing them one by one.
+\end{description}
+
+In R regressing on $0$ as the first variable removes the intercept: 
+
+```{r eval=FALSE}
+regional_df_subset <- regional_df %>% 
+  select(matches(c("IQ","nearc4","fatheduc","motheduc","^exp", "^reg")))
+
+SQ5h_lm <- lm(IQ ~ 0 + . , data=regional_df_subset)
+summary(SQ5h_lm)
+```
+
+In STATA we remove the intercept via the `noco` or `noconstant` option :
+
+```{stata}
+quietly cd ..
+quietly import excel using Data/iv.xls, sheet("regional") firstrow
+gen iq = real(IQ)
+
+reg iq nearc4 fatheduc motheduc exp* reg**, noconstant
+```
+
+From the regression output we see that $nearc4$ has a $t$ statistic of $0.3$ and is not significant. Therefore, when controlling for regional factors, $nearc4$ is not related to $IQ$. On the other hand both $fatheduc$ and $motheduc$ are significant, and thus seem related to $IQ$. So it appears that the best thing to do is to only use $nearc4$ and to ensure the regional dummies are controlling for regional factors in the structural equation.
+
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
+
+### (i) Estimate equation (\ref{eq:SQ5c}) on page \pageref{eq:SQ5c} once more, this time using the dummies from part (h) and only $nearc4$ as an instrument, also use the `first` option so that you can check that the identification condition holds. Discuss these results.
+
+\begin{description}
+\item[Answer:]
+\end{description}
+
+```{stata}
+quietly cd ..
+quietly import excel using Data/iv.xls, sheet("regional") firstrow
+
+ivreg lwage exper expersq reg* (educ=nearc4), noco first
+```
+
+All the variables are significant. Interestingly, the coefficient on $educ$ has now increased to $0.208$ which is still not what we would expect. What is causing the problem is not the omission of $ability$ because if it was then our estimates would be falling.
+
+
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
+
+### (j) Using the residuals from the equation estimated in part (i), test the hypothesis that $educ$ is endogeneous. Confirm your results using the STATA 'endogeneity test'. Discuss your results.
+
+\begin{description}
+\item[Answer:] This is essentially a test to see if any of this is required in the first place. 
+\end{description}

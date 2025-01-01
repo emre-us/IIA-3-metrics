@@ -243,7 +243,7 @@ libraries <- c("haven",       # to import/export SPSS, STATA, SAS files
                "kableExtra", # for creating nice tables in R
                "rstatix")     # converts stats functions to a tidyverse-friendly format
 
-# lapply(libraries, library, character.only=TRUE) will load the libraries
+# invisible(lapply(libraries, library, character.only=TRUE)) will load the libraries
 ```
 
 ```{r include = FALSE}
