@@ -911,7 +911,7 @@ it appears all three additional variables are significant so the identification 
 ***
 \bigskip\bigskip
 
-### (e) Estimate equation ($\ref{eq:SQ5c}) on page \pageref{eq:SQ5c} using all three instruments. Discuss your results.
+### (e) Estimate equation (\ref{eq:SQ5c}) on page \pageref{eq:SQ5c} using all three instruments. Discuss your results.
 
 \begin{description}
 \item[Answer:] We are now treating experience as exogenous and regress with the three instruments.
@@ -1084,9 +1084,9 @@ In R regressing on $0$ as the first variable removes the intercept:
 
 ```{r eval=FALSE}
 regional_df_subset <- regional_df %>% 
-  select(matches(c("IQ","nearc4","fatheduc","motheduc","^exp", "^reg")))
+  select(matches(c("lwage","IQ","nearc4","educ","fatheduc","motheduc","^exp", "^reg")))
 
-SQ5h_lm <- lm(IQ ~ 0 + . , data=regional_df_subset)
+SQ5h_lm <- lm(IQ ~ 0 + . - lwage - educ, data=regional_df_subset)
 summary(SQ5h_lm)
 ```
 
@@ -1131,5 +1131,96 @@ All the variables are significant. Interestingly, the coefficient on $educ$ has 
 ### (j) Using the residuals from the equation estimated in part (i), test the hypothesis that $educ$ is endogeneous. Confirm your results using the STATA 'endogeneity test'. Discuss your results.
 
 \begin{description}
-\item[Answer:] This is essentially a test to see if any of this is required in the first place. 
+\item[Answer:] This is essentially a test to see if any of this is required in the first place. We should test this because 2SLS estimator is less efficient with larger standard errors than OLS when the explanatory variables are exogenous. 
+
+\begin{tcolorbox}[breakable, title=Testing for Endogeneity\footnote{Wooldridge (2021, $7^{th}$ ed) Section 15.5a: Testing for Endogeneity}, skin=enhancedlast]
+Suppose there is a single suspected endogeneous variable in
+\[
+Y_1 = \beta_0 + \beta_1 Y_2 + \beta_2 Z_1 + \beta_3 Z_2 + u
+\]
+which would be $educ$ in this question where the model with regional dummies is
+\[
+log(wage) = \beta_1 educ + \beta_2 exper + \beta_3 {exper}^2 + \beta_4 reg661 + \beta_5 reg662 + \beta_6 reg663 + \beta_7 reg664 + \beta_8 reg665 + \beta_9 reg666 + \beta_{10} reg667 + \beta_{11} reg668 + \beta_{12} reg669 + u
+\]
+which is without an intercept because all the regional dummy variables are present in the model. If $Y_2$, which is $educ$ in our case, is uncorrelated with $u$ then we should estimate the model by OLS and not 2SLS. 
+
+To test this, Hausman (1978)\footnote{Hausman J A (1978) "Specification Tests in Econometrics", \textit{Econometrica}, 46:1251:1271} suggested directly comparing the OLS and 2SLS estimates and determining whether the differences are statistically significant. If all variables are exogenous, then both OLS and 2SLS are consistent. If $Y_2$, or in our case $educ$, is endogeneous while the other variables are exogeneous, then 2SLS and OLS must differ significantly. 
+
+A regression test, is therefore, the most straight forward way of checking if the difference between 2SLS and OLS are statistically significant. This approach is based on estimating the reduced form for $Y_2$
+\[
+Y_2 = \alpha_0 + \alpha_1 Z_1 + \alpha_2 Z_2 + \alpha_3 Z_3 + \alpha_4 Z_4 + v
+\]
+Here $Z_3$ and $Z_4$ are two additional exogeneous variables that do not appear in the main model. If $v$ is uncorrelated with $u$ then $Y_2$ is uncorrelated with $u_1$ as well since each $Z_j$ is uncorrelated with $u$.
+
+In this question, the reduced form is
+\[
+educ = \alpha_1 nearc4 + \alpha_2 exper + \alpha_3 {exper}^2 + \alpha_4 reg661 + \alpha_5 reg662 + \alpha_6 reg663 + \alpha_7 reg664 + \alpha_8 reg665 + \alpha_9 reg666 + \alpha_{10} reg667 + \alpha_{11} reg668 + \alpha_{12} reg669 + v
+\]
+If $v$ is uncorrelated with $u$, then $educ$ is also uncorrelated with $u$, and thus exogeneous, since all the other regressors are exogeneous.
+
+This is what we want to test.
+
+This means, we want to test if $\eta_1$ in the following relationship is zero or not
+\[
+u = \eta_1 v + e
+\]
+where $e$ is uncorrelated with $v$ and has zero mean.
+
+Then $u$ and $v$ are uncorrelated if and only if $\eta_1 = 0$. The most straightforward way of testing is to include $v$ as an additional regressor to our model and do a $t$ test. However, $v$ is not observed, so we need to estimate the reduced form and use the residuals $\hat{v}$ instead. Therefore we estimate by OLS the following,
+\[
+Y_1 = \beta_0 + \beta_1 Y_2 + \beta_2 Z_1 + \beta_3 Z_2 + \eta_1\hat{v} + u
+\]
+which, in this question is
+\[
+log(wage) = \beta_1 educ + \beta_2 exper + \beta_3 {exper}^2 + \beta_4 reg661 + \beta_5 reg662 + \beta_6 reg663 + \beta_7 reg664 + \beta_8 reg665 + \beta_9 reg666 + \beta_{10} reg667 + \beta_{11} reg668 + \beta_{12} reg669 + \eta_1 \hat{v} + \epsilon
+\]
+and test $\mathbb{H}_0: \eta_1=0$ using a $t$-statistic. If we reject the null hypothesis then we conclude that $Y_2$, or in our case $educ$ is endogeneous because $v$ and $u$ are correlated. If that is the case, then we should use 2SLS.
+
+Also note that all the coefficients from this last regression, with the exception the coefficient for $v$, $\eta_1$, will always be identical to the 2SLS estimates, even though we use OLS to estimate them. This can be used as a check to see whether we have done a proper regression in testing for endogeneity.
+
+This point also gives us a useful interpretation of 2SLS. When we add $\hat{v}$ as an explanatory variable and applying OLS, we clear up the endogeneity of $Y_2$. So when we start by estimating the structural equation, i.e. original model without $\hat{v}$, by OLS, we can quantify the importance of allowing $Y_2$ to be endogeneous by seeing how much $\hat{\beta}_1$ changes when $\hat{v_2}$ is added to the equation. Irrespective of the outcome of the statistical tests, we can see whether the change in $\hat{\beta}_1$ is expected and practically significant.
+
+A caution, however. If we go ahead with 2SLS estimates in the end, the standard errors should not come from the model with $\hat{v}$ included, which are only valid under the null hypothesis that $\eta_1=0$, but from the built-in 2SLS routines instead.
+
+Finally, we can test for endogeneity of multiple explanatory variables, where we test for joint significance of the residuals in the structural equation using an $F$-test.
+\end{tcolorbox}
+
+We can do this test in R as follows:
 \end{description}
+
+```{r eval=FALSE}
+SQ5j_rf_lm <- lm(educ ~ 0 + . - IQ - fatheduc - motheduc - lwage, 
+                 data = regional_df_subset)
+SQ5j_lm <- lm(lwage ~ 0 + . + SQ5j_rf_lm$residuals - IQ - fatheduc - motheduc, 
+              data = regional_df_subset)
+summary(SQ5j_lm)
+```
+
+
+and in STATA:
+
+```{stata}
+quietly cd ..
+quietly import excel using Data/iv.xls, sheet("regional") firstrow
+
+/* obtain the residuals v from reduced form */
+quietly regress educ nearc4 exper expersq reg*, noconstant
+predict v, r
+
+/* run the model with v included */
+reg lwage educ exper expersq reg* v, noconstant
+```
+
+The $t$ statistic for $v$ is $-2.38$ with a $p$ value of $0.017$ which means we can reject the null hypothesis and conclude that $educ$ is endogeneous. Accordingly we should estimate our model using 2SLS. Also notice that the relationship to the error term $v$ is negative.
+
+We can also use the `estat endog` function in STATA for this:
+
+```{stata}
+quietly cd ..
+quietly import excel using Data/iv.xls, sheet("regional") firstrow
+
+quietly ivregress 2sls lwage (educ=nearc4) exper expersq reg*, small noconstant
+estat endog
+```
+
+Which gives us an $F$-statistic of $5.66477$ which is the square of the $t$-statistic of $-2.38$ we observed above. 
