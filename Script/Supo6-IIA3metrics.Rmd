@@ -1,0 +1,131 @@
+---
+title: "IIA-3 Econometrics: Supervision 6"
+author: "Emre Usenmez"
+date: "Lent Term 2025"
+output: pdf_document
+header-includes: 
+  - \usepackage{amsmath, tcolorbox, dashrule, booktabs, fancyhdr, multirow}
+  - \tcbuselibrary{listings,most}
+  - \allowdisplaybreaks
+---
+
+<!-- This comment will not be displayed in the output. Below change to CSS style is to ensure the blocktexts are in the same form size as the rest of the text.-->
+
+```{css style settings, echo = FALSE} 
+blockquote {
+    padding: 10px 20px;
+    margin: 0 0 20px;
+    font-size: 14px;
+    border-left: 5px solid #eee;
+}
+```
+
+<!-- below ensures the output are not presented in Scientific mode (e.g. 0.023+e4) but regular decimals -->
+```{r, echo=FALSE}
+options(scipen = 999)
+```
+
+
+\pagestyle{fancy}
+\fancyhead[L]{2024-25 Part IIA Paper 3}
+\fancyhead[R]{Supervision 6 Solutions}
+\fancyfoot[L]{Gonville \& Caius}
+\fancyfoot[R]{Emre Usenmez}
+
+\bigskip\bigskip
+
+\textbf{\underline{Topics Covered}}
+\begin{description}
+\item[Faculty Qs:] 
+\item[Supplementary Qs:] Endogeneity, measurement errors; simultaneous equations;
+\end{description}
+
+\bigskip
+
+\textbf{\underline{Related Reading:}}
+\begin{description}
+\item Dougherty, \textit{Introduction to Econometrics}, $5^{th}$ ed, OUP
+  \subitem Chapter 14: Introduction to Panel Data Models
+\item Wooldridge J M (2021) \textit{Introductory Econometrics: A Modern Approach}, $7^{th}$ ed, 
+  \subitem Chapter 13: Pooling Cross Sections across Time: Simple Panel Data Methods
+\item Gujarati, D N and Porter, D (2009) \textit{Basic Econometrics}, $7^{th}$ International ed, McGraw-Hill 
+  \subitem Chapter 16: Panel Data Regression Models
+\item Gujarati, D (2022) \textit{Essentials of Econometrics}, $5^{th}$ ed, Sage
+  \subitem Chapter 12: Panel Data Regression Models
+\item Stock, J H and Watson M W (2020) \textit{Introduction to Econometrics}. $4^{th}$ Global ed, Pearson
+  \subitem Chapter 10: Regression with Panel Data
+\end{description}
+
+\bigskip
+
+\small Very grateful to Dr Oleg Kitov and Dr Clive Lawson for the very informative stylized answers to previous iterations of the supervision questions.
+\normalsize
+
+\pagebreak
+
+# FACULTY QUESTIONS
+
+\bigskip\bigskip
+ 
+
+## QUESTION 1
+
+
+
+
+
+
+\pagebreak
+
+# SUPPLEMENTARY QUESTIONS
+
+These questions are intended to guide the students through the procedures for estimation using Panel Data sets. A large part of the problem with this topic is keeing in mind the basic structure of a panel data set, there is little more theory than already covered with omitted variable bias. 
+
+Question A deals with pooled cross-sections in order to make the comparison with panel data sets in questions B and C.
+
+\bigskip\bigskip
+
+## QUESTION A
+
+### (1) Explain the difference between independently pooled cross section data sets and panel data sets. Is either heteroskedasticity or serial correlation likely to be more of a problem for pooled cross section estimates? Explain why.
+
+\begin{description}
+\item[Answer:]
+Let's first define the two types of data sets.
+
+\subitem{Indy-pooled X-section:} When we sample randomly from a population at different points in time we obtain an \textit{independently pooled cross section}. These data sets consist of independently sampled observations which, among other things, ensures error terms across different observations would not be correlated.
+
+One reason for using independently pooled cross sections is to increase the sample size, which would result in more precise estimators as well as in test statistics with more power. As long as the relationship between at least some of the explanatory variables and the response variable remains constant over time.
+
+Because the data is pooled from different time periods, the populations may have different distributions in different time periods. To accomodate for this, the intercept in the model is allowed to differ across time periods. This is done by incorporating dummy variables for all but one time periods, where earliest time period is usually chosen as the base year. We can also use a time period dummy variable to check for structural changes as we did in the Michaelmas term, by interacting that dummy with a key explanatory variable of interest.
+
+\subitem{Panel Data:} A \textit{panel data}, or \textit{longitudinal data} are different from independently pooled cross section in that the \textit{same} unit of observation in a cross-sectional sample are surveyed across time. As a result, we cannot assume that the observations are independently distributed across time.
+
+Given these definitions, both types of data sets can have both heteroskedasticity and serial correlation.
+
+\end{description}
+
+
+
+
+
+
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
+
+### (2) 
+
+#### (a) Using data in the "houseprices" worksheet, and noting the definitions of each variable, estimate the following equation for 1981:
+\begin{equation}\label{eq:SQA2a}
+log(rprice)_i = \beta_0 + \beta_1\ {nearinc}_i + u_i
+\end{equation}
+\textbf{Given that the building of the incinerator was completed before 1981, interpret your results. Do your results imply that the building of the incinerator causes house prices to fall?}
+
+\begin{description}
+\item[Answer:]
+\end{description}
+
+
+#### (b) Estimate equation (\ref{eq:SQA2a}) using data for 1978 (at which time the incinerator had not even been planned) and calculate the difference-in-differences estimator.

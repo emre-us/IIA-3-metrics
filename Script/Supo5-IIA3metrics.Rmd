@@ -28,7 +28,7 @@ options(scipen = 999)
 
 \pagestyle{fancy}
 \fancyhead[L]{2024-25 Part IIA Paper 3}
-\fancyhead[R]{Supervision 4 Solutions}
+\fancyhead[R]{Supervision 5 Solutions}
 \fancyfoot[L]{Gonville \& Caius}
 \fancyfoot[R]{Emre Usenmez}
 
@@ -1139,9 +1139,10 @@ Suppose there is a single suspected endogeneous variable in
 Y_1 = \beta_0 + \beta_1 Y_2 + \beta_2 Z_1 + \beta_3 Z_2 + u
 \]
 which would be $educ$ in this question where the model with regional dummies is
-\[
-log(wage) = \beta_1 educ + \beta_2 exper + \beta_3 {exper}^2 + \beta_4 reg661 + \beta_5 reg662 + \beta_6 reg663 + \beta_7 reg664 + \beta_8 reg665 + \beta_9 reg666 + \beta_{10} reg667 + \beta_{11} reg668 + \beta_{12} reg669 + u
-\]
+\begin{align*}
+log(wage) = &\beta_1\ educ + \beta_2\ exper + \beta_3\ {exper}^2 + \beta_4\ reg661 + \beta_5\ reg662 + \beta_6\ reg663 \\
+            & + \beta_7\ reg664 + \beta_8\ reg665 + \beta_9\ reg666 + \beta_{10}\ reg667 + \beta_{11}\ reg668 + \beta_{12}\ reg669 + u
+\end{align*}
 which is without an intercept because all the regional dummy variables are present in the model. If $Y_2$, which is $educ$ in our case, is uncorrelated with $u$ then we should estimate the model by OLS and not 2SLS. 
 
 To test this, Hausman (1978)\footnote{Hausman J A (1978) "Specification Tests in Econometrics", \textit{Econometrica}, 46:1251:1271} suggested directly comparing the OLS and 2SLS estimates and determining whether the differences are statistically significant. If all variables are exogenous, then both OLS and 2SLS are consistent. If $Y_2$, or in our case $educ$, is endogeneous while the other variables are exogeneous, then 2SLS and OLS must differ significantly. 
@@ -1153,12 +1154,15 @@ Y_2 = \alpha_0 + \alpha_1 Z_1 + \alpha_2 Z_2 + \alpha_3 Z_3 + \alpha_4 Z_4 + v
 Here $Z_3$ and $Z_4$ are two additional exogeneous variables that do not appear in the main model. If $v$ is uncorrelated with $u$ then $Y_2$ is uncorrelated with $u_1$ as well since each $Z_j$ is uncorrelated with $u$.
 
 In this question, the reduced form is
-\[
-educ = \alpha_1 nearc4 + \alpha_2 exper + \alpha_3 {exper}^2 + \alpha_4 reg661 + \alpha_5 reg662 + \alpha_6 reg663 + \alpha_7 reg664 + \alpha_8 reg665 + \alpha_9 reg666 + \alpha_{10} reg667 + \alpha_{11} reg668 + \alpha_{12} reg669 + v
-\]
+\begin{align*}
+educ = &\alpha_1\ nearc4 + \alpha_2\ exper + \alpha_3\ {exper}^2 + \alpha_4\ reg661 + \alpha_5\ reg662 + \alpha_6\ reg663 \\
+      &+ \alpha_7\ reg664 + \alpha_8\ reg665 + \alpha_9\ reg666 + \alpha_{10}\ reg667 + \alpha_{11}\ reg668 + \alpha_{12}\ reg669 + v
+\end{align*}
 If $v$ is uncorrelated with $u$, then $educ$ is also uncorrelated with $u$, and thus exogeneous, since all the other regressors are exogeneous.
 
+
 This is what we want to test.
+
 
 This means, we want to test if $\eta_1$ in the following relationship is zero or not
 \[
@@ -1171,9 +1175,11 @@ Then $u$ and $v$ are uncorrelated if and only if $\eta_1 = 0$. The most straight
 Y_1 = \beta_0 + \beta_1 Y_2 + \beta_2 Z_1 + \beta_3 Z_2 + \eta_1\hat{v} + u
 \]
 which, in this question is
-\[
-log(wage) = \beta_1 educ + \beta_2 exper + \beta_3 {exper}^2 + \beta_4 reg661 + \beta_5 reg662 + \beta_6 reg663 + \beta_7 reg664 + \beta_8 reg665 + \beta_9 reg666 + \beta_{10} reg667 + \beta_{11} reg668 + \beta_{12} reg669 + \eta_1 \hat{v} + \epsilon
-\]
+\begin{align*}
+log(wage) = &\beta_1\ educ + \beta_2\ exper + \beta_3\ {exper}^2 + \beta_4\ reg661 + \beta_5\ reg662 + \beta_6\ reg663 \\
+            &+ \beta_7\ reg664 + \beta_8\ reg665 + \beta_9\ reg666 + \beta_{10}\ reg667 + \beta_{11}\ reg668 + \beta_{12}\ reg669 \\
+            &+ \eta_1\ \hat{v} + \epsilon
+\end{align*}
 and test $\mathbb{H}_0: \eta_1=0$ using a $t$-statistic. If we reject the null hypothesis then we conclude that $Y_2$, or in our case $educ$ is endogeneous because $v$ and $u$ are correlated. If that is the case, then we should use 2SLS.
 
 Also note that all the coefficients from this last regression, with the exception the coefficient for $v$, $\eta_1$, will always be identical to the 2SLS estimates, even though we use OLS to estimate them. This can be used as a check to see whether we have done a proper regression in testing for endogeneity.
