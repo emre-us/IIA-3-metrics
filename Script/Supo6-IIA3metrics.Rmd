@@ -37,7 +37,7 @@ options(scipen = 999)
 \textbf{\underline{Topics Covered}}
 \begin{description}
 \item[Faculty Qs:] 
-\item[Supplementary Qs:] Endogeneity, measurement errors; simultaneous equations;
+\item[Supplementary Qs:] Independently pooled cross-section; panel data; difference-in-differences (DiD) estimator;
 \end{description}
 
 \bigskip
@@ -55,6 +55,22 @@ options(scipen = 999)
 \item Stock, J H and Watson M W (2020) \textit{Introduction to Econometrics}. $4^{th}$ Global ed, Pearson
   \subitem Chapter 10: Regression with Panel Data
 \end{description}
+
+\bigskip
+
+```{r include=FALSE}
+libraries <- c("haven",       # to import/export SPSS, STATA, SAS files
+               "readxl",      # to import/export Excel files   
+               "tidyverse",   # for tidy data
+               "Statamarkdown", # for using STATA commands in R
+               "ivreg", #for regressions with instrumental variables
+               "mnormt", #for creating bivariate normal distributions
+               "lmtest", #for various tests on regressions
+               "kableExtra", # for creating nice tables in R
+               "rstatix")     # converts stats functions to a tidyverse-friendly format
+
+invisible(lapply(libraries, library, character.only=TRUE))  # will load the libraries
+```
 
 \bigskip
 
@@ -79,7 +95,7 @@ options(scipen = 999)
 
 # SUPPLEMENTARY QUESTIONS
 
-These questions are intended to guide the students through the procedures for estimation using Panel Data sets. A large part of the problem with this topic is keeing in mind the basic structure of a panel data set, there is little more theory than already covered with omitted variable bias. 
+These questions are intended to guide the students through the procedures for estimation using Panel Data sets. A large part of the problem with this topic is keeping in mind the basic structure of a panel data set, there is little more theory than already covered with omitted variable bias. 
 
 Question A deals with pooled cross-sections in order to make the comparison with panel data sets in questions B and C.
 
@@ -121,11 +137,1045 @@ Given these definitions, both types of data sets can have both heteroskedasticit
 \begin{equation}\label{eq:SQA2a}
 log(rprice)_i = \beta_0 + \beta_1\ {nearinc}_i + u_i
 \end{equation}
-\textbf{Given that the building of the incinerator was completed before 1981, interpret your results. Do your results imply that the building of the incinerator causes house prices to fall?}
+\textbf{Given that the building of the incinerator was completed before 1981, interpret your results. Do your results imply that the building of the incinerator causes house prices to fall?}\footnote{This question is from Wooldridge (2021), Section 13-2: Policy Analysis with Pooled Cross Sections, Example 13.3, and and is based on Kiel, K A and McClain, K T (1995) "House Prices During Siting Decision Stages: The Case of an Incinerator from Rumor through Operation" \textit{Journal of Environmental Economics and Management} 28:241-255.}
 
 \begin{description}
 \item[Answer:]
+Since we are going to estimate this equation for only 1981 only we need to select that year in our regression. In STATA this can be done in a number of ways. The following is one of them:
+\end{description}
+
+```{stata}
+/* load the data */
+  quietly cd ..
+  quietly import excel using Data/panel1.xls, sheet("houseprices") firstrow
+/* `firstrow` indicates that the first row contains the variable names */
+
+/* run the regression */
+  reg lrprice nearinc if year == 1981
+```
+
+
+and in R:
+
+```{r eval = FALSE}
+# Load the data
+houseprices_df <- read_excel("../Data/panel1.xls", sheet = "houseprices")
+
+# create a subset of the data
+houseprices_1981_df <- houseprices_df[houseprices_df$year==1981,]
+
+# run the regression on this subset
+SQA2a_lm <- lm(lrprice ~ nearinc, data = houseprices_1981_df)
+summary(SQA2a_lm)
+```
+
+Since this is a simple regression on a dummy variable, the intercept of $11.47852$ is the average selling price for homes that are not near the incinerator. The slope coefficient of $-0.40257$ for $nearinc$ indicates the percentage difference in the average selling price between homes that are near the incinerator and those that are not. In this instance, houses near the incinerator seem to sell on average $0.4$ percent less than those that are not near it. It is statistically significant with $t$ value of $-6.233$ thus we would reject the null that there is no difference in house prices with respect to proximity to the incinerator, i.e. $\mathbb{H}_0:\beta_1=0$.  However, this does not imply that building incinerator caused house prices to fall, the causation could be the other way around. We can run the same regression for 1978 before the rumors about incinerator began.
+
+
+
+\bigskip
+***
+\bigskip
+
+
+#### (b) Estimate equation (\ref{eq:SQA2a}) on page \pageref{eq:SQA2a} using data for 1978 (at which time the incinerator had not even been planned) and calculate the difference-in-differences estimator.
+
+\begin{description}
+\item[Answer:]
+We will do the same approach as we did in part (a), except this time for year 1978. This year is chosen because this is when there were not even the rumors that the incinerator would be built in North Andover, Massachusetts. Those rumors started after 1978.
+\end{description}
+
+```{stata}
+quietly cd ..
+quietly import excel using Data/panel1.xls, sheet("houseprices") firstrow
+  
+regress lrprice nearinc if year==1978
+```
+
+and in R:
+
+```{r eval = FALSE}
+houseprices_1978_df <- houseprices_df[houseprices_df$year==1978,]
+
+# run the regression on this subset
+SQA2b_lm <- lm(lrprice ~ nearinc, data = houseprices_1978_df)
+summary(SQA2b_lm)
+```
+
+This shows that even before there was even a talk of an incinerator, the average value of a home near the site was $0.3$ percent lower than the average value of a home far from the site. That difference is statistically significant with $t$-statistic of $-6.35$.This result seems to be consistent with the view that the incinerator was built in an area with lower housing values.
+
+To see if building an incinerator impacts house prices, we can use \textit{difference-in-differences estimator}, or (DiD estimator) which is the difference over time in the average house price differences in two locations. We can then check if this estimator is statistically different from zero.
+
+
+\begin{tcolorbox}[breakable, title=Difference in Differences\footnote{\textcolor{white}{Wooldridge (2021, $7^{th}$ ed) Section 13-2: Policy Analysis with Pooled Cross Sections}}, skin=enhancedlast]
+Suppose we want to understand the impact of a policy. In a natural experiment, we always have a control group that are not affected by the policy change, and a treatment group that are thought to be impacted by the policy change. To control for systematic differences between the control and treatment groups, we need two years of data, one before the policy change and one after the change.
+
+Therefore, our sample is split into four groups: the control group before the change, the control group after the change, the treatment group before the change, and the treatment group after the change. Denote the control group as a whole with $C$, and the treatment group with $T$. Create a dummy variable $dT$ that is equal to $1$ to indicate those in the treatment group $T$, and $0$ otherwise. Create another dummy variable $d2$ that is equal to $1$ to indicate the post-policy change period, and $0$ otherwise.
+
+The equation of interest is
+\[
+Y = \beta_0 + \delta_0\ d2 + \beta_1\ dT + \delta_1\ d2\times dT + other\ factors
+\]
+where $\delta_1$ measures the effect of the policy. Without other factors in the regression, $\hat{\delta}_1$ will be the \textbf{difference-in-differences} estimator:
+\[
+\hat{\delta}_1 = \big(\bar{Y}_{2,T} - \bar{Y}_{2,C}\big) - \big(\bar{Y}_{1,T} - \bar{Y}_{1,C}\big).
+\]
+We can rearrange this expression as
+\[
+\hat{\delta}_1 = \big(\bar{Y}_{2,T} - \bar{Y}_{1,T}\big) - \big(\bar{Y}_{2,C} - \bar{Y}_{1,C}\big)
+\]
+which gives a different interpretation of the DiD estimator. The first term, $\big(\bar{Y}_{2,T} - \bar{Y}_{1,T}\big)$, is the treatment group's difference in means across the two time periods. This quantity would be a good estimator of the policy effect only if we can assume no external factors changed across the two time periods. To adjust for this possibility, we subtract from this quantity, the control group's difference in means across the two time periods. We hope that this adjustment will give a good estimator of the causal impact of the program or intervention.
+
+Table below shows that the parameter $\delta_1$ can be estimated in two ways:
+\begin{itemize}
+\item[1.] compute the differences in averages between the treatment and control groups in the second time period, then compute the differences in averages between the treatment and control groups in the first time period, and finally subtract the result of the latter from the former, as in the first expression for $\hat{\delta}_1$ above.
+\item[2.] compute the changes in averages over time for each of the treatment and control groups, and then difference these changes, as in the second expression for $\hat{\delta}_1$ above.
+\end{itemize}
+These give us a two different interpretations of $\hat{\delta}_1$.
+\begin{center}
+\begin{tabular}{|| c | c | c | c ||}
+ & Before & After & After - Before \\
+Control & $\beta_0$ & $\beta_0+\delta_0$ & $\delta_0$ \\
+Treatment & $\beta_0 + \beta_1$ & $\beta_0+\delta_0+\beta_1+\delta_1$ & $\delta_0+\delta_1$ \\
+Treatment - Control & $\beta_1$ & $\beta_1 + \delta_1$ & $\delta_1$
+\end{tabular}
+\end{center}
+
+The parameter $\delta_1$ can be given an interpretation as an \textit{average treatment effect} (ATE) where the "treatment" is the group $T$ in the second time period.
+
+Finally, when include the explanatory variables, the OLS estimate of $\delta_1$ no longer has the simple form of DiD above, but its interpretation is similar. 
+\end{tcolorbox}
+
+So in order to obtain the DiD estimate, we will do the following:
+\[
+\hat{\delta}_1 = \Big(\overline{lrprice}_{81,near} - \overline{lrprice}_{81,far} \Big) - \Big(\overline{lrprice}_{78,near} - \overline{lrprice}_{78,far} \Big) 
+\]
+
+In STATA, we can do this manually by:
+
+```{stata}
+quietly cd ..
+quietly import excel using Data/panel1.xls, sheet("houseprices") firstrow
+
+quietly gen near81 = lrprice if year==1981 & nearinc==1
+quietly gen far81 = lrprice if year==1981 & nearinc==0
+quietly gen near78 = lrprice if year==1978 & nearinc==1
+quietly gen far78 = lrprice if year==1978 & nearinc==0
+
+means near81 far81 near78 far78
+```
+
+Based on the arithmetic averages, we then calculate the $\hat{\delta}_1$:
+
+```{r}
+(11.07595-11.47852)-(10.9455-11.28542)
+```
+
+Thus,
+\[
+\hat{\delta}_1 = \Big(\overline{lrprice}_{81,near} - \overline{lrprice}_{81,far} \Big) - \Big(\overline{lrprice}_{78,near} - \overline{lrprice}_{78,far} \Big) = -0.06265
+\]
+
+This can also be automatically obtained via `didregress` command in STATA:
+
+```{stata}
+quietly cd ..
+quietly import excel using Data/panel1.xls, sheet("houseprices") firstrow
+
+/* Run the DiD regression */
+quietly didregress (lrprice) (y81nrinc), group(nearinc) time(y81)
+
+/* The DiD estimate is the first row of the first column of resulting table */
+display r(table)[1,1]
+```
+
+In R it is the coefficient of the cross-product term:
+
+```{r eval=FALSE}
+summary(lm(lrprice ~ y81*nearinc, data=houseprices_df))
+```
+
+where the coefficient for the cross-product of $y81$ and $nearinc$ gives us the same result.
+
+
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
+
+### (3) Estimate the following equations and intrepret your results:
+\begin{align}
+log(rprice)_i &= \beta_0 + \beta_1\ {nearinc}_i + \beta_2\ y81 \times {nearinc}_i + u_i \\[4pt]
+log(rprice)_i &= \gamma_0 + \gamma_1\ {y81}_i + \gamma_2\ y81 \times {nearinc}_i + \varepsilon_i \\[4pt]
+log(rprice)_i &= \lambda_0 + \lambda_1\ {y81}_i + \lambda_2\ {nearinc}_i + \lambda_3\ y81 \times {nearinc}_i + v_i
+\end{align}
+\textbf{Why are the estimates so different? Use these results to test the significance of difference-in-differences estimator calculated in question A(2) above. (answers to this can be found in the help sheet, so no need to hand this in unless you have problems.)}
+
+\begin{description}
+\item[Answer:] 
+First, lets look at the interpretation of these coefficients:
+\begin{itemize}
+\item[$\beta_0$:] The price of houses averaged over 1978 and 1981 that are not near the incinerator.
+\item[$\beta_1$:] The difference between those houses near the incinerator in 1978 and those far from the incinerator in both years, which is not that interesting.
+\item[$\beta_2$:] The change in price over the two years for houses near the incinerator. This would be equivalent to the sum of $\lambda_1$ and $\lambda_3$.
+\bigskip
+\item[$\gamma_0$:] The price of houses in 1978 averaged over the whole area irrespective of their proximity to the incinerator site
+\item[$\gamma_1$:] Difference between prices of houses further away from incinerator in 1981 and all houses in 1978, which is again not very interesting
+\item[$\gamma_2$:] The difference in price between houses near the incinerator and those far from the incinerator in 1981. This is equivalent to the sum of $\lambda_2$ and $\lambda_3$.
+\bigskip
+\item[$\lambda_0$:] The average price of a house that is not near the incinerator in 1978
+\item[$\lambda_1$:] Changes in all housing values from 1978 to 1981
+\item[$\lambda_2$:] Difference in price between those houses near the incinerator and those far from it in 1978. That is, the location effect that is not due to the presence of incinerator. Recall from the earlier parts of the question above that even in 1978, homes near the incinerator site sold for less than houses not near it.
+\item[$\lambda_3$:] This is the parameter of interest. It measures the decline in housing values due to the new incinerator, provided we assume that houses both near and far from the incinerator site did not appreciate at different rates for other reasons. In other words, this is the estimate of the effect of the incinerator, the difference in differences estimate. This can be understood in two ways:
+\subitem as the difference between the price differences for houses near and far from the incinerator between 1978 and 1981, which is $\gamma_2 - \lambda_2$, and
+\subitem as the difference between the price differences in the two years between houses that are near and far from the incinerator, which is $\beta_2 - \lambda_1$.
+\end{itemize}
+
+To estimate these we will begin with creating a new variable that is the cross product of $y81$ and $nearinc$.
+\end{description}
+
+in STATA:
+
+```{stata}
+quietly cd ..
+quietly import excel using Data/panel1.xls, sheet("houseprices") firstrow
+
+generate y81nearinc = y81*nearinc
+
+regress lrprice nearinc y81nearinc
+regress lrprice y81 y81nearinc
+regress lrprice y81 nearinc y81nearinc
+```
+
+Notice that the coefficient on the interaction term are all different because the first two equations suffer from omitted variable bias. The first equation leaves out $y81$ and the second equation leaves out $nearinc$. In each case the variable left out must be related to the interaction term, so biasing the interaction term's coefficient estimate.
+
+Also notice that the coefficient of the interaction term in the last estimation is $-0.0626498$ which is exactly the same as the DiD estimate above. The $t$-statistic for this is $4.26$ which indicates that it is not significant.
+
+Also, notice that
+\begin{align*}
+\lambda_3 &= \beta_2 - \lambda_1 \\
+-0.0626498 &= 0.1304441 - 0.1930939  \\[12pt]
+\lambda_3 &= \gamma_2 - \lambda_2\\
+-0.0626498 &= -0.4025714 + 0.3399216 
+\end{align*}
+as expected.
+
+
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
+
+### (4) Now add the following variables and comment on the differences in your results: $age, age^2, rooms, baths, log(intst), log(land)$, and $log(area)$. Comment upon the reasons for adding such variables. Explain why the coefficient for $nearinc$ is no longer significant, and why the interaction term is.
+
+\begin{description}
+\item[Answer:]
+Up to now we did not take into account the characteristics of the houses. It may be that the houses selling near the incinerator may be different in 1981 than those in 1978. If that is the case, it can be important to control for such characteristics. Even if the relevant house characteristics did not change, including them can greatly reduce the error variance, which can in turn reduce the standard error of the interaction term's coefficient estimate. This is what Kiel and McClain (1995) did in their study.
+
+Here in this question, the age of the house is controlled for using a quadratic, while also controlling for distance to the inter-state in feet ($intst$), land area in feed ($land$), house area in feet ($area$), number of rooms ($rooms$), and number of baths ($baths$).
+\end{description}
+
+In STATA:
+
+```{stata}
+quietly cd ..
+quietly import excel using Data/panel1.xls, sheet("houseprices") firstrow
+generate y81nearinc = y81*nearinc
+
+regress lrprice y81 nearinc y81nearinc age agesq rooms baths lintst lland larea
+```
+
+We see that the adjusted R-squared has risen to 0.7239. The estimate of the coefficient of the interaction term is $-0.1315137$ which is relatively close to that without any controls. However, its $t$-statistic is now $-2.53$ which is significant at $\alpha=0.05$. We also see a reduction in the standard error of the interaction term estimate from $0.0834408$ in the uncontrolled model to $0.0519713$ in the controlled model. In the model without the full set of controls, the coefficient of the interaction term implied that because of the new incinerator, houses near it lost about $6.3\%$ in value. However, this estimate was not statistically different from zero. Here, with the full set of controls, we see that the houses near the incinerator were devalued by about $13.2\%$.
+
+Also $nearinc$ is no longer significant and has a very small coefficient. This indicates that the characteristics included in this model largely capture the housing characteristics that are most important for determining housing prices.
+ 
+ 
+ 
+\bigskip\bigskip
+***
+\bigskip\bigskip
+
+### (5) Test the hypothesis that the variance of the last equation (with the added variables) changes over time, i.e., that this equation suffers from the kind of heteroskedasticity we might expect to find in pooled cross-section data.
+
+\begin{description}
+\item[Answer:]
+Recall from Supervisions 4 Supplementary Questions 2(d) that in order to test for violation of the homoskedasticity assumption we want to test whether $u^2$ is related in expected value to one or more of the explanatory variables, which, in this case, would be the variable $y81$ since we are testing whether the variance changes over time. 
+
+We can do this either manually or via STATA command `hettest` or R function  `bptest()` from `lmtest` package. 
+\end{description}
+
+In STATA:
+
+```{stata}
+quietly cd ..
+quietly import excel using Data/panel1.xls, sheet("houseprices") firstrow
+generate y81nearinc = y81*nearinc
+quietly reg lrprice y81 nearinc y81nearinc age agesq rooms baths lintst lland larea
+
+/* apply hettest */
+  hettest y81, fstat
+
+/* or manual calculation */
+  predict u, resid
+  generate u2 = u^2
+  regress u2 y81
+```
+
+In the manual calculation we can see that the $t$-statistic for $y81$ is $-0.5$ which means we fail to reject the null hypothesis of homoskedasticity. We can also reach the same conclusion with the $F$-statistic of $0.25$ obtained either from the `hettest` command or from the manual approach. 
+
+
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
+
+### (6) Consider the following model:
+\begin{equation}\label{eq:SQA6}
+log(rprice)_i = \delta_0 + \delta_1\ {y81}_i + \delta_2\ log(dist)_i + \delta_3\ y81\times log(dist)_i + u_i
+\end{equation}
+\textbf{What would you expect the sign of $\delta_3$ to be? What does it mean if $\delta_2>0$? Estimate this equation and interpret your results.}
+
+
+\begin{description}
+\item[Answer:]
+$\delta_3$ is the parameter of interest. It measures the change in housing values due to distance from the incinerator site. The interaction term is 0 if year is not 1981. For 1981, the interaction term logarithmically increases as the distance to incinerator increases. Therefore, we would expect a positive $\delta_3$ since it would mean that the house prices increase as you move away from the incinerator.
+
+Similarly, if $\delta_2>0$, it means, holding others constant, a percentage increase in distance has a $\delta_2>0$ percent increase in the house prices on average. 
+
+We can estimate the equation in STATA as follows:
+\end{description}
+
+```{stata}
+quietly cd ..
+quietly import excel using Data/panel1.xls, sheet("houseprices") firstrow
+
+regress lrprice y81 ldist y81ldist
+```
+
+The interaction term is positive as we expected. However, with $t$-statistic of $0.59$ it is not significantly different from $0$. Just as we did in part A(4) above, we can control for house characteristics to see if this improves.
+
+
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
+
+### (7) Add the variables listed in part A(4). What do you now conclude about the effect of the incinerator's location on house prices? How do you explain the differences between these results and those in A(4)? How might you improve your results?
+
+\begin{description}
+\item[Answer:]
+We will start by adding $age, age^2, rooms, baths, log(intst), log(land)$, and $log(area)$ to the model and estimate again.
+\end{description}
+
+In STATA:
+
+```{stata}
+quietly cd ..
+quietly import excel using Data/panel1.xls, sheet("houseprices") firstrow
+
+regress lrprice y81 ldist y81ldist age agesq rooms baths lintst lland larea
+```
+
+We see that the adjusted $R$-squared rose from $0.2217$ to $0.7195$ after controlling for the relevant house characteristics. The estimate of the coefficient of the interaction term is $0.0624666$ which is relatively close to its value without the house characteristics controls. There is also a decline in the standard error from $0.081793$ to $0.0502789$ in the controlled model.The $t$-statistic is now $1.24$ which is still not high enough to reject the null hypothesis that it is significantly different from $0$. That is, the interaction term has not become significant with the addition of controls. 
+
+Notice that in Question A(4) when we ran the model with proximity to the incinerator using the dummy variable $nearinc$, the interaction term $y81\times nearinc$ was significant. This means, for distances less than or equal to $15,840$ feet between a given house and the incinerator, the model seems to work well. That is, our $dist$ variable, which treats the distance as continuous, would work well for distances that are less than or equal to $15,840$ feet. It appears that it does not work well, however, outside of this, given that the interaction term here is not significant.
+
+What can we do to address this? We could replace the distance outside to be the mean distance of that outside area, and use that constant number, so number marginal effects.
+
+```{stata}
+quietly cd ..
+quietly import excel using Data/panel1.xls, sheet("houseprices") firstrow
+
+/* create new variable that will replace `ldist` whereby it is equal to `ldist` */
+/* when near incinerator and average distance when outside */
+generate dis = ldist if nearinc==1
+egen meanldist0 = mean(ldist / (nearinc == 0))
+replace dis = meanldist0 if nearinc == 0
+
+/* create the new interaction term */
+generate disy81=dis*y81
+
+regress lrprice y81 dis disy81 age agesq rooms baths lintst lland larea
+```
+
+We see an improvement in the $t$-statistic at $1.97$ with $p$ value exactly at $0.5$. This is still not great, though. Perhaps we can drop $dis$ which is not significant.
+
+```{stata}
+quietly cd ..
+quietly import excel using Data/panel1.xls, sheet("houseprices") firstrow
+quietly generate dis = ldist if nearinc==1
+egen meanldist0 = mean(ldist / (nearinc == 0))
+replace dis = meanldist0 if nearinc == 0
+generate disy81=dis*y81
+
+regress lrprice y81 disy81 age agesq rooms baths lintst lland larea
+```
+
+Now it looks like with the full set of controls for house characteristics, and by treating the distance as continuous only in proximity, and fixed at the average distance when far, generates a statistically significant result with $t$-statistics for the interaction term at $2.84$. The coefficient of $0.1266185$ tells us that for each percentage change in distance from the incinerator impacts the house prices on average by $12.66\%$, holding everything else constant.
+
+Note that instead of averaging the distance for those distances that are far from the incinerator, we could instead have created an interaction between $ldist$ and $nearinc$ and interact $y81$ with that variable.
+
+```{stata}
+quietly cd ..
+quietly import excel using Data/panel1.xls, sheet("houseprices") firstrow
+generate disinc = ldist * nearinc
+generate disincy81=disinc*y81
+
+regress lrprice y81 disincy81 age agesq rooms baths lintst lland larea
+```
+
+Interestingly, here we get a negative coefficient for the interaction term. This is because by multiplying $lidst$ with $nearinc$ we effectively make all the distances that are not near the incinerator, $0$. This makes it look like the houses with higher prices are actually zero distance from the incinerator, thus it indicates that the closer you get to the incinerator, the more expensive a house becomes.
+
+
+
+
+
+
+
+
+
+
+\bigskip\bigskip
+\hdashrule[0.5ex]{\textwidth}{1pt}{3mm}
+\bigskip\bigskip
+
+## QUESTION B
+
+In Question A we looked at a policy analysis with pooled cross sections. In this question we will look at a two-period panel data analysis.\footnote{This question is from Wooldridge (2021), Section 13-3: Two-Period Panel Data Analysis}
+
+### (1) Using the data from the worksheet "crime1", estimate the following relationship between $crmrte$ against $unem$ for the year $1987$ only:
+\begin{equation} \label{eq:SQB1}
+crmrte = \beta_0 + \beta_1\ unem + \varepsilon
+\end{equation}
+
+\begin{description}
+\item[Answer:]
+The worksheet contains data on crime, ($crmrte$) and unemployment ($unem$) rates for 46 counties for 1982 and 1987. The $year$ column consists of $82$ and $87$, and the dummy variable d87 is 1 if $year$ is $87$ and $0$ otherwise. The question is effectively asking what happens if we use the 1987 cross section and run a simple regression of $crmrte$ on $unem$.
+
+Before we estimate this equation, lets first plot $crmrte$ against $unem$ to see the relationship between the rate of unemployment and crime rates. In STATA, you can do this by just following the instructions after clicking on the `graphics` dropdown menu. Or you can simply type `twoway (scatter crmrate unem)` and it should produce the scatter plot. From the scatter plot it should be clear that there is little relationship.
+
+To estimate the equation for 1987 only, we run the following commands in STATA:
+\end{description}
+
+```{stata}
+quietly cd ..
+quietly import excel using Data/panel1.xls, sheet("Crime1") firstrow
+
+regress crmrte unem if year==87
+```
+
+The regression gives us
+\begin{alignat*}{3}
+\widehat{crmrte} & = && 128.35 - && 4.16\ unem \\
+  &  && (20.76) && (3.42) \\
+n & = 46, &&  && R^2 = 0.033 
+\end{alignat*}
+
+A casual interpretation of this means that an increase in the unemployment rate \textit{lowers} the crime rate which makes little sense. The coefficient on $unem$ is not statistically significant with $|t|$-statisic of $1.22$. So at best, we found no link between crime and unemployment rates.
+
+This simple regression equation likely suffers from omitted variable problems. One possible solution is to try to control for more factors such as age distribution, gender distribution, education levels, law enforcement efforts etc in a multiple regression analysis. But many factors might be hard to control for. 
+
+Alternatively, as we discussed in Supervision 5, we can use a proxy variable. Here we suspect that our independent variable $unem$ is correlated with an omitted variable but we don't know how to obtain a proxy for that omitted variable. In these types of situations, we can include, as a control, the value of the dependent variable, $crmrte$ from an earlier time period. This is especially useful for policy analysis.
+
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
+
+### (2) Estimate equation (\ref{eq:SQB1}) again using lagged dependent variable. Comment on your results, and the reasons for using this specification.
+
+\begin{description}
+\item[Answer:]
+Some cities have had high crime rates in the past. Many of the same unobserved factors contribute to both high current crime rats and past crime rates. Inertial effects are also captured by putting in lags of the dependent variable. Using a lagged dependent variable in a cross-sectional equation provides a simple way to account for historical factors that cause \textit{current} differences in the dependent variable which are difficult to account for in other ways.
+
+Therefore in this question we are considering the following simple equation to explain city crime rates:
+\[
+crmrte = \beta_0 + \beta_1\ unem + \beta_2\ {crmrte}_{-1} + u
+\]
+By using the lagged dependent variable, we are partialling out those factors that affect the crime rate in both 1982 and 1987. 
+
+Before we can estimate this in STATA we need to structure the data set as a panel data set. To do that, either use the `xtset` command or go to the `statistics` drop down menu and select `longitudinal/panel` then `setup and utilities` and then `declare data set to be panel data`. Now you have to define your cross-section and time terms. On the `panel ID variable` dropdown box select `County`, then tick the time variable box and select $d87$. Click OK. 
+\end{description}
+
+```{stata}
+quietly cd ..
+quietly import excel using Data/panel1.xls, sheet("Crime1") firstrow
+
+xtset County d87
+
+regress crmrte unem L.crmrte
+```
+
+We see that at $0.6259$ the adjusted $R$-squared is now much higher, and the lagged variable is significant with $t$-statistic of $8.56$. We also see that the unemployment is now positive, but still not significant.
+
+An alternative way to use panel data is to view the unobserved factors as consisting of two types: those that are constant and those that vary over time. We will do this next.
+
+
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
+
+
+### (3) It is now suggested that the relationship between crime and unemployment takes the following form:
+\begin{equation}
+{crmrte}_{it} = \beta_0 + \delta\ d87 + \beta_1\ {unem}_{it} + a_i + \varepsilon_{it}
+\end{equation}
+\textbf{Estimate this equation as a pooled cross section equation and comment on your results. Estimate this equation again but this time using the first difference transformation.}
+
+\begin{description}
+\item[Answer:]
+The variable $d87$ is $0$ when $t = 1$, i.e. when year is $82$, and $1$ when $t=2$, i.e. when year is $87$.  Therefore, the intercept for $t=1$ is $\beta_0$, and the intercept for $t = 2$ is $\beta_0 + \delta$. Just as in using independently pooled cross-sections, allowing the intercept to change over time is important. Secular trends will cause crime rates to change over a five-year period.
+
+The variable $a_i$ captures all unobserved, time-constant factors that affect $y_{it}$. Notice that this variable does not have $t$ subscript since it does not change over time. This variable is usually called an \textit{unobserved effect}, or \textit{fixed effect}, or \textit{unobserved heterogeneity}, and the model in this question is called an \textit{unobserved effects model} or \textit{fixed effects model}. 
+
+In this question since $i$ denotes different counties, we'd call $a_i$ an \textit{unobserved county effect} or \textit{county fixed effect} as it represents all factors affecting county crime rates that do not change over time. These unchanging factors may, for example, be geographical features (i.e. location). $a_i$ would also include other factors that may be roughly constant over a five-year period such as the demographic features of the population. Also different cities may have different methods for reporting crimes, and the people living in the cities might have different attitudes toward crime; these are typically slow to change. For historical reasons cities can have very different crime rates, and historical factors are effectively captured by the unobserved effect $a_i$.
+
+The error $\varepsilon_{it}$ is often called \textit{idiosyncratic error} or \textit{time-varying error}, because it represents unobserved factors that change over time and affect the dependent variable.
+
+\underline{Estimating as pooled cross section equation}:
+
+Given two years of panel data, one possible way we could try to estimate the parameter of interest, $\beta_1$, is to pool the two years and use OLS, essentially similar to Question A. This method has two drawbacks however. The most important of these two drawbacks is that in order for pooled OLS to produce a consistent estimator of $\beta_1$, we need to assume that the unobserved effect $a_i$ is uncorrelated with ${unem}_{it}$.
+
+To see this, denote $u_{it} = a_{i} + \varepsilon_{it}$ as the composite error. For OLS to estimate $\beta_1$ and the other parameters consistently, we assume that $u_{it}$ is uncorrelated with ${unem}_{it}$ where $t=1$, i.e. 1982, or $t=2$, i.e. 1987. This is true irrespective of whether we use a single cross section or pool the two cross sections. Therefore, pooled OLS is biased and inconsistent if $a_i$ and ${unem}_{it}$ are correlated, even if the idiosyncratic error $\varepsilon_{it}$ is uncorrelated with $unem_{it}$. The resulting bias is sometimes called \textit{heterogeneity bias}, but it is really just bias caused from omitting a time-constant variable.
+
+To illustrate this, let's run our regression. Notice that since we have 46 counties and two years for each county, by pooling them we will have $92$ observations. 
+\end{description}
+
+In STATA:
+
+```{stata}
+quietly cd ..
+quietly import excel using Data/panel1.xls, sheet("Crime1") firstrow
+
+regress crmrte unem d87
+```
+\begin{description}
+\item The coefficient on $unem$ is positive but has a very small $t$ statistic of $0.36$ and thus insignificant. So using pooled OLS on the two years has not substantially changed anything from using a single cross section. This is not surpising because using pooled OLS does not solve the omitted variables problem. 
+
+\underline{Estimating using the first difference transformation}:
+
+Usually the main reason for collecting panel data is to allow for the unobserved effect, $a_i$, to be correlated with the explanatory variables. Here, we want to allow the unmeasured county factors in $a_i$ that affect the crime rate also to be correlated with the unemployment rate. To do this, we can difference the data across the two years as follows:
+\begin{align*}
+{crmrte}_{i2} &= (\beta_0 + \delta) + \beta_1\ {unem}_{i2} + a_i + \varepsilon_{i2} \ \ &( \text{when }t=2) \\
+{crmrte}_{i1} &= \beta_0 + \beta_1\ {unem}_{i1} + a_i + \varepsilon_{i1}  &( \text{when }t=1)
+\end{align*}
+If we subtract the latter equation from the former then we get
+\[
+({crmrte}_{i2} - {crmrte}_{i1}) = \delta + \beta_1({unem}_{i2} - {unem}_{i1}) + (\varepsilon_{i2} - \varepsilon_{i1})
+\]
+or
+\[
+\Delta{crmrte}_i = \delta + \beta_1\Delta{unem}_i + \Delta\varepsilon_i
+\]
+Notice that the unobserved effect, $a_i$ does not appear in this first difference transformation since it has been differenced away. Also the intercept, $\delta$, is the \textit{change} in the intercept from $t=1$ to $t=2$.
+
+For us to be able to analyze this \textit{first-differenced equation}, we need to assume that
+\begin{itemize}
+\item $\Delta\varepsilon_i$ and ${unem}_i$ are uncorrelated, which would hold if $\varepsilon_{it}$ is uncorrelated with ${unem}_{it}$ in both time periods. 
+\subitem This assumption might be reasonable but it can also fail. Consider for example a factor in the idiosyncratic error such as law enforcement effort. Suppose this effort increases more in counties where the unemployment rate decreases. This can cause negative correlation between $\Delta\varepsilon_i$ and ${unem}_i$ which would then lead to a biased estimator. This problem can be overcome to some extent by including more factors in the equation.
+\item $\Delta {unem}_i$ must have some variation across $i$.
+\subitem This qualification fails if $unem$ does not change over time for any cross-sectional observation, or if it changes by the same amount for every observation. This is not an issue here though since $unem$ changes across time for almost all cities.
+\subitem The reason why this is important is that since we allow $a_i$ to be correlated with ${unem}_{it}$, we can't separate the effect of $a_i$ on ${crmrte}_{it}$ from the effect of any variable that does not change over time.
+\item the first-differenced equation is homoskedastic. If it does not hold, we know from Supervision 4 how to test and correct for heteroskedasticity.
+\end{itemize}
+
+We can now estimate the first-differenced equation.
+\end{description}
+
+In STATA:
+
+```{stata}
+quietly cd ..
+quietly import excel using Data/panel1.xls, sheet("Crime1") firstrow
+
+quietly xtset County d87
+
+quietly generate dcrmrte = crmrte - L.crmrte
+quietly generate dunem = unem - L.unem
+reg dcrmrte dunem
+```
+The same result can also be obtained in STATA more compactly as follows:
+
+```{stata eval=FALSE}
+quietly xtset County d87
+
+regress D.(crmrte unem)
+```
+
+Either approach gives us a positive, statistically significant relationship between crime rate and unemployment rate. Therefore, we can see that differencing to eliminate time-constant effects makes a big difference in this question.
+
+The intercept tells is that even if the unemployment rate does not change between the two periods, the crime rate increases by $15.4$ per $1,000$ people, reflecting a secular increase in crime rates across 46 counties from 1982 to 1987.
+
+
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
+
+### (4) Verify that for t=2, the Fixed Effects transformation gives the same results as those in the previous question. Comment on your results.
+
+\begin{description}
+\item[Answer:]
+The term "fixed effects" refers to the fact that each $i$'s intercept does not vary over time, i.e. time-invariant, although the intercept may differ across different $i$s.
+
+Here for $t=2$ the fixed effects transformation is:
+\[
+{crmrte}_{i2} = \beta_0 + \delta\ d87 + \beta_1\ {unem}_{i2} + a_i + \varepsilon_{i2}
+\]
+To be able to estimate this in STATA we need to use the `xtreg` command with the `fe` option as follows:
+\end{description}
+
+```{stata}
+quietly cd ..
+quietly import excel using Data/panel1.xls, sheet("Crime1") firstrow
+quietly xtset County d87
+
+xtreg crmrte d87 unem, fe
+```
+\begin{description}
+\item
+In the output $u$ corresponds to out $a$, the unobserved effect. Since it is fixed, it has no distribution and the reported $\hat{\sigma}_u$ is merely an arithmetic way to describe the range of estimated but fixed $a_i$. (If we were using the fixed-effects estimator of the random-effects model, this would be the estimate of $\sigma_a$ assuming no omitted variables.) Similarly, $e$ in the output is our $\varepsilon$ in this question.
+
+This approach also gives us a positive, statistically significant relationship between crime rate and unemployment rate.
+\end{description}
+\textbf{Note:} In general, if you are using the first differences estimator as in part (3), you will loose a constant term (probably best to ignore the first dummy. See Guajarti and Porter (2009) Section 16.4). If you are using fixed effects model then include all dummies in the equation, but ignore the estimated value of the constant.
+
+
+
+
+
+
+
+
+
+
+
+
+
+\bigskip\bigskip\bigskip
+\hdashrule[0.5ex]{\textwidth}{1pt}{3mm}
+\bigskip\bigskip\bigskip
+
+## QUESTION C
+
+### (1) Explain what is meant by an unobserved or fixed effect, and carefully compare the differencing and fixed effects transformations used to remove these effects. How would you decide which transformation to use when: (a) $t=2$; and (b) $t>2$?
+
+\begin{description}
+\item[Answer:]
+We have already defined unobserved or fixed effect in Question B(3). So we will look at the fixed effects model and differencing when we have two time periods as in Question B and when we have more than two time periods.
+
+\underline{Fixed effects model when $t=2$}:\footnote{Stock and Watson (2020), Sections 10.3 and 10.4; Gujarati and Porter (2009) Section 16.4; Wooldridge (2021) Sections 13.3-5, 14.1.}
+
+Consider the model
+\[
+Y_{it} = \beta_0 + \beta_1 X_{it} + \beta_2 Z_t + u_{it}
+\]
+where $Z_i$ is an unobserved variable that varies from one entity $i$ to the next but does not change over time. We can interpret this as the model having $n$ intercepts, one for each entity. We are interested in $\beta_1$, the effect of $X$ on $Y$, holding constant the unobserved entity characteristics $Z$.
+
+Since we can think of the model having $n$ intercepts, we can let $\alpha_i = \beta_0 + \beta_2 Z_i$. Then the model becomes
+\[
+Y_{it} = \alpha_i + \beta_1 X_{it} + u_{it}.
+\]
+This is the \textit{fixed effects regression model}, in which $\alpha_1,\dots,\alpha_n$ are treated as unknown intercepts to be estimated, one for each entity.
+\subitem This interpretation of $\alpha_i$ as an entity specific intercept in the model comes from the fact that the slope coefficient $\beta_1$ is the same for all the entities, but the intercept of the population regression line, $\alpha_i$ varies from one entity to the next.
+
+The intercept $\alpha_i$ in the model can also be thought of as the "effect" of being in entity $i$, which means the terms $\alpha_1,\dots,\alpha_n$ are known as \textit{entity fixed effects}. The variation in the entity fixed effects comes from omitted variables that vary across entities but never over time, like $Z_i$.
+
+Software typically computes the OLS fixed effects estimator in two steps.
+\begin{itemize}
+\item[Step 1:] the entity-specific average is subtracted from each variable:
+\subitem For the model $Y_{it} = \alpha_i + \beta_1 X_{it} + u_{it}$, the average of both sides would be $bar{Y}_{it} = \alpha_i + \beta_1 \bar{X}_{it} + \bar{u}_{it}$ where $\bar{Y}_{it}=\displaystyle\frac{1}{T}\sum_{t=1}^T Y_{it}$, and $\bar{X}$ and $\bar{u}$ are defined similarly.
+\subitem Therefore the model can be expressed as $Y_{it} - \bar{Y}_i = \beta_1 (X_{it} - \bar{X}_i) + (u_{it} - \bar{u}_i)$, or more compactly as $\tilde{Y}_{it} = \beta_1 \tilde{X}_{it} + \tilde{u}_{it}$
+\item[Step 2:] the regression is estimated using "entity-demeaned" variables. That is, $\beta_1$ can be estimated by OLS regression of the "entity-demeaned" variables $\tilde{Y}_{it}$ on $\tilde{X}_{it}$.
+\subitem In fact, this estimator is identical to the OLS estimator of $\beta_1$ obtained by estimation of the fixed effects model using $T-1$ binary variables.
+\end{itemize}
+
+We can use this approach to develop a fixed effects regression model using a binary variable. Introduce a dummy variable $D_t$ that is equal to $0$ when $t=1$, and it is equal to $1$ when $t=2$. Here $t=1$ corresponds to the earlier year. The dummy variable does not change across $i$, so it does not have the $i$ subscript:
+\[
+Y_{it} = \alpha_i + \delta_0 D_t + \beta_1 X_{it} + u_{it}
+\]
+in this setup, the intercept for $t=1$ is $\alpha_i$ and the intercept for $t=2$ is $\alpha_i + \delta_0$. Thus $\delta_0$ tells us by how much the intercept value of the of second period differs from the first period for entity $i$.
+
+\underline{Fixed effects model when $t>2$}:
+The above reasoning can be extended to more than one time periods. In this case the general unobserved effects model is:
+\[
+Y_{it} = \alpha_i + \delta_2\ D2_t + \dots + \delta_T\ DT_t + \beta_1 X_{it} + u_{it}
+\]
+for $t=1,\dots, T$, and where $D2_t=1$ if $t=2$, and $0$ otherwise, $D3_t=1$ if $t=3$, and $0$ otherwise, $\dots$, $DT_t = 1$ if $t=T$, and $0$ otherwise. Notice that here we are treating the first time period as the base, so we omit $D1_t$ and include in the model a total of $T-1$-period dummies in addition to the intercept. Thus the intercept for $t=1$ is $\alpha_i$, for $t=2$ it is $\alpha_i + \delta_2$, for $t=3$, it is $\alpha_i + \delta_3$, etc. As before, we are primarily interested in $\beta_1$ and if the fixed effect $\alpha_i$ is correlated with any of the explanatory variables, then using pooled OLS on the $t>2$ time periods of data results in biased and inconsistent estimates.
+
+
+\bigskip
+\underline{Differencing model when $t=2$}:
+Again consider the model
+\[
+Y_{it} = \alpha_i + \delta_0 D_t + \beta_1 X_{it} + u_{it}
+\]
+Since $\alpha_i$ is constant across time, we can difference the data across the two years. Specifically, for a cross-sectional observation $i$, write the two years as
+
+\begin{align*}
+Y_{i2} &= (\alpha_i + \delta_0) + \beta_1 X_{i2} + u_{i2} \ \ \ \ \ &(\text{when } t=2) \\
+Y_{i1} &= \alpha_i + \beta_1 X_{i1} + u_{i1}  &(\text{when } t=1) 
+\end{align*}
+
+Subtracting the latter from the former then gives us
+\[
+(Y_{i2} - Y_{i1}) = \delta_0 + \beta_1(X_{i2} - X_{i1}) + (u_{i2} - u_{i1})
+\]
+or
+\[
+\Delta Y_i = \delta_0 + \beta_1\Delta X_i + \Delta u_i
+\]
+where $\alpha_i$ is differenced away and $\delta_0$ gives us the magnitude of change in the intercept from $t=1$ to $t=2$. The OLS estimator of $\beta_1$ is called the \textit{first-differenced estimator}. 
+
+\bigskip
+\underline{Differencing model when $t>2$}:
+The key assumption is that the idiosyncratic errors are uncorrelated with the explanatory variable in each time period. That is, the explanatory variables are strictly exogeneous after we take out the unobserved effect, $\alpha_i$. If we have omitted an important time-varying variable, then this assumption is generally violated. Also, measurement error in one or more explanatory variables can cause this assumption to be false.
+
+We can eliminate $\alpha_i$ by differencing adjacent periods. In the $T=3$ case, we subtract $t=1$ from $t=2$, and $t=2$ from $t=3$. This gives
+\[
+\Delta Y_i = \delta_2\Delta D2_t + \delta_3\Delta D3_t + \beta_1\Delta X_{it} + \Delta U_{it}
+\]
+for $t=2,3$. Notice that the expression here contains differences in the year dummies. So when $t=2$, we have $\Delta D2_t = 1$ and $\Delta D3_t=0$. When $t=3$, we have $\Delta D2_t = -1$ and $\Delta D3_t = 1$.
+
+For $t=T$ periods, this model extends to:
+\[
+\Delta Y_i = \delta_2\Delta D2_t + \delta_3\Delta D3_t + \dots + \delta_T\Delta DT_t + \beta_1\Delta X_{it} + \Delta u_{it}
+\]
+
+\bigskip
+\underline{How to decide which transformation to use}
+\begin{itemize}
+\item When $T=2$, the fixed-effect and first-difference estimates, as well as all test statistics are \textit{identical}, and so it does not matter which one we use. However, in this case the first-difference has the advantage of being straightforward to implement in any software package and it is easy to compute heteroskedasticity-rovust statistics after the first-differenced estimation, because when $T=2$ the first-difference estimation is just a cross-sectional regression.
+
+\item When $T>2$, the fixed-effect and first-difference estimators are \underline{not the same}. Both are unbiased and consistent with $T$ fixed as $N \to \infty$.
+
+  \begin{itemize}
+  \item For large $N$ and small $T$ (i.e. $N>T$), the choice between fixed-effect and first-difference hinges on the relative efficiency of the estimators, and this is determined by the serial correlation in the idiosyncratic errors, $u_{it}$. Of course, efficiency comparisons require homoskedastic errors, so we assume homoskedasticity of the $u_{it}$.
+    \begin{itemize}
+    \item When the $u_{it}$ are serially uncorrelated, fixed effects is more efficient than first differencing, and the standard errors reported from fixed effects are valid. Because the unobserved effects model is typically stated with serially uncorrelated idiosyncratic errors, the fixed-effect is used more than the first-difference estimator. In many cases we can expect the unobserved factors that change over time to be serially correlated.
+    \item If $u_{it}$ are serially uncorrelated with constant variance, then the correlation between $\Delta u_{it}$ and $\Delta u_{it+1}$ can be shown to be $-0.5$.
+    \item If $u_{it}$ follows a stable $AR(1)$ model, then $\Delta u_{it}$ will be serially correlated.
+    \item If $u_{it}$ follows a random walk, meaning that there is a very substantial, positive serial correlation, then the difference $\Delta u_{it}$ is serially uncorrelated, and first differencing is better. In many cases, the $u_{it}$ exhibit some positive serial correlation, but perhaps not as much as a random walk. Then, we cannot easily compare the efficiency of the fixed-effects and first-difference estimators.
+    \item If there is substantial negative serial correlation in the $\Delta u_{it}$, fixed-effect is probably better.
+    \end{itemize}
+  \item When $T$ is large, and especially wen $N$ is not very large (i.e. $N<T$), we need to exercise caution in using the fixed-effects estimator because inference can be very sensitive to violations of the assumptions in these cases. Specifically, inference with the fixed effects estimator is potentially more sensitive to nonnormality, heteroskedasticity, and serial correlation in the idiosyncratic errors.
+    \begin{itemize}
+    \item First differencing has the advantage of turning an integrated time series process into a weakly dependent process. Therefore, with first-differencing, we can appeal to the central limit theorem even in cases where $T>N$.
+    \item Normality in the idiosyncratic errors is not needed, and heteroskedasticity and serial correlation can be dealt with.
+    \end{itemize}
+  \end{itemize}
+  
+\item When classical measurement error in one of more explanatory variables is present the the fixed effects estimator and the first difference estimator can be very sensitive. However, if each $X_{itj}$ is uncorrelated with $u_{it}$, but the strict exogeneity assumption is otherwise violated, then the fixed-effect estimator likely has substantially lest bias than the first difference estimator, unless $T=2$.
+\subitem The important theoretical fact is that the bias in the first difference estimator does not depend on $T$, while the bias in the fixed-effect estimator tends to $0$ at the rate $1/T$.
+\subitem Strict exogeneity assumption may otherwise be violated when for example a lagged dependent variable is included among the regressors or there is a feedback between $u_{it}$ and future outcomes of the explanatory variable.
+\end{itemize}
+
+Generally, it is difficult to choose between fixed-effect and first-difference when they give substantially different results. It makes sense to report both sets of results and to try to determine why they differ.
 \end{description}
 
 
-#### (b) Estimate equation (\ref{eq:SQA2a}) using data for 1978 (at which time the incinerator had not even been planned) and calculate the difference-in-differences estimator.
+
+### (2) Using the data from the "crime2" worksheet, estimate the following relationship between crime and the average sentence in 1987 and comment on your results (especially why this equation is unlikely to provide good results?):
+\begin{equation}\label{eq:SQC2}
+{lcrmrte}_{87} = \beta_0 + \beta_1{lavgsen}_{87} + u_{87}
+\end{equation}
+
+\begin{description}
+\item[Answer:]
+This data set includes data on 90 counties in North Carolina for the years 1981 through to 1987.\footnote{This question is based on Wooldridge (2021) Example 13.9, which is based on Cornwell, C and Turnbull, W N (1994), "Estimating the Economic Model of Crime Using Panel Data", \textit{Review of Economics and Statistics} 76:360-366.} Various factors including geographical location, attitudes toward crime, historical records, and reporting conventions might be contained in $\alpha_i$.
+\end{description}
+
+In STATA:
+
+```{stata}
+quietly cd ..
+use Data/crime4
+
+regress lcrmrte lavgsen if d87==1
+```
+\begin{description}
+\item
+The regression gives us
+\begin{alignat*}{3}
+\widehat{lcrmrte} & = && -3.644 + && 0.046\ lavgsen \\
+  &  && (0.47) && (0.21) \\
+n & = 90, &&  && R^2 = 0.0005 
+\end{alignat*}
+
+A casual interpretation of this means that a percentage increase in average sentence length \textit{increases} the crime rate by about $0.46\%$ which makes little sense. The coefficient on $lavgsen$ is not statistically significant with a very small $|t|$-statisic of $0.22$. So at best, we found no link between crime rates and average sentence length.
+
+This simple regression equation likely suffers from omitted variable problems. One possible solution is to try to control for more factors in a multiple regression analysis. But many factors might be hard to control for. 
+
+Alternatively, as we discussed in Supervision 5, we can use a proxy variable. Here we suspect that our independent variable $lavgsen$ is correlated with an omitted variable but we don't know how to obtain a proxy for that omitted variable. In these types of situations, we can include, as a control, the value of the dependent variable, $lcrmrte$ from an earlier time period.
+\end{description}
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
+
+
+### (3) Re-estimate equation(\ref{eq:SQC2}) now including a lagged dependent variable in the equation (i.e. ${lcrmrte}_{86}$). Comment on your results and the reasoning behind including the lagged dependent variable in this case.
+
+\begin{description}
+\item[Answer:]
+We will consider the following simple equation to explain county crime rates:
+\[
+{lcrmrte}_{87} = \beta_0 + \beta_1{lavgsen}_{87} + {lcrmrte}_{86} + u_{87}
+\]
+Before we can estimate this in STATA we need to structure the data set as a panel data set, just like we did in Question B(2).
+\end{description}
+
+```{stata}
+quietly cd ..
+use Data/crime4
+
+quietly xtset county year
+
+regress lcrmrte lavgsen L.lcrmrte if d87==1
+```
+\begin{description}
+\item
+The regression now gives us
+\begin{alignat*}{4}
+\widehat{lcrmrte} & = && -0.188 - && 0.154\ lavgsen && 0.083\ {lcrmrte}_{-1} \\
+  &  && (0.24) && (0.08) && (0.37) \\
+n & = 90, &&  && \bar{R}^2 = 0.8514 
+\end{alignat*}
+So we see that the adjusted $R$-squared is now much higher and the lagged variable is significant with a very high $t$-statistic of $22.62$. We also see that $lavgsen$ is now negative but still not significant.
+\end{description}
+
+
+
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
+
+### (4) Using data for just 1987 and 1986, now estimate a pooled cross-section equation if the population relationship is thought to be of the following form:
+\begin{equation}\label{eq:SQC4}
+{lcrmrte}_{it} = \beta_0 + \delta_0\ d87 + \beta_1\ {lavgsen}_{it} + a_i + \varepsilon_{it}
+\end{equation}
+
+\begin{description}
+\item[Answer:]
+Given two years of panel data, one possible way we could try to estimate the parameter of interest, $\beta_1$, is to pool the two years and use OLS, essentially similar to Question A as well as Question B(3). This method has two drawbacks however. The most important of these two drawbacks is that in order for pooled OLS to produce a consistent estimator of $\beta_1$, we need to assume that the unobserved effect $a_i$ is uncorrelated with ${lavgsen}_{it}$.
+
+Since we have $90$ counties and two years for each county, by pooling them we should have $180$ observations:
+\end{description}
+
+```{stata}
+quietly cd ..
+use Data/crime4
+
+regress lcrmrte d87 lavgsen if year>85
+```
+
+The coefficient on $lavgsen$ is positive but has a very small $t$-statistic of $0.84$ and thus insignificant. So using pooled OLS on the two years has not substantially changed anything from using a single cross section. This is not surprising because pooled OLS does not solve the omitted variables problem.
+
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
+
+### (5) Show that estimating equation (ref{eq:SQC4}) using the first difference transformation (for the same years) would involve estimating the following equation:
+\begin{equation}\label{eq:SQC5}
+\Delta{lcrmrte}_i = \delta + \beta_1\Delta{lavgsen}_i + \Delta\varepsilon_i
+\end{equation}
+
+\begin{description}
+\item[Answer:]
+Usually the main reason for collecting panel data is to allow for the unobserved effect, $a_i$, to be correlated with the explanatory variables. Here, we want to allow the unmeasured county factors in $a_i$ that affect the crime rate also to be correlated with the average sentence length. To do this, denote $t=1$ for $1986$, and $t=2$ as $1987$. Then we can difference the data across the two years as follows:
+\begin{align*}
+{lcrmrte}_{i2} &= (\beta_0 + \delta) + \beta_1\ {lavgsen}_{i2} + a_i + \varepsilon_{i2} \ \ &( \text{when }t=2) \\
+{crmrte}_{i1} &= \beta_0 + \beta_1\ {unem}_{i1} + a_i + \varepsilon_{i1}  &( \text{when }t=1)
+\end{align*}
+If we subtract the latter equation from the former then we get
+\[
+({crmrte}_{i2} - {crmrte}_{i1}) = \delta + \beta_1({lavgsen}_{i2} - {lavgsen}_{i1}) + (\varepsilon_{i2} - \varepsilon_{i1})
+\]
+or
+\[
+\Delta{crmrte}_i = \delta + \beta_1\Delta{lavgsen}_i + \Delta\varepsilon_i
+\]
+as desired.
+
+Notice that the unobserved effect, $a_i$ does not appear in this first difference transformation since it has been differenced away. Also the intercept, $\delta$, is the \textit{change} in the intercept from $t=1$ to $t=2$.
+
+For us to be able to analyze this \textit{first-differenced equation}, we need to assume that
+\begin{itemize}
+\item $\Delta\varepsilon_i$ and ${lavgsen}_i$ are uncorrelated, which would hold if $\varepsilon_{it}$ is uncorrelated with ${lavgsen}_{it}$ in both time periods. 
+\subitem This assumption might be reasonable but it can also fail. Consider for example a factor in the idiosyncratic error such as law enforcement effort. Suppose this effort decreases more in counties where the sentencing length increases. This can cause negative correlation between $\Delta\varepsilon_i$ and ${lavgsen}_i$ which would then lead to a biased estimator. This problem can be overcome to some extent by including more factors in the equation.
+\item $\Delta {lavgsen}_i$ must have some variation across $i$.
+\subitem This qualification fails if $lavgsen$ does not change over time for any cross-sectional observation, or if it changes by the same amount for every observation. This is not an issue here though since $lavgsen$ changes across time for almost all counties.
+\subitem The reason why this is important is that since we allow $a_i$ to be correlated with ${lavgsen}_{it}$, we can't separate the effect of $a_i$ on ${crmrte}_{it}$ from the effect of any variable that does not change over time.
+\item the first-differenced equation is homoskedastic. If it does not hold, we know from Supervision 4 how to test and correct for heteroskedasticity.
+\end{itemize}
+\end{description}
+
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
+
+### (6) Again using the data for just 1987 and 1986, estimate equation (\ref{eq:SQC5}) and verify that these results are the same as those given by using the fixed effects transformation. (You might also try to get these fixed effects results manually within Stata - i.e. not using the `xtreg` command).
+
+\begin{description}
+\item[Answer:]
+Note that variable $clcrmrte$ is the first-differenced $log(crmrte)$ and $clavgsen$ is the first-differenced $log(avgsen)$. We can estimate the first-differenced equation in STATA as follows:
+\end{description}
+
+```{stata}
+quietly cd ..
+use Data/crime4
+
+regress clcrmrte clavgsen if year > 86
+```
+
+We can also obtain the same results using either of the following commands:
+
+```{stata eval=FALSE}
+quietly xtset county year
+
+regress D.(lcrmrte lavgsen) if year > 86
+/* OR */
+xtreg lcrmrte d87 lavgsen if year > 85, fe
+```
+
+\begin{description}
+\item
+We get the same output that shows a negative and statistically significant relationship between crime rate and average sentence length. Therefore, we can see that differencing to eliminate time-constant effects makes a big difference in this question.
+
+The intercept tells us that even if the average sentence length does not change between the two periods, the crime rate increases by about $0.1\%$ reflecting a secular increase in crime rates across 90 counties of North Carolina from 1986 to 1987.
+
+We can also do the fixed effects transformation manually:
+\end{description}
+
+```{stata}
+quietly cd ..
+use Data/crime4
+
+/* generate averages */
+quietly egen avc = mean(lcrmrte) if year > 85, by (county)
+quietly egen avs = mean(lavgsen) if year > 85, by (county)
+
+/* generate "entity-demeaned" variables */
+quietly gen cfe = lcrmrte - avc if year > 85
+quietly gen sfe = lavgsen-avs if year > 85
+
+/* run the regression using "entity-demeaned" variables */
+reg cfe d87 sfe
+```
+
+
+
+
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
+
+### (7) Now, using data for all years, estimate the following equation first as a pooled cross section equation, then using a first difference transformation, and finally a fixed effects transformation (N.B. for the first difference transformation, read Wooldridge on differencing with more than two time periods - Section 13.5) 
+\begin{equation}
+\begin{aligned}\label{eq:SQC7}
+log(crmrte)_{it} &= \delta_1 + \delta_2\ {d82}_i + \delta_3\ {d83}_i + \delta_4\ {d84}_i + \delta_5\ {d85}_i + \delta_6\ {d86}_i + \delta_7\ {d87}_i + \beta_1\ log(prbarr)_{it} \\
+  &+ \beta_2\ log(prbconv)_{it} + \beta_3\ log(prbpris)_{it} + \beta_4\ log(avgsen)_{it} + \beta_5\ log(polpc)_{it} + a_i + u_{it}
+\end{aligned}
+\end{equation}
+
+\begin{description}
+\item[Answer:]
+Pooled cross section in STATA can be obtained as follows:
+\end{description}
+
+```{stata}
+quietly cd ..
+use Data/crime4
+
+reg lcrmrte d82 d83 d84 d85 d86 d87 lprbarr lprbconv lprbpris lavgsen lpolpc
+```
+
+\bigskip
+
+First difference transformation:
+
+```{stata}
+quietly cd ..
+use Data/crime4
+
+reg clcrmrte d83 d84 d85 d86 d87 clprbarr clprbcon clprbpri clavgsen clpolpc
+```
+
+\bigskip
+
+and fixed effect transformation
+
+```{stata}
+quietly cd ..
+use Data/crime4
+
+quietly xtset county year
+
+xtreg lcrmrte d82 d83 d84 d85 d86 d87 lprbarr lprbconv lprbpris lavgsen lpolpc, fe
+```
+
+
+
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
+
+### (8) Compare and comment upon your results. In particular comment upon (a) the signs and significance of the "deterrent" variables, and (b) which results you would prefer and why (NB your answers to Question C(1)(b)).
+
+\begin{description}
+\item[Answer:]
+The problem with assessing the disturbances in the pooled cross section is that the disturbances are unobservable. Most econometricians thus focus upon the first difference equation. If this is OK, then use these results, if it is not then go for fixed-effects transformation.
+
+However, recall that we have strict exogeneity and homoskedasticity assumptions. So we need to test for these.
+
+For heteroskedasticity test, we can use the usual Breusch-Pagan test from Supervision 4:
+\end{description}
+
+```{stata}
+quietly cd ..
+use Data/crime4
+quietly reg clcrmrte d83 d84 d85 d86 d87 clprbarr clprbcon clprbpri clavgsen clpolpc
+
+estat hettest d83 d84 d85 d86 d87 clprbarr clprbcon clprbpri clavgsen clpolpc, fstat
+```
+
+With $F$-statistic of $1.09$ we cannot reject the null hypothesis of homoskedasticity. 
+
+When we run the White test that squares the terms, then we get
+
+```{stata}
+quietly cd ..
+use Data/crime4
+quietly reg clcrmrte d83 d84 d85 d86 d87 clprbarr clprbcon clprbpri clavgsen clpolpc
+
+imtest, white
+```
+
+chi-square of $257.57$ which means we can reject the null of homoskedasticity. However, note that if there is serial correlation, then this test is not very reliable. At best it is suggestive.
+
+To test for serial correlation, recall that we said in Question C(1)(b) that if $u_{it}$ is serially uncorrelated then correlation between $\Delta u_{it}$ and $\Delta u_{it+1}$ is $-0.5$.
+
+```{stata}
+quietly cd ..
+use Data/crime4
+
+quietly xtset county year
+
+quietly reg clcrmrte d83 d84 d85 d86 d87 clprbarr clprbcon clprbpri clavgsen clpolpc
+
+quietly predict U, r
+quietly reg clcrmrte d84 d85 d86 d87 clprbarr clprbcon clprbpri clavgsen clpolpc L.U
+
+test L.U = -0.5
+```
+
+The $F$-statistic of $29.79$ tells us that we can reject the null hypothesis $\mathbb{H}_0: \rho=-0.5$ and conclude that serial correlation seems to be present. However, this serial correlation is not of a form that would suggest no correlation in the first equation.
+
+In sum, we don't really know what to do. It is difficult to choose between fixed-effects and first-difference. So, report both sets of results. Alternatively, you could just go with fixed-effect since it uses more data.
+
