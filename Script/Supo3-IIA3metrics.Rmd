@@ -200,8 +200,8 @@ where $\delta$s are the coefficients of model $D_t$ which is the difference betw
 
 Accordingly, we first need to derive the respective $RSS$s using the identity $R^2=1-\frac{RSS}{TSS}$ or $RSS = (1-R^2)TSS$ where $TSS=\sum(M-\bar{M})^2$:
 \begin{align*}
-RSS_R &= (1-0.841)\times 45,600 = 7,250.4 \\
-RSS_{UR} &= (1-0.818)\times 50,100 = 9,118.2
+RSS_{UR} &= (1-0.841)\times 45,600 = 7,250.4 \\
+RSS_R &= (1-0.818)\times 50,100 = 9,118.2
 \end{align*}
 
 We can then calculate the Chow test whereby
