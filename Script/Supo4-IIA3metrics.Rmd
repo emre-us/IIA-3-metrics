@@ -1991,7 +1991,7 @@ rho <- SQ3d_ii_lm$coefficients[2]
 2*(1 - rho)
 ```
 
-Here we get a very similar $d$ value of $0.8108223$ to $0.8032315$ obtained in part (i), and would conclude the same way as we did in part (i) - reject the null hypothesis of no postiive autocorrelation.
+Here we get a very similar $d$ value of $0.8108223$ to $0.8032315$ obtained in part (i), and would conclude the same way as we did in part (i) - reject the null hypothesis of no positive autocorrelation.
 
 
 \bigskip
@@ -2256,7 +2256,8 @@ wage_autocorr_df$beta0_star[wage_autocorr_df$t == 2] <-
   sqrt((1- rho^2))
 
 # run the regression on the transformed variables
-SQ3e_lm <- lm(gprice_star ~ gwage_star + beta0_star, data = wage_autocorr_df)
+SQ3e_lm <- lm(gprice_star ~ gwage_star + beta0_star + 0, data = wage_autocorr_df)
+summary(SQ3e_lm)
 
 # or alternatively use `prais_winsten()` formula from `prais` package
 library(prais)
@@ -2274,14 +2275,14 @@ and in STATA:
   quietly destring, replace
   
 /* transform the variables */
-  generate gprice_star = gprice - 0.5945888 * gprice_1
-  generate gwage_star = gwage - 0.5945888 * gwage_1
-  generate beta0_star = 1 - 0.5945888
+  quietly generate gprice_star = gprice - 0.5945888 * gprice_1
+  quietly generate gwage_star = gwage - 0.5945888 * gwage_1
+  quietly generate beta0_star = 1 - 0.5945888
   
 /* adjust the first observation */
-  replace gprice_star=((1 - 0.5945888^2)^(1/2))*gprice if t==2
-  replace gwage_star=((1 - 0.5945888^2)^(1/2))*gwage if t==2
-  replace beta0_star=((1 - 0.5945888^2)^(1/2)) if t==2
+  quietly replace gprice_star=((1 - 0.5945888^2)^(1/2))*gprice if t==2
+  quietly replace gwage_star=((1 - 0.5945888^2)^(1/2))*gwage if t==2
+  quietly replace beta0_star=((1 - 0.5945888^2)^(1/2)) if t==2
     
 /* run the regression */
   regress gprice_star gwage_star beta0_star, noc
