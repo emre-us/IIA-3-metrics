@@ -39,7 +39,7 @@ options(scipen = 999)
 \item[Supplementary Qs:] Heteroskedasticity; White's robust standard errors; Goldfeld-Quandt test; Breusch-Pagan test; Lagrange Multiplier test; White test; autocorrelation; Durbin-Watson $d$ test; Breusch-Godfrey test; Durbin's alternative test; Prais-Winsten transformation; Cochrane-Orcutt Two-Step Procedure
 \end{description}
 
-bigskip
+\bigskip
 
 \textbf{\underline{Related Reading:}}
 \begin{description}
