@@ -261,7 +261,7 @@ where $v_2$ is an error due to the fact that $ability$ and $IQ$ are not exactly 
 
 Note that the intercept $\delta_0$ allows $ability$ and $IQ$ to be measured on different scales and thus can be positive or negative. That is, the unobserved $ability$ is not required to have the same average value as $IQ$ in the population.
 
-To use $IQ$ to get unbiased, or at least consistent, estimators for $\beta_1$, the coefficient of $educ$, we would regress $log(wage)$ on $educ$ and $IQ$. This is called \textit{the plug-in solution to the omitted variables problem} since we plug-in $IQ$ for $ability$ before running the OLS. However, since $IQ$ and $educ$ are not the same, we need to check if this does give consistent estimator for $\beta_1$. 
+In order to use $IQ$ to get unbiased, or at least consistent, estimators for $\beta_1$, which is the coefficient of $educ$, we would regress $log(wage)$ on $educ$ and $IQ$. This is called \textit{the plug-in solution to the omitted variables problem} since we plug-in $IQ$ for $ability$ before running the OLS. However, since $IQ$ and $educ$ are not the same, we need to check if this does give consistent estimator for $\beta_1$. 
 
 For the plug-in solution to provide consistent estimator for $\beta_1$ the following two assumptions need to hold true:
 \begin{itemize}
@@ -285,7 +285,7 @@ log(wage)
   &= \gamma_0 + \beta_1 educ + \gamma_2 IQ + \epsilon.
 \end{align*}
 
-Notice that the composite error $\epsilon$ depends on both the error in the model of interest in the question, $u$, and on the error in the proxy variable equation, $v_2$. Since both $u$ and $v_2$ have zero mean and each is uncorralated with $educ$ and $IQ$, $\epsilon$ also has zero mean and is uncorralted with $educ$ and $IQ$.
+Notice that the composite error $\epsilon$ depends on both the error in the model of interest in the question, $u$, and on the error in the proxy variable equation, $v_2$. Since both $u$ and $v_2$ have zero mean and each is uncorralated with $educ$ and $IQ$, $\epsilon$ also has zero mean and is uncorrelated with $educ$ and $IQ$.
 
 So when we regress $log(wage)$ on $educ$ and $IQ$, we will \underline{not} get unbiased estimators of $\alpha$ and $\beta_2$. Instead, we will get unbiased, or at least consistent, estimators of $\gamma_0, \beta_1,$ and $\gamma_2$. The important thing is that we get good estimators of $\beta_1$. 
 
@@ -359,6 +359,7 @@ Thus, in this question, although $IQ$ is a good candidate as a proxy variable fo
 ## QUESTION 3
 \textbf{The following regression explores the relationship between television watching and childhood obesity, using a cross-section of US children. The variables are:}
 
+\begin{center}
 \begin{tabular}{llccc}
 Name   & Description & Minimum & Maximum & Mean \\ 
 \midrule
@@ -371,6 +372,7 @@ dadbmi & father's BMI                  & 11 & 58 & 26   \\
 mombmi & mother's BMI                  & 14 & 56 & 26   \\
 \midrule
 \end{tabular}
+\end{center}
 
 ```{r include=FALSE}
 libraries <- c("haven",       # to import/export SPSS, STATA, SAS files
@@ -504,7 +506,7 @@ Y_i = \alpha + \beta X_i + \varepsilon_i, \ \ i = 1,2,\dots,m
 \textbf{where $Y_i$ is the mean expenditure on alcohol in group $i$ and $X_i$ is the mean income of group $i$. Each group $i$ has $N_i$ members and the model satisfies all the classical assumptions except that the variance of $\varepsilon_i$ is equal to $\sigma^2/N_i$.}
 
 
-### (a) What are the statistical properties of the OLS estimates of $\alpha$ nad $\beta$ in this case?
+### (a) What are the statistical properties of the OLS estimates of $\alpha$ and $\beta$ in this case?
 
 \begin{description}
 \item[Answer:] 
@@ -553,7 +555,7 @@ We assume homoskedasticity and no autocorrelation in estimating the variance of 
 
 To see why this is called a spherical distribution lets look at a special case of two dimensions, i.e. circular distribution, as opposed to three dimensions for spherical distribution. Consider two random errors, $u_i$ and $u_j$ which are graphed below as density plots and contour plots, the latter of which shows what you'd see when you look straight down from the top of the density plot.
 
-The shapes of these plots depend on the variances and covariances of these two random errors. If $u_i$ and $u_j$ are homoskedastic and they are not autocorrelated, then the contour lines will be circles. If there were three random error variables $u_i$, $u_j$, and $u_k$ then we would have four-dimensional density plot and the contours would form a sphere. If there were more than three random error variables then the contours would form a hyper-sphere. This is why the errors are spherically distributed.
+The shapes of these plots depend on the variances and covariances of these two random errors. If $u_i$ and $u_j$ are homoskedastic and they are not correlated, then the contour lines will be circles. If there were three random error variables $u_i$, $u_j$, and $u_k$ then we would have four-dimensional density plot and the contours would form a sphere. If there were more than three random error variables then the contours would form a hyper-sphere. This is why the errors are spherically distributed.
 
 What we are plotting is therefore:
 \begin{equation*}
@@ -605,7 +607,7 @@ contour(x,y,z, main="Contour", axes=TRUE, xlab=expression(error[i]),ylab=express
 ```
 
 
-If on the other hand, heterskedasticity is present then we loose the symmetry of the joint density plot and get a more elliptic contours. Suppose now the variance-covariance matrix is as follows:
+If on the other hand, heteroskedasticity is present then we loose the symmetry of the joint density plot and get a more elliptic contours. Suppose now the variance-covariance matrix is as follows:
 \begin{equation*}
 Var
 \begin{pmatrix}
@@ -647,7 +649,7 @@ u_j
 \end{pmatrix}
 =
 \begin{pmatrix}
-0.1 & -0.5 \\
+1 & -0.5 \\
 -0.5 & 1
 \end{pmatrix}
 \end{equation*}
@@ -678,7 +680,7 @@ contour(x,y,z, main="Contour", axes=TRUE, xlab=expression(error[i]),ylab=express
 \bigskip\bigskip
 
 
-### (b) How should equation \ref{eq:SQ1} on page \pageref{eq:SQ1} be transformed so that the OLS estimates of $\alpha$ and $\beta$ are BLUE?
+### (b) How should equation (\ref{eq:SQ1}) on page \pageref{eq:SQ1} be transformed so that the OLS estimates of $\alpha$ and $\beta$ are BLUE?
 \begin{description}
 \item[Answer:] The variances of the error terms are given in the question, thus \textit{known}. We can therefore estimate using the generalized least squares (GLS) estimators for correcting heteroskedasticity where we minimize a \textit{weighted sum of squared residuals.}
 
@@ -688,7 +690,7 @@ $\hookrightarrow$ For remedial measures when $\sigma_i^2$ is unknown, see Questi
 \[
 Var(\varepsilon_i) = \frac{\sigma^2}{N_i} = \sigma_i^2
 \]
-So we transform equation \ref{eq:SQ1} on page \pageref{eq:SQ1} by dividing it with theses known standard deviations, $\sigma_i$:
+So we transform equation (\ref{eq:SQ1}) on page \pageref{eq:SQ1} by dividing it with theses known standard deviations, $\sigma_i$:
 \[
 \frac{Y_i}{\sigma_i} = \frac{\alpha}{\sigma_i} + \beta \frac{X_i}{\sigma_i} + \frac{\varepsilon_i}{\sigma_i}
 \]
@@ -718,17 +720,17 @@ Thus, GLS is OLS on the transformed variables that satisfy the standard least-sq
 \item[Answer:]
 In this case, what we want is a transformation of the equation \ref{eq:SQ1} on page \pageref{eq:SQ1} in such a way that the variance of the transformed error, $Var(\varepsilon_i*)$, is constant $\sigma^2$. 
 
-For this, we can work backwards. We know that $Var(\varepsilon_i) = \mathbb{E}(\varepsilon_i^2) = \frac{\sigma^2}{N_i}$ so if the transformation resulted in $Var(\varepsilon_i^*)=N_i\mathbb{E}(\varepsilon_i^2)$ then it would equal to constant $\sigma^2$. Fro that to happen, we can set $\varepsilon_i^* = \varepsilon_i\sqrt{N_i}$, so that
+For this, we can work backwards. We know that $Var(\varepsilon_i) = \mathbb{E}(\varepsilon_i^2) = \frac{\sigma^2}{N_i}$ so if the transformation resulted in $Var(\varepsilon_i^*)=N_i\mathbb{E}(\varepsilon_i^2)$ then it would equal to constant $\sigma^2$. For that to happen, we can set $\varepsilon_i^* = \varepsilon_i\sqrt{N_i}$, so that
 \[
 Var(\varepsilon_i^*) = \mathbb{E}\big((\varepsilon_i^*)^2\big) - \big[\mathbb{E}(\varepsilon_i^*)\big]^2 = \mathbb{E}\big((\varepsilon_i^*)^2\big) = \mathbb{E}\Big((\varepsilon_i\sqrt{N_i})^2\Big) = N_i\mathbb{E}(\varepsilon_i^2) = N_i\frac{\sigma^2}{N_i} = \sigma^2
 \]
 as desired.
 
 Thus using the weighting of $\sqrt{N_i}$ the sample regression function becomes:
-\[
-Y_i\sqrt{N_i} = \alpha\sqrt{N_i} + \beta \sqrt{N_i}X_i + \varepsilon_i\sqrt{N_i} \\
-Y_i^* = \alpha^* + \beta^* X_i + \varepsilon^*
-\]
+\begin{align*}
+Y_i\sqrt{N_i} &= \alpha\sqrt{N_i} + \beta \sqrt{N_i}X_i + \varepsilon_i\sqrt{N_i} \\
+Y_i^* &= \alpha^* + \beta^* X_i + \varepsilon^*
+\end{align*}
 In general, to obtain the estimators for the coefficients, the weighted least-squares method minimizes the weighted residual sum of squares:
 \[
 \sum w_i\hat{\varepsilon}_i^2 = \sum w_i(Y_i - \hat{\alpha}^* - \hat{\beta}^* X_i)^2
@@ -880,7 +882,7 @@ Since $\sigma_i^2$ are not directly observable, White argues for using the squar
 \begin{equation}\label{eq:WhiteVar2}
 Var(\hat{\beta}_1) = \frac{\displaystyle\sum_{i=1}^n (X_i - \bar{X})^2\hat{u}_i^2}{\Big( \displaystyle\sum_{i=1}^n(X_i - \bar{X})^2 \Big)^2}
 \end{equation}
-White has shown that when this equation \ref{eq:WhiteVar2} is multiplied by the sample size $n$, it converges in probability to $\frac{\mathbb{E}[(X_i - \mu_X)^2u_i^2]}{(\sigma_X^2)^2}$ which is the probability limit of equation \ref{eq:WhiteVar1} multiplied by $n$, and where $\mu_X$ is the expected value of $X$, and $\sigma_X^2$ is the population variance of $X$. Thus, the law of large numbers and the central limit theorem are key in establishing these convergences, which are necessary for justifying the use of standard errors to construct confidence intervals and $t$-statistics.
+White has shown that when this equation \ref{eq:WhiteVar2} is multiplied by the sample size $n$, it converges in probability to $\frac{\mathbb{E}[(X_i - \mu_x)^2u_i^2]}{(\sigma_X^2)^2}$ which is the probability limit of equation \ref{eq:WhiteVar1} multiplied by $n$, and where $\mu_x$ is the expected value of $X$, and $\sigma_X^2$ is the population variance of $X$. Thus, the law of large numbers and the central limit theorem are key in establishing these convergences, which are necessary for justifying the use of standard errors to construct confidence intervals and $t$-statistics.
 
 $\hookrightarrow$ One can first obtain the residuals from the usual OLS regression and then calculate the variance using equation \ref{eq:WhiteVar2}. Statistical software do this automatically.
 
@@ -898,7 +900,7 @@ where $\hat{v}_{ji}$ denotes the $i^{th}$ residual from regressing $X_j$ on all 
 
 The square root of this expression in equation \ref{eq:WhiteVar3} is called \textbf{heteroskedasticity-robust standard error} for $\hat{\beta}_j$.
 
-Also note that, sometimes the equation \ref{eq:WhiteVar3} is adjusted for degrees of freedom by multiplying it with $frac{n}{n-(k+1)}$ before taking the square root. This is because if $\hat{u}_i$ were the same for all $i$ then we would get the usual OLS standard errors. Since all forms of this equation has asymptotic justification, and they are asymptotically equivalent, no one form is unanimously preferred over others. Usually, we use whatever form the software we work with uses. 
+Also note that, sometimes the equation \ref{eq:WhiteVar3} is adjusted for degrees of freedom by multiplying it with $\frac{n}{n-(k+1)}$ before taking the square root. This is because if $\hat{u}_i$ were the same for all $i$ then we would get the usual OLS standard errors. Since all forms of this equation has asymptotic justification, and they are asymptotically equivalent, no one form is unanimously preferred over others. Usually, we use whatever form the software we work with uses. 
 \end{tcolorbox}
 
 \end{description}
@@ -954,7 +956,7 @@ Notice that all the $t$-values are lower for each variable and in the case of $L
 ***
 \bigskip\bigskip
 
-### (c) Using the specification in equation \ref{eq:SQ2a} on page \pageref{eq:SQ2a}, conduct a Goldfeld-Quandt test for heteroskedasticity in the $LOTSIZE$ dimension (exclude the middle 24 observations).
+### (c) Using the specification in equation (\ref{eq:SQ2a}) on page \pageref{eq:SQ2a}, conduct a Goldfeld-Quandt test for heteroskedasticity in the $LOTSIZE$ dimension (exclude the middle 24 observations).
 
 \begin{description}
 \item[Answer:]
@@ -978,7 +980,7 @@ To test this, Goldfeld and Quandt provide the following steps:
 \begin{itemize}
 \item[Step 1:] Order or rank the observations according to the values of $X_i$ beginning with the lowest $X$ value;
 
-\item[Step 2:] Omit $c$ central observations, where $c$ is specified a priori, and divide the remaining onservations into two groups, each of $\frac{n-c}{2}$ observations;
+\item[Step 2:] Omit $c$ central observations, where $c$ is specified a priori, and divide the remaining observations into two groups, each of $\frac{n-c}{2}$ observations;
 
 \item[Step 3:] Fit separate OLS regressions to these two groups of observations and obtain the respective residual sum of squares $RSS_1$ and $RSS_2$, where $RSS_1$ represents the $RSS$ from the regression corresponding to the smaller $X_i$ values, i.e. small variance group, and $RSS_2$ to the larger $X_i$ values, i.e. the large variance group.
 
@@ -990,12 +992,12 @@ These $RSS$ each have $\displaystyle\frac{n-c}{2}-(k+1)$ degrees of freedom wher
 \]
 \end{itemize}
 
-The main argument of this test is that if the assumption of homoskedasticity and $u_i$ are normally distributed both hold true, then $\lambda$ of equation \ref{eq:GQTest1} follows the $F$-distribution with $\displaystyle\frac{n-c}{k}-(k+1)$ degrees of freedom in both the numerator and denominator.
+The main argument of this test is that if the assumption of homoskedasticity and $u_i$ are normally distributed both hold true, then $\lambda$ of equation (\ref{eq:GQTest1}) follows the $F$-distribution with $\displaystyle\frac{n-c}{k}-(k+1)$ degrees of freedom in both the numerator and denominator.
 
 As usual, if the computed $\lambda$ which is equal to $F$-statistic, is greater than the critical $F$ value at the chosen level of significance, we can reject the null hypothesis of homoskedasticity.
 
 \textbf{Why we ommit $c$ central observations?}
-These observations are omitted to accentuate the difference between the small variance group, $RSS_1$, and the large variance group $RSS_2$. However, the \textit{power} of the test depends on how $c$ is chosen. Recall that \textit{power of a test} is measured by the probability of rejecting the null hypothesis when it is false, and it is calculated by $1-prob(Type II error)$.
+These observations are omitted to accentuate the difference between the small variance group, $RSS_1$, and the large variance group $RSS_2$. However, the \textit{power} of the test depends on how $c$ is chosen. Recall that \textit{power of a test} is measured by the probability of rejecting the null hypothesis when it is false, and it is calculated by $1-prob(Type\ II\ error)$.
 
 Goldfeld and Quandt suggest $c=8$ for models with two-explanatory variables if $n=30$ and double if $n=60$.
 \end{tcolorbox}
@@ -1047,7 +1049,7 @@ Both R and STATA give the same result that the $F$-statistic of $1.6275654$ is s
 ***
 \bigskip\bigskip
 
-### (d) Test for heteroskedasticity by first estimating an equation that regresses the squared residuals from equation \ref{eq:SQ2a} on page \pageref{eq:SQ2a} against all of the independent variables used to estimate equation \ref{eq:SQ2a}. (Calculate both F and LM versions of this test). Verify your results using the 'hettest' command in Stata. Compare these results with the results of the White Test in Stata.
+### (d) Test for heteroskedasticity by first estimating an equation that regresses the squared residuals from equation (\ref{eq:SQ2a}) on page \pageref{eq:SQ2a} against all of the independent variables used to estimate equation (\ref{eq:SQ2a}). (Calculate both F and LM versions of this test). Verify your results using the 'hettest' command in Stata. Compare these results with the results of the White Test in Stata.
 
 \begin{description}
 \item[Answer:]
@@ -1056,6 +1058,7 @@ Goldfeld-Quandt test depends not only on the number of observations we omit but 
 \begin{tcolorbox}[breakable, title=Breusch-Pagan / Breusch-Pagan-Godfrey Test, skin=enhancedlast]
 
 \textbf{What are the reasoning and mechanics of the test?}\footnote{Gujarati and Porter (2009), Section 11.5; Wooldridge (2021), Section 8.3}
+
 Consider the model
 \[
 Y = \beta_0 + \beta_1X_{1} + \beta_2X_{2} + \dots + \beta_kX_{k} + u
@@ -1075,11 +1078,13 @@ The null hypothesis then becomes
 \mathbb{H}_0: \gamma_1 = \gamma_2 = \dots = \gamma_k = 0.
 \]
 
-Under the null hypothesis we can assume that the error $v$ is independent of $X_1, \dots X_k$. Then, either the $F$ or $Lagrange Multiplier (LM)$ statistics can be used to test for the overall significance of the independent variables in explaining $u^2$. Both statistics would have asymptotic justification, even though $u^2$ cannot be normally distributed.
+Under the null hypothesis we can assume that the error $v$ is independent of $X_1, \dots X_k$. Then, either the $F$ or \textit{Lagrange Multiplier (LM)} statistics can be used to test for the overall significance of the independent variables in explaining $u^2$. Both statistics would have asymptotic justification, even though $u^2$ cannot be normally distributed.
 
 $\hookrightarrow$ e.g. if $u$ is normally distributed then $\frac{u^2}{\sigma^2}$ is distributed $\chi_1^2$.
 
-If we could observe the $u^2$ in the sample, then we could compute this statistic by running the OLS regression of $u^2$ on $X_1,\dots,X_k$ using all $n$ observations, which would give us the maximum likelihood (ML) of $\sigma^2$ (as opposed to . Since we do not know $u$, we can instead estimate the equation:
+If we could observe the $u^2$ in the sample, then we could compute this statistic by running the OLS regression of $u^2$ on $X_1,\dots,X_k$ using all $n$ observations, which would give us the maximum likelihood (ML) of $\sigma^2$. 
+
+Since we do not know $u$, we can instead estimate the equation:
 \[
 \hat{u}^2 = \gamma_0 + \gamma_1 X_1 + \gamma_2 X_2 + \dots + \gamma_k X_k + \epsilon
 \]
@@ -1103,6 +1108,7 @@ The $LM$ version of the test is called the \textbf{Breusch-Pagan test} for heter
 \bigskip
 
 \textbf{What is Lagrange Multiplier Statistic?}\footnote{Wooldridge (2021), Section 5.2a}
+
 Consider again the multiple regression model with $k$ independent variables:
 \[
 Y = \beta_0 + \beta_1X_{1} + \beta_2X_{2} + \dots + \beta_kX_{k} + u
@@ -1111,7 +1117,7 @@ We want to test whether, say, the last $q$ of these variables all have $0$ popul
 \[
 \mathbb{H}_0: \beta_{k-q+1} = \beta_{k-q+2} = \dots = \beta_k = 0, 
 \]
-which puts $q$ exclusion restrictions on the model. The alternatively hypothesis is that at least one of the parameters is dofferent from $0$.
+which puts $q$ exclusion restrictions on the model. The alternatively hypothesis is that at least one of the parameters is different from $0$.
 
 The LM statistic requires the estimation of the restricted model only. So we run the regression
 \[
@@ -1125,7 +1131,9 @@ This means, we run the regression of $u^{res}$ on $X_1, \dots, X_k$.
 
 $\hookrightarrow$ this is an example of \textit{auxiliary regression} which is a regression used to compute a test statistic but whose coefficients are not of direct interest.
 
-If the null hypothesis is true, the $R$-squared from this regression should be "close" to zero, subject to sampling error. This is because $u^{res}$ will be approximately uncorrelated with all the independent variables. What is interesting with this test is that, under the null hypothesis, the sample size multiplied by the $R$-squared from the auxiliary regression is distributed asymptotically as a chi-square random variable with $q$ degrees of freedom. That is, $n\times R_{\hat{u}^2}^2 \ \overset{a}{\sim} \ \chi_q^2$.
+If the null hypothesis is true, the $R$-squared from this regression should be "close" to zero, subject to sampling error. This is because $u^{res}$ will be approximately uncorrelated with all the independent variables. 
+
+What is interesting with this test is that, under the null hypothesis, the sample size multiplied by the $R$-squared from the auxiliary regression is distributed asymptotically as a chi-square random variable with $q$ degrees of freedom. That is, $n\times R_{\hat{u}^2}^2 \ \overset{a}{\sim} \ \chi_q^2$.
 
 Because of its form, the $LM$ statistic is also referred to as the \textbf{n-R-squared statistic}.
 \end{tcolorbox}
@@ -1134,13 +1142,13 @@ Because of its form, the $LM$ statistic is also referred to as the \textbf{n-R-s
 
 \bigskip
 
-We can obtain the BP-statistic that has a $Chi_3^2$ distribution in R as follows:
+We can obtain the BP-statistic that has a $\chi_3^2$ distribution in R as follows:
 
 ```{r eval=FALSE}
 bptest(SQ2a_lm)
 ```
 
-In STATA, we can do the same using the `hettest()` command:
+In STATA, we can do the same using the `hettest` command:
 
 ```{stata}
 /* load the data */
@@ -1201,7 +1209,7 @@ These are just linear functions of the independent variables. If we square the f
 \[
 \hat{u}_i^2 = \eta_0 + \eta_1 \hat{Y}_i + \eta_2 \hat{Y}_i^2 + \epsilon
 \]
-where $\hat{Y}_i$ stand for fitted values. We can use $F$ or $LM$ statistic for the null hypothesis $\mathbb{H}_0: \eta_1=0, \eta_2=0$. This results in two restrictions in testing the null og homoskedasticity, regardless of the number of independent variables in the original model. This can be thought of as a special case of White test.
+where $\hat{Y}_i$ stand for fitted values. We can use $F$ or $LM$ statistic for the null hypothesis $\mathbb{H}_0: \eta_1=0, \eta_2=0$. This results in two restrictions in testing the null of homoskedasticity, regardless of the number of independent variables in the original model. This can be thought of as a special case of White test.
 \end{tcolorbox}
 
 We can run the White test in R manually as follows:
@@ -1287,7 +1295,7 @@ There appears to be a non-linear relationship to LOTSIZE, in which case the Whit
 ***
 \bigskip\bigskip
 
-### (e) Researcher A decides to try 'scaling' to remove the heterosekdasticity and so reestimates the equation in part (a) by dividing \ref{eq:SQ2a} on page \pageref{eq:SQ2a} by $BDRMS$ and then, as an alternative, by $LOTSIZE$. Discuss the reasoning behind using such variable to scale in this way (what must the form of heteroskedasticity be in each case? - note the $1/X$ term in each regression you have to estimate!). Which gives the best results?
+### (e) Researcher A decides to try 'scaling' to remove the heterosekdasticity and so reestimates the equation in part (a) by dividing equation (\ref{eq:SQ2a}) on page \pageref{eq:SQ2a} by $BDRMS$ and then, as an alternative, by $LOTSIZE$. Discuss the reasoning behind using such variable to scale in this way (what must the form of heteroskedasticity be in each case? - note the $1/X$ term in each regression you have to estimate!). Which gives the best results?
 
 \begin{description}
 \item[Answer:]
@@ -1416,7 +1424,7 @@ ln(PRICE_i) = \beta_0 + \beta_1 \ ln(LOTSIZE_i) +\beta_2 \ ln(SQRFT_i) + \beta_3
 
 \end{description}
 
-In R we can transform and obtaint he BP nad White tests as follows:
+In R we can transform and obtain the BP and White tests as follows:
 
 ```{r eval=FALSE}
 SQ2f_lm_log <- lm(log(PRICE) ~ log(LOTSIZE) + log(SQRFT) + BDRMS, data=property_df)
@@ -1576,15 +1584,17 @@ Looking at the table, we can see that in all approaches we are able to tackle he
 
 \begin{description}
   \item[Answer:] We will briefly discuss the nature of the problem, why it occurs, and what problems arise from use of OLS with serially correlated errors.
+  
   \underline{What is the problem of autocorrelation?} 
   
   Classical linear regression model assumes autocorrelation does not exist in the disturbances. That is, it assumes $Cov(u_i,u_j | X_i, X_j) = 0, \ i\neq j$. What this means is that the disturbance term relating to any observation is not influenced by the disturbance term relating to any other observation. If there is such a dependence, then autocorrelation is present. That is, $\mathbb{E}(u_i,u_j)\neq 0$.
+ 
   \underline{Why autocorrelation occurs?} 
   
   There are several reasons as to why autocorrelation occurs including inertia, specification bias, cobweb phenomenon, lags, 'manipulation' of data, data transformation, and nonstationarity.\footnote{Gujarati and Porter (2009), Section 12.1}
     \begin{itemize}
       \item[inertia:] Most econometrics time series has inertia or sluggishness in that the variables exhibit cyclicality where successive observations are likely to be interdependent.
-      \item[specification bias:] It may be the case that one of the variables of the true model is omitted or excluded from the model used. The omitted variable would then be part of the error or disturbance term, which would in turn reflect a systematic patternd.
+      \item[specification bias:] It may be the case that one of the variables of the true model is omitted or excluded from the model used. The omitted variable would then be part of the error or disturbance term, which would in turn reflect a systematic pattern.
       \item[cobweb phenomenon:] The supply of many agricultural commodities reflect the cobweb phenomenon where supply reacts to price with a lag of one time period because supply decisions take time to implement. Thus at the beginning of this year's planting of crops, farmers are influenced by the price prevailing last year.
       \item[lags:] In a time series regression, it is not uncommon to find that the dependent variable in the current variable also depends on the value of itself in the previous period. That is, $Y_t = \beta_0 + \beta_1 X_t + \beta_2 Y_{t-1} + u_t$. This is known as \textit{autoregression}. If we omit the lagged term in this equation, the resulting error term will reflect a systematic pattern due to the influence of the lagged variable on the dependent variable.
       \item['manipulation' of data:] Smoothing out the data, say by averaging three monthly observations to obtain quarterly figures, may itself lend to a systematic pattern in the disturbances, thereby introducing autocorrelation. Similarly, interpolation or extrapolating from data for the missing values, or any data 'massaging' techniques may also introduce autocorrelation.
@@ -1716,6 +1726,8 @@ Cov(\varepsilon_t,\varepsilon_{t-3}) &= \rho^3 \frac{\sigma_v^2}{1 - \rho^2} \\
 \vdots
 \end{align*}
 
+Since $|\rho|\neq 0$, then $Cov(\varepsilon_t,\varepsilon_{t-1})\neq 0$.
+
 \bigskip
 
 \item[Answer (iii):] 
@@ -1746,8 +1758,8 @@ The question is asking for us to regress "growth of price" on "growth of wages".
 In R:
 
 ```{r results = 'hide'}
-property_autocorr_df <- read_excel("../Data/sup4.xls", sheet = "autocorrelation")
-str(property_autocorr_df)
+wage_autocorr_df <- read_excel("../Data/sup4.xls", sheet = "autocorrelation")
+str(wage_autocorr_df)
 ```
 
 and in STATA via the command `describe`.
@@ -1766,14 +1778,14 @@ In R we can do this with
 
 ```{r warning=FALSE, results='hide'}
 # convert all characters to numeric
-property_autocorr_df <- property_autocorr_df %>% mutate_if(is.character, as.numeric)
+wage_autocorr_df <- wage_autocorr_df %>% mutate_if(is.character, as.numeric)
 
 # remove N/As from `gprice` and `gwage` only
-property_autocorr_df <- property_autocorr_df[!with(property_autocorr_df, 
+wage_autocorr_df <- wage_autocorr_df[!with(wage_autocorr_df, 
                                                    is.na(gprice) & is.na(gwage)),]
 
 # look at the structure of the data again to confirm
-str(property_autocorr_df)
+str(wage_autocorr_df)
 ```
 
 and we see that the number of observations for `gprice` and `gwage` now have reduced to 285 each.
@@ -1792,7 +1804,7 @@ The same can be done in STATA with
 Now we can run the regression. In R
 
 ```{r}
-SQ3c_lm <- lm(gprice ~ gwage, data = property_autocorr_df)
+SQ3c_lm <- lm(gprice ~ gwage, data = wage_autocorr_df)
 summary(SQ3c_lm)
 ```
 
@@ -2036,7 +2048,7 @@ This can be done in R via `bgtest()` function in `lmtest` library:
 \end{description}
 
 ```{r}
-bgtest(SQ3c_lm, order=1, data = property_autocorr_df)
+bgtest(SQ3c_lm, order=1, data = wage_autocorr_df)
 ```
 
 which gives us a $\chi^2$ statistic of $105.4$ with a $p$ value of essentially $0$. The critical value at $\alpha=0.05$ is $\chi_1^2 = 3.84146$. Since our test statistic exceeds that, we can reject the null hypothesis and conclude that $\rho_1 \neq 0$ at 95% significance.
@@ -2086,7 +2098,7 @@ where the covariates $X_1$ through $X_k$ are not assumed to be strictly exogeneo
 \[
 \hat{u}_t = \eta_1\hat{u}_{t-1}+\dots+\eta_p\hat{u}_{t-p}+\beta_1X_{1t}+\dots+\beta_kX_{kt} + \varepsilon_t
 \]
-\item Durbin's alternative test is obtained by performing a Wald test that on the null hypothesis that $\mathbb{H}_0:\eta_1 = \dots = \eta_p = 0$ 
+\item Durbin's alternative test is obtained by performing a Wald test on the null hypothesis that $\mathbb{H}_0:\eta_1 = \dots = \eta_p = 0$ 
 \end{enumerate}
 
 \end{tcolorbox}
@@ -2130,7 +2142,7 @@ Durbin's alternative & $\chi^2=165.49$ & Reject null \\
 \end{tabular}
 \end{center}
 
-Given that $X$s are not exogeneous, BG test is more appropriate here. However, it $F$-tests all slopes including all $X$s which not really that interesting. So it may be preferable to use Durbin's alternative test instead, which is almost identical to the BG test but it does not test whether all the slope coefficients are zero, only whether the coefficients of the lagged residuals are zero.
+Given that $X$s are not exogeneous, BG test is more appropriate here. However, it $F$-tests all slopes including all $X$s which is not really that interesting. So it may be preferable to use Durbin's alternative test instead, which is almost identical to the BG test but it does not test whether all the slope coefficients are zero, only whether the coefficients of the lagged residuals are zero.
 
 
 
@@ -2139,7 +2151,7 @@ Given that $X$s are not exogeneous, BG test is more appropriate here. However, i
 ***
 \bigskip\bigskip
 
-###(e) Estimate the model using the Cochrane-Orcutt (two step) method. Check that these results are the same as those obtained by using the `prais` command in Stata (with the `corc` and `twostep` options). Does any autocorrelation remain?
+### (e) Estimate the model using the Cochrane-Orcutt (two step) method. Check that these results are the same as those obtained by using the `prais` command in Stata (with the `corc` and `twostep` options). Does any autocorrelation remain?
 
 \begin{description}
 \item[Answer:]
@@ -2195,7 +2207,7 @@ Adding this adjusted equation for first observation to $Y_t^* = \beta_0^* + \bet
 
 \bigskip
 
-One of the points that was made in the box above was that if we knew $\rho$, we could estimate $\beta_0*$ and $\beta_1$ by regressing $Y_t^*$ on $X_t^*$. Cochrane-Orcutt method is a way to estimate $\rho$.
+One of the points that was made above was that if we knew $\rho$, we could estimate $\beta_0*$ and $\beta_1$ by regressing $Y_t^*$ on $X_t^*$. Cochrane-Orcutt method is a way to estimate $\rho$.
 
 \bigskip
 
@@ -2228,24 +2240,27 @@ In R:
 
 ```{r eval = FALSE}
 # transform the data
-property_autocorr_df <- property_autocorr_df %>%
+wage_autocorr_df <- wage_autocorr_df %>%
   mutate(gprice_star = gprice - rho*lag(gprice, 1),
-         gwage_star = gwage - rho*lag(gwage,1))
+         gwage_star = gwage - rho*lag(gwage,1),
+         beta0_star = 1-rho)
 
 # next we need to adjust this for the first observation
-property_autocorr_df$gprice_star[property_autocorr_df$t == 2] <- 
-  sqrt((1- rho^2))*property_autocorr_df$gprice[property_autocorr_df$t == 2]
+wage_autocorr_df$gprice_star[wage_autocorr_df$t == 2] <- 
+  sqrt((1- rho^2))*wage_autocorr_df$gprice[wage_autocorr_df$t == 2]
 
-property_autocorr_df$gwage_star[property_autocorr_df$t == 2] <- 
-  sqrt((1- rho^2))*property_autocorr_df$gwage[property_autocorr_df$t == 2]
+wage_autocorr_df$gwage_star[wage_autocorr_df$t == 2] <- 
+  sqrt((1- rho^2))*wage_autocorr_df$gwage[wage_autocorr_df$t == 2]
+
+wage_autocorr_df$beta0_star[wage_autocorr_df$t == 2] <- 
+  sqrt((1- rho^2))
 
 # run the regression on the transformed variables
-SQ3e_lm <- lm(gprice_star ~ gwage_star + beta0_star, data = property_autocorr_df)
-summary(SQ3e_lm)
+SQ3e_lm <- lm(gprice_star ~ gwage_star + beta0_star, data = wage_autocorr_df)
 
 # or alternatively use `prais_winsten()` formula from `prais` package
 library(prais)
-prais_winsten(gprice ~ gwage, data = property_autocorr_df, index = "t", twostep = TRUE)
+prais_winsten(gprice ~ gwage, data = wage_autocorr_df, index = "t", twostep = TRUE)
 ```
 
 and in STATA:
@@ -2454,7 +2469,7 @@ with $chi^2=70.241$ and a $p$ value that is practically zero, we would reject th
 ***
 \bigskip\bigskip
 
-### (h) Run model \ref{eq:SQ3g} on page \pageref{eq:SQ3g} again, this time including the residuals from this equation as lagged values. Experiment with the number of lagged terms you include. How many lagged terms are required to make the autocorrelation disappear?
+### (h) Run model (\ref{eq:SQ3g}) on page \pageref{eq:SQ3g} again, this time including the residuals from this equation as lagged values. Experiment with the number of lagged terms you include. How many lagged terms are required to make the autocorrelation disappear?
 
 ```{r eval = FALSE}
 SQ3h_lm <- update(SQ3g_lm, . ~ . + SQ3g_lm_residuals + lag(SQ3g_lm_residuals, 1))
