@@ -36,8 +36,8 @@ options(scipen = 999)
 
 \textbf{\underline{Topics Covered}}
 \begin{description}
-\item[Faculty Qs:] 
-\item[Supplementary Qs:] Endogeneity, measurement errors; simultaneous equations;
+\item[Faculty Qs:] endogeneity; simultaneous equations; reduced-form equation; instrumental variable; Durbin-Wu-Hausman specification test;
+\item[Supplementary Qs:] endogeneity, measurement errors; simultaneous equations;
 \end{description}
 
 \bigskip
@@ -50,10 +50,12 @@ options(scipen = 999)
   \subitem Chapter 9: Simultaneous Equations Estimation
 \item Wooldridge J M (2021) \textit{Introductory Econometrics: A Modern Approach}, $7^{th}$ ed, 
   \subitem Chapter 9: More on Specification and Data Issues 
+  \subitem Chapter 13: Pooling Cross Sections across Time: Simple Panel Data Methods
   \subitem Chapter 15: Instrumental Variables in Estimation and Two Stage Least Squares
   \subitem Chapter 16: Simultaneous Equations Models
 \item Gujarati, D N and Porter, D (2009) \textit{Basic Econometrics}, $7^{th}$ International ed, McGraw-Hill 
-  \subitem Chapter 13: Econometric Modeling: Model Specification and Diagnostic Testing 
+  \subitem Chapter 13: Econometric Modeling: Model Specification and Diagnostic Testing
+  \subitem Chapter 19: The Identification Problem
   \subitem Chapter 20: Simultaneous-Equation Methods
 \item Gujarati, D (2022) \textit{Essentials of Econometrics}, $5^{th}$ ed, Sage
   \subitem Chapter 7: Model Selection: Criteria and Tests 
@@ -72,7 +74,423 @@ options(scipen = 999)
 \bigskip\bigskip
  
 
-## QUESTION 1
+## QUESTION A: INSTRUMENTAL VARIABLES
+
+\textbf{We are interested in the determinants of crime. We use Cornwell and Trumbull (1994) data on 90 counties in North Caroline for the years 1981 through 1987.}\footnote{This question is based on Cornwell, C and Trumbull, W N (1994) "Estimating the Economic Model of Crime Using Panel Data", \textit{Review of Economics and Statistics}, 76:360-366, and is covered in Wooldridge (2021) Ch 13.}
+
+### 1. Download the dataset crime4.dta
+
+```{r include=FALSE}
+libraries <- c("haven",       # to import/export SPSS, STATA, SAS files
+               "readxl",      # to import/export Excel files   
+               "tidyverse",   # for tidy data
+               "Statamarkdown", # for using STATA commands in R
+               "ivreg", #for regressions with instrumental variables
+               "mnormt", #for creating bivariate normal distributions
+               "modelsummary", #for building regression output comparison tables
+               "lmtest", #for various tests on regressions
+               "kableExtra", # for creating nice tables in R
+               "rstatix")     # converts stats functions to a tidyverse-friendly format
+
+invisible(lapply(libraries, library, character.only=TRUE))  # will load the libraries
+```
+
+In R:
+
+```{r}
+crime_df <- read_dta("../Data/crime4.dta")
+```
+
+and in STATA:
+
+```{stata}
+quietly cd .. 
+use Data/crime4.dta
+```
+
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
+
+
+### 2. See what the variables mean by typing "des"
+
+```{stata eval = !knitr::is_latex_output()}
+quietly cd .. 
+use Data/crime4.dta
+des
+```
+
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
+
+
+### 3. Summarize the data using the command "summ"
+
+```{stata eval = !knitr::is_latex_output()}
+quietly cd .. 
+use Data/crime4.dta
+summ
+```
+
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
+
+
+### 4. Run an OLS regression with the command "`reg crmrte polpc west central urban`"
+
+In R:
+
+```{r, results='hide'}
+FQA4_lm <- lm(crmrte ~ polpc + west + central + urban, data = crime_df)
+```
+
+and in STATA:
+
+```{stata}
+quietly cd .. 
+use Data/crime4.dta
+reg crmrte polpc west central urban
+```
+
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
+
+
+### 5. What do you infer from the row corresponding to $west$?
+
+\begin{description}
+\item[Answer:] 
+Western North Carolina is a dummy variable and it has a statistically significant negative relationship with the crime rate. 
+\end{description}
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
+
+
+### 6. Interpret the positive and highly significant coefficient on $polpc$.
+
+\begin{description}
+\item[Answer:] 
+The coefficient on police per capita is positive and significant, suggesting regions with higher number of police officers have higher crime rates. This is counter-intuitive, since we may expect that hiring more police officers should help crime. If the interpretation is causal and runs from police to crime, this result would suggest that hiring more police officers increases the crime rate.
+
+There may be two other possibilities, however. It might be the case that when there are additional police, perhaps more crimes are reported. It may also be the case that the police variable might be endogeneous in the equation for other reasons: counties may enlarge the police force when they expect crime rates to increase. In this case, this regression cannot be interpreted in the causal fashion. 
+
+In the rest of this question, we will look at how to account for this additional form of endogeneity.
+\end{description}
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
+
+
+### 7. We intend to use $taxpc$ as an IV for for $polpc$. In terms of a simultaneous equations model, explain explain which coefficients should be zero or non-zero, in order for $taxpc$ to be a valid IV for $polpc$.
+
+\begin{description}
+\item[Answer:] 
+Unless the police themselves are involved in the crime, the positive coefficient on $polpc$ in the above regression contradicts theory and common sense. What is likely is that the estimator is biased. The reason for the bias is the endogeneity of $polpc$ with respect to the unobserved error terms in the regression.\footnote{see Faculty Question 1(c) from Supervision 4 to remind yourself why it is biased.} Endogeneity could be present because causality in this relationship runs in the opposite direction - increasing crime rate leads to more hiring into the police force. 
+
+Overall there is likely to be simultaneity in the relationship between police and crime rates. Simultaneity would be present because increase in law enforcement would at least be partially dependent on the expected crime rate, and the crime rate would at least be partially dependent on the size of the police force. This type of bi-directional causality causes endogeneity and is a major source of bias in the OLS estimator. 
+
+\begin{tcolorbox}[breakable, title=Simultaneity Bias in OLS\footnote{Wooldridge (2021, $7^{th}$ ed) Section 16-2: Simultaneity Bias in OLS}, skin=enhancedlast]
+Consider the two-equation model
+\begin{align*}
+Y &= \beta_0 + \beta_1\ X + \beta_2\ Z_1 + u \\
+X &= \gamma_0 + \gamma_1\ Y + \gamma_2\ Z_2 + v
+\end{align*}
+The variables $Z_1$ and $Z_2$ are exogeneous, i.e. each is uncorrelated with $u$ and $v$. Rearranging this for $X$ gives:
+\begin{align*}
+X &= \gamma_0 + \gamma_1\ (\beta_0 + \beta_1\ X + \beta_2\ Z_1 + u) + \gamma_2\ Z_2 + v \\
+(1-\gamma_1\beta_1)X &= (\gamma_0 + \gamma_1\beta_0) + \gamma_1\beta_2\ Z_1 + \gamma_2\ Z_2 + (\gamma_1u+v)
+\end{align*}
+Assume $\gamma_1\beta_1\neq1$. Whether this assumption is restrictive depends on the application. If this assumption holds, then
+\begin{align*}
+X &= \frac{\gamma_0 + \gamma_1\beta_0}{1-\gamma_1\beta_1} + \frac{\gamma_1\beta_2}{1-\gamma_1\beta_1}Z_1 + \frac{\gamma_2}{1-\gamma_1\beta_1}Z_2 + \frac{\gamma_1u+v}{1-\gamma_1\beta_1} \\
+X &= \pi_0 + \pi_{21}\ Z_1 + \pi_{22}\ Z_2 + \epsilon
+\end{align*}
+This equation that expresses $X$ in terms of the exogeneous variables and the error terms is the \textbf{reduced form equation} for $X$.
+
+The parameters $\pi_{21}$ and $\pi_{22}$ are the \textit{reduced form parameters} which are nonlinear functions of the \textit{structural parameters}.
+
+The \textit{reduced form error}, $\epsilon$ is a linear function of the structural error terms $u$ and $v$. Therefore, we can consistently estimate $\pi_{21}$ and $\pi_{22}$ by OLS, something that is used for 2-stage least squares estimation. 
+
+A reduced form also exists for $Y$ insofar as the assumption $\gamma_1\beta_1\neq1$ holds. The algebra is similar and has the same properties as the reduced form equation for $X$.
+
+Estimating $Y = \beta_0 + \beta_1\ X + \beta_2\ Z_1 + u$ with OLS will produce biased and inconsistent estimators for the $\beta$s. Since by assumption $Z_1$ and $u$ are uncorrelated, the issue is whether $X$ and $u$ are uncorrelated. From the reduced form we see that $X$ and $u$ are correlated if and only if $\epsilon$ and $u$ are correlated, since $Z_1$ and $Z_2$ are assumed exogeneous. $\epsilon$ is a linear function of $u$ and $v$ so it is generally correlated with $u$. 
+
+We can also suppose $u$ and $v$ are uncorrelated. Then we can consider two cases where $\gamma_1=0$ and $\gamma_1\neq 0$:
+\begin{itemize}
+\item When $\gamma_1=0$ and $u$ and $v$ are uncorrelated, $X$ and $u$ are also uncorrelated.
+\subitem Notice in this case $X$ is not simultaneously determined with $Y$. If $Corr(u,v)=0$ then this rules out omitted variables or measurement errors in $u$ that are correlated with $X$. It would then not be surprising in this case to see that OLS estimation of $Y = \beta_0 + \beta_1\ X + \beta_2\ Z_1 + u$ works.
+\item When $\gamma_1\neq 0$ and $u$ and $v$ are uncorrelated, $u$ and $\epsilon$ must be correlated. Also note that, if $u$ and $v$ are correlated, and $\gamma_1=0$, $u$ and $\epsilon$ will still be correlated.
+\end{itemize}
+When $X$ is correlated with $u$ because of simultaneity, it is said that OLS suffers from \textit{simultaneity bias}. Obtaining the direction of the bias in the coefficients is generally complicated, as discussed in the omitted variable bias supervision.
+\end{tcolorbox}
+
+
+In this case, we suspect that the bias is positive and large in magnitude. In order to correct for the estimation bias we use an instrument $taxpc$ for police per capita and run a 2-stage least squares estimation (2SLS). Accordingly, we will estimate the following system of simultaneous equations (SEM):
+\begin{align*}
+{crmrte}_i &= \beta_0 + \beta_1\ {polpc}_i + \beta_2\ {taxpc}_i + \delta_{11}\ {west}_i + \delta_{12}\ {central}_i + \delta_{13}\ {urban}_i + u_i \\
+{polpc}_i &= \gamma_0 + \gamma_1\ {crmrte}_i + \gamma_2\ {taxpc}_i + \delta_{11}\ {west}_i + \delta_{12}\ {central}_i + \delta_{13}\ {urban}_i + v_i \\
+\end{align*}
+
+For identification of the IV we need:
+\begin{itemize}
+\item \textit{Instrument relevance:} whereby the tax rate must have non-trivial explanatory power for police per capita, i.e. 
+$Cov(taxpc, polpc)\neq 0$;
+\item \textit{Instrument exogeneity:} whereby the tax rate must affect the crime rate only through its influence on police per capita and not in any other way. That is, $taxpc$ must be exogeneous with respect to $u$, i.e. $\mathbb{E}(u|taxpc)=0$. This exogeneity of $taxpc$ implies that $Cov(taxpc, u)=0$.
+\end{itemize}
+
+For identification of an equation (i.e. which equation can be estimated), we need:
+\begin{itemize}
+\item[Order Condition:] This is a necessary condition for identification of an equation that states that we need at least as many excluded exogeneous variables as there are included endogeneous explanatory variables in the structural equation.
+\item[Rank Condition:] This is the sufficient condition for identification of an equation that states that at least one of the exogeneous variable is excluded from this equation must have a nonzero population coefficient in the second equation. This ensures that at least one of the exogeneous variables omitted from the first equation actually appears in the reduced form of $X$, so that we can use these variables as instruments for $X$. 
+\end{itemize}
+
+In this question, the order condition means that tax rate is informative for police per capita, i.e. $\gamma_2\neq 0$ and the rank condition means that the tax rate is exogenous in the $crmrte$ equation, i.e. $\beta_2=0$ which is the exclusion restriction.
+\end{description}
+
+
+
+### 8. Run a 2SLS using $taxpc$ as an IV. Compare with the OLS output.
+
+\begin{description}
+\item[Answer:]
+There are multiple ways of doing this. For illustration, we will do the 2-stage least squares regression manually and then use specific STATA commands for IV regression.
+
+Manually, what we are doing is first regressing $X = \pi_0 + \pi_{21}\ Z_1 + \dots + \pi_{24}\ Z_4 + \epsilon$ where $Z_1$ to $Z_4$ are $west, central, urban,$ and $taxpc$, respectively.
+
+We then use $\hat{X}$, or $\widehat{polpc}$ to estimate $Y = \beta_0 + \beta_1\ hat{X} + \beta_2\ Z_1 + \beta_3\ Z_2 + \beta_4\ Z_3 + u$. 
+\end{description}
+
+In R:
+
+```{r results='hide'}
+FQA8_lm1 <- lm(polpc ~ west + central + urban + taxpc, data = crime_df)
+polpc_hat <- predict(FQA8_lm1)
+FQA8_lm2 <- lm(crmrte ~ polpc_hat + west + central + urban, data=crime_df)
+summary(FQA8_lm2)
+```
+
+In STATA: 
+
+```{stata eval = !knitr::is_latex_output()}
+quietly cd .. 
+use Data/crime4.dta
+regress polpc taxpc west central urban
+predict polpc_hat
+regress crmrte polpc_hat west central urban
+```
+
+Instead of doing it manually, in STATA we can either use `ivreg` command or `ivregress 2sls` command. Note that `ivreg` is not short for `ivregress 2sls` - they are different commands. However, if we add the `,small` option at the end of `ivregress 2sls` command, then it will give the same result as `ivreg`. 
+
+To estimate the model with the IV method we reference the variable that we suspect is endogeneous, i.e. $polpc$ within a parenthesis and set it equal to the instrument or instruments we are using, i.e. $taxpc$. If you want to obtain the reduced form equation, use the `first` option at the end of the IV regression:
+
+```{stata eval = !knitr::is_latex_output()}
+quietly cd .. 
+use Data/crime4.dta
+ivregress 2sls crmrte west central urban (polpc = taxpc), first
+```
+
+We can show the results in comparison to OLS results from part 4 above in a table as follows:
+
+```{r results='hide'}
+FQA8_models <- list(
+  "OLS" = FQA4_lm,
+  "IV" = FQA8_lm2
+)
+msummary(FQA8_models)
+```
+
+
+```{stata}
+quietly cd .. 
+use Data/crime4.dta
+quietly reg crmrte polpc west central urban
+estimates store OLS
+quietly regress polpc taxpc west central urban
+quietly predict polpc_hat
+quietly regress crmrte polpc_hat west central urban
+estimates store IV
+
+estout OLS IV, cells (b(star fmt(2)) se(par fmt(2))) ///
+  legend varlabels(_cons constant) ///
+  stats(N r2 F)
+```
+
+We see that the coefficient on police per capita is still positive and larger in magnitude in the 2SLS model with the use of $taxpc$ as IV. It is, however, insignificant. We also see a drop in $R^2$ and overall regression significance as suggested by the $F$-statistic.
+
+This is to be expected since by instrumenting $polpc$ with $taxpc$ in the second-stage regression, we are only keeping the exogeneous variation in police per capita. This is lower than the overall variation $polpc$, so the overall explanatory power of the regression falls. 
+
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
+
+
+### 9. If $taxpc$ were a valid instrument, what does the 2SLS estimate tell us about the effect of police on crime? What does it tell us about the effect of crime on police employment?
+
+\begin{description}
+\item[Answer:]
+if $taxpc$ were a valid instrument, then the 2SLS estimate tells us that taxes may be raised in places with high crime rates to employ more police. However, given the positive and larger coefficient for $polpc$, it means increase in police force correlates with increase in crime. This latter coefficient is insignificant, however.
+\end{description}
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
+
+
+### 10. Can you suggest a reason why $taxpc$ may not be a valid instrument?
+
+\begin{description}
+\item[Answer:]
+Since there is a drop in $R^2$ and $F$-statistic, and $polpc$ is no longer significant, suggests that $taxpc$ as an instrument may be chosen poorly and does not help us solve the endogeneity problem. 
+
+If we suppose that the taxes need to be raised in place with high crime rates to employ more police, this violates the exclusion restriction whereby $\beta_2\neq 0$.
+\end{description}
+
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
+
+
+### 11. If $taxpc$ is indeed a valid IV, how would you test the endogeneity of $polpc$ in the OLS regression of part 4. Perform this test and write down your conclusions.
+
+\begin{description}
+\item[Answer]
+The underlying point in this question is that most economic data are subject to some element of measurement error. The issue is whether it is potentially serious enough to require the use of IV instead of OLS to fit a model. If there is no simultaneity problem, the OLS estimators produce consistent and efficient estimators. If there is simultaneity, then the OLS estimators are not even consistent. 
+
+Simultaneity problem arises because some of the regressors are endogeneous and are therefore likely to be correlated with the error term. Therefore, we need to test this. So, essentially, a test of simultaneity is a test of whether and endogeneous regressor is correlated with the error term. The test for this is called \textit{Hausman's specification error test}, or \textit{Wu-Hausman specification test}, or \textit{Durbin-Wu-Hausman (DWH) specification test}. This is because although the standard reference is Hausman (1978),\footnote{Hausman, J A (1978), "Specification tests in econometrics", \textit{Econometrica} 46(6):1251-71.} Durbin (1954)\footnote{Durbin, J (1954) "Errors in variables", \textit{Review of the International Statistical Institute} 22(1):23-32.} and Wu (1973)\footnote{Wu,D-M (1973) "Alternative tests of independence between stochastic regressors and disturbances", \textit{Econometrica} 41(4):733-50} made important contributions to its development.
+
+\begin{tcolorbox}[breakable, title=The Durbin-Wu-Hausman (DWH) specification test, skin=enhancedlast]
+Consider the model
+\[
+Y = \beta_0 + \beta_1X_1 + \dots + \beta_kX_k + u
+\]
+where one or more of the explanatory variables are potentially subject to measurement error. Under the null hypothesis that there is no measurement error, the OLS and IV coefficients will not be systematically different. The test statistic is based on the differences between all of the OLS and IV coefficients.
+
+Under the null hypothesis of no significant overall difference, the test statistic has a $\chi^2$ distribution with degrees of freedom equal to the number of coefficients being compared, at least in principle. In practice, for technical reasons, the actual number of degrees of freedom may be smaller. STATA and R computes this for us automatically.
+
+Now consider the demand and supply functions:
+\begin{align*}
+\text{Demand Function: }\ & Q_t^d = \alpha_0 + \alpha_1\ P_t + \alpha_2\ I_t + \alpha_3\ R_t + u_{1t} \\
+\text{Supply Function: }\ & Q_t^s = \beta_0 + \beta_1\ P_t + u_{2t}
+\end{align*}
+where $P,Q,I$, and $R$ are price, quantity, income, and wealth, respectively. Assume that income and wealth are exogeneous. We see that price and quantity are endogeneous.
+
+Consider the supply function above. If there is no simultaneity problem, i.e. $P$ and $Q$ are mutually independent, then $P_t$ and $u_{2t}$ are uncorrelated. If there is simultaneity, then $P_t$ and $u_{2t}$ will be correlated. To find out which is the case, the Hausman test proceeds as follows:
+
+First, obtain the reduced form equations:
+\begin{align*}
+P_t &= \pi_0 + \pi_1\ I_t + \pi_2\ R_2 + v_t \\
+Q_t &= \pi_3 + \pi_4\ I_t + \pi_5\ R_t + w_t
+\end{align*}
+
+Second, estimate $P_t$ using OLS:
+\[
+\hat{P}_t = \hat{\pi}_0 + \hat{\pi}_1\ I_t + \hat{\pi}_2\ R_2
+\]
+Thus, $P_t = \hat{P}_t +\hat{v}_t$. 
+
+Third, consider the following equation:
+\[
+Q_t = \beta_0 + \beta_1\ \hat{P}_t + \beta_1\ \hat{v}_t + u_{2t}
+\]
+Notice that the coefficients of $P_t$ and $v_t$ are the same: $\beta_1$. The difference between this equation and the original supply equation is that it includes the additional variable $\hat{v}_t$
+
+If the null hypothesis that there is no simultaneity, i.e. $P_t$ is not an endogeneous variable, holds then the correlation between $\hat{v}_t$ and $u_{2t}$ should be zero, asymptotically. So if we run the regression on this equation and find that the coefficient of $\hat{v}_t$ is statistically zero, then we can conclude that there is no simultaneity problem.  
+\end{tcolorbox}
+
+In this question, to test for the endogeneity of $polpc$ in the second-stage regression, we then use Durbin-Wu-Hausman test. We will do this manually and automatically, as usual.
+\end{description}
+
+
+Manual STATA:
+
+```{stata eval = !knitr::is_latex_output()}
+quietly cd .. 
+use Data/crime4.dta
+quietly regress polpc taxpc west central urban
+quietly predict res, res
+quietly regress crmrte polpc west central urban res
+test res
+```
+
+We can also use `estat endogeneous` function for postestimation following `ivregress` function:
+
+```{stata}
+quietly cd .. 
+use Data/crime4.dta
+quietly ivregress 2sls crmrte west central urban (polpc = taxpc)
+estat endogenous
+```
+
+The $F$-test statistic for this test has a $p$-value of $0.5398$ so we do not reject the null hypothesis of endogeneity. That is, OLS and IV estimators are statistically equivalent insofar as $taxpc$ is used as an instrument. We conclude that both estimators are either valid or invalid.
+
+
+
+\bigskip\bigskip\bigskip
+\hdashrule[0.5ex]{\textwidth}{1pt}{3mm}
+\bigskip\bigskip\bigskip
+
+
+## QUESTION B: SIMULTANEOUS EQUATIONS
+
+\textbf{We are interested in estimating how women's hours of work respond to the wages they get. Consider the simultaneous equations relating wages earned and hours worked for women in the labour force:}
+\begin{align}
+{hours}_i &= \beta_0 + \beta_1\ {wage}_i + \beta_2\ {kids}_i + u_i \label{eq:FQB1} \\ 
+{wage}_i &= \gamma_0 + \gamma_1\ {hours}_i + \gamma_2\ {kids}_i + v_i. \label{eq:FQB2}
+\end{align}
+
+
+### A. Where do you think these equations come from - i.e. what are the economic rationale for these equations?
+\begin{description}
+\item[Answer:]
+Equation (\ref{eq:FQB1}) is the labor supply decision by workers;
+
+Equation (\ref{eq:FQB2}) is the labor demand decision of firms, who typically pay higher wages for those who work full time.
+
+\end{description}
+
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
+
+
+### B. Would an OLS of $hours$ on wage and kids give us a consistent estimates of the causal effect of wage on hours of work? Please justify your answer.
+
+\begin{description}
+\item[Answer:]
+Not consistent due to simultaneity.
+\end{description}
+
+
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -512,21 +930,6 @@ Also note that the IV estimator of $\beta_0$ is $\hat{\beta}_0 = \bar{Y} - \hat{
 \item[Answer:]
 In STATA we can do this using the following code
 \end{description}
-
-```{r include=FALSE}
-libraries <- c("haven",       # to import/export SPSS, STATA, SAS files
-               "readxl",      # to import/export Excel files   
-               "tidyverse",   # for tidy data
-               "Statamarkdown", # for using STATA commands in R
-               "ivreg", #for regressions with instrumental variables
-               "mnormt", #for creating bivariate normal distributions
-               "lmtest", #for various tests on regressions
-               "kableExtra", # for creating nice tables in R
-               "rstatix")     # converts stats functions to a tidyverse-friendly format
-
-invisible(lapply(libraries, library, character.only=TRUE))  # will load the libraries
-```
-
 
 ```{stata}
 /* load the data */
