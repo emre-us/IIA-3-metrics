@@ -44,19 +44,28 @@ options(scipen = 999)
 
 \textbf{\underline{Related Reading:}}
 \begin{description}
-\item Dougherty, \textit{Introduction to Econometrics}, $5^{th}$ ed, OUP
+\item Dougherty (2016), \textit{Introduction to Econometrics}, $5^{th}$ ed, OUP
+  \subitem Chapter 10: Binary Choice and Limited Dependent Variable Models, and Maximum Likelihood Estimation
   \subitem Chapter 14: Introduction to Panel Data Models
 \item Wooldridge J M (2021) \textit{Introductory Econometrics: A Modern Approach}, $7^{th}$ ed, 
+  \subitem Section 7-5: A Binary Dependent Variable: The Linear Probability Model
   \subitem Chapter 13: Pooling Cross Sections across Time: Simple Panel Data Methods
+  \subitem Chapter 17: Limited Dependent Variable Model and Sample Selection Corrections
 \item Gujarati, D N and Porter, D (2009) \textit{Basic Econometrics}, $7^{th}$ International ed, McGraw-Hill 
+  \subitem Chapter 15: Qualitative Response Regression Models
   \subitem Chapter 16: Panel Data Regression Models
 \item Gujarati, D (2022) \textit{Essentials of Econometrics}, $5^{th}$ ed, Sage
+  \subitem Chapter 6: Qualitative or Dummy Variable Regression Models
   \subitem Chapter 12: Panel Data Regression Models
 \item Stock, J H and Watson M W (2020) \textit{Introduction to Econometrics}. $4^{th}$ Global ed, Pearson
   \subitem Chapter 10: Regression with Panel Data
+  \subitem Chapter 11: Regression with a Binary Dependent Variable
 \end{description}
 
 \bigskip
+
+\small Very grateful to Dr Oleg Kitov and Dr Clive Lawson for the very informative stylized answers to previous iterations of the supervision questions.
+\normalsize
 
 ```{r include=FALSE}
 libraries <- c("haven",       # to import/export SPSS, STATA, SAS files
@@ -65,6 +74,7 @@ libraries <- c("haven",       # to import/export SPSS, STATA, SAS files
                "Statamarkdown", # for using STATA commands in R
                "ivreg", #for regressions with instrumental variables
                "mnormt", #for creating bivariate normal distributions
+               "modelsummary", #for building regression output comparison tables
                "lmtest", #for various tests on regressions
                "kableExtra", # for creating nice tables in R
                "rstatix")     # converts stats functions to a tidyverse-friendly format
@@ -72,19 +82,866 @@ libraries <- c("haven",       # to import/export SPSS, STATA, SAS files
 invisible(lapply(libraries, library, character.only=TRUE))  # will load the libraries
 ```
 
-\bigskip
 
-\small Very grateful to Dr Oleg Kitov and Dr Clive Lawson for the very informative stylized answers to previous iterations of the supervision questions.
-\normalsize
 
 \pagebreak
+
 
 # FACULTY QUESTIONS
 
 \bigskip\bigskip
  
 
-## QUESTION 1
+## QUESTION A: Panel Data
+
+### (1) Recall the first problem of the previous supervision sheet on determinants of crime. Download the dataset CRIME4.dta. Remind yourselves what the variables mean by typing "des".
+
+This question is based on Wooldridge (2021) Example 13.9.
+
+In R:
+
+```{r}
+crime_df <- read_dta("../Data/crime4.dta")
+```
+
+and in STATA:
+
+```{stata eval = !knitr::is_latex_output()}
+quietly cd .. 
+use Data/crime4.dta
+des
+```
+
+
+\bigskip
+***
+\bigskip
+
+### (2) Observe now that we actually have a panel dataset. So we can use a first-difference or fixed effects method to eliminate omitted variable bias.
+
+\begin{description}
+\item[Answer:]
+In order to eliminate a time-constant unobserved effect, we can difference panel data over time. This of course assumes strict exogeneity of regressors. Similarly, if one of the regressors is subject to measurement error, then differencing a poorly measured regressor reduces its variation relative to its correlation with the differenced error caused by classical measurement error, resulting in a potentially sizable bias.
+
+\begin{tcolorbox}[breakable, title=Unobserved Effects Model and First Differences\footnote{\textcolor{lightgray}{Wooldridge (2021, $7^{th}$ ed) Section 13-3: Two-Period Panel Data Analysis}}, skin=enhancedlast]
+Consider a model with single observed regressor such as regressing $crmrte$ on $polpc$:
+\[
+Y_{it} = \beta_0 + \gamma_0\ d1_t + \beta_1\ X_{it} + a_{i} + u_{it}
+\]
+where $d1_t$ is a dummy variable which is equal to $1$ when $t=1$ and $0$ when $t=0$. Since it does not change across time, it does not have an $i$ subscript. This means, the intercept at $t=0$ is $\beta_0$ and at $t=1$ is $\beta_0 + \gamma_0$.
+
+Variable $a_i$ captures all unobserved, time-constant factors that affect $Y_{it}$. Notice that this variable does not have $t$ subscript since it does not change over time. This variable is usually called an \textit{unobserved effect}, or \textit{fixed effect}, or \textit{unobserved heterogeneity}, and the model here is called an \textit{unobserved effects model} or \textit{fixed effects model}. Similarly, the error $u_{it}$ is called the \textit{idiosyncratic error} or \textit{time-varying error} because it represents unobserved factors that change over time and affect $Y_{it}$.
+
+In most applications, the main reason for collecting panel data is to allow for the unobserved effect, $a_i$ to be correlated with explanatory variables. For example, in this question, we want the unmeasured factors in $a_i$ that affect the crime rate also to be correlated with police per capita. 
+
+Since $a_i$ is constant over time, we can difference the data across the two time periods:
+\begin{align*}
+Y_{i1} &= (\beta_0 + \gamma_0) + \beta_1\ X_{i1} + a_i + u_{i1} \\
+Y_{i0} &= \beta_0 + \beta_1\ X_{i0} + a_i + u_{i0} \\
+Y_{i1}-Y_{i0} &= \gamma_0 + \beta_1\ (X_{i1} - X_{i0}) + (u_{i1} - u_{i0}) \\
+\Delta Y_i &= \gamma_0 + \beta_1\ \Delta X_i + \Delta u_i
+\end{align*}
+where $\gamma_0$ is the change in intercept from $t=0$ to $t=1$ and the unobserved effect $a_i$ is differenced away. The OLS estimator of $\beta_1$ is called the \textit{first-differenced estimator}.
+
+For us to be able to analyze this \textit{first-differenced equation}, we need to assume that
+\begin{itemize}
+\item $\Delta u_i$ and $\Delta X_i$ are uncorrelated, which would hold if $u_{it}$ is uncorrelated with $X_{it}$ in both time periods. 
+\subitem This assumption is effectively another version of the \textit{strict exogeneity} condition for time series models. This assumption rules out the regressor being a lagged dependent variable, i.e. rules out $X_{it} = Y_{i,t-1}$.
+\subitem Notice that here $X_{it}$ are allowed to be correlated with unobesrvables that are constant over time.
+\item $\Delta X_i$ must have some variation across $i$.
+\subitem This qualification fails if $X$ does not change over time for any cross-sectional observation, or if it changes by the same amount for every observation. Thus, if $X_i$ is a dummy variable this assumption fails and we cannot estimate by OLS.
+\subitem The reason why this is important is that since we allow $a_i$ to be correlated with $X_{it}$, we can't separate the effect of $a_i$ on $Y_{it}$ from the effect of any variable that does not change over time.
+\item the first-differenced equation is homoskedastic. If it does not hold, we know from Supervision 4 how to test and correct for heteroskedasticity.
+\end{itemize}
+
+\underline{Drawbacks}:
+
+One drawback of differencing to eliminate $a_i$ is that it can greatly reduce the variation in explanatory variables. That is, $X_{it}$ may have substantial variation but $\Delta X_{it}$ may not have much variation. This would lead to a large standard error for $\hat{\beta}_1$ when estimating by OLS. 
+
+We can address this by using a large cross section, though that is not always possible. We can also use longer differences over time rather than using year-to-year changes, which can sometimes be better.
+
+\underline{Differencing with multiple regressors and more than two time periods}:
+
+Suppose we have $k$ regressors and three time periods. A general unobserved effects model is:
+\[
+Y_{it} = \delta_0 + \delta_1\ d1_t + \delta_2\ d2_t + \beta_1\ X_{it1} + \dots + \beta_k\ X_{itk} + a_i + u_{it}
+\]
+We now have two time period dummies in addition to the intercept. The intercept in the current period is $\delta_0$, in the first period is $\delta_0+\delta_1$, and in the second period is $\delta_0 + \delta_1 + \delta_2$. 
+
+We are mainly interested in $\beta_1, \dots, \beta_k$. If the unobserved effect $a_i$ is correlated with any of the explanatory variables, then using pooled OLS on the three years of data results in biased and inconsistent estimates.
+
+The key assumption here is that the explanatory variables are strictly exogeneous after the unobserved effect $a_i$ is taken out. That is, the idiosyncratic errors are uncorrelated with the explanatory variable in \textit{Peach time period}:
+\begin{align*}
+&Cov(X_{itj},u_{im}) = 0 \ \ \text{for all } t, m, j \\
+&\text{or,} \\
+&\mathbb{E}(u_{it} | \vec{\mathbf{X}}_i,a_i) = 0.
+\end{align*}
+This assumption rules out the possibility of one of the regressors being a lagged dependent variable, i.e. it rules out $X_{itj} = Y_{it-1}$ as it did for the two-period version above.
+
+Notice that if an important time-varying variable has been omitted, then this assumption is generally violated.
+
+Similarly, measurement error in one or more explanatory variables can cause this assumption to be false.
+
+Notice also that under this assumption if $a_i$ is correlated with $X_{itj}$, then $X_{itj}$ will be correlated with the composite error $v_{it} = a_i + u_{it}$. As we did with two-period version, we can eliminate $a_i$ by differencing adjacent periods. 
+
+In three period case, we subtract period zero from period one, and subtract period one from period two. This gives:
+\[
+\Delta Y_{it} = \delta_1\ \Delta d1_t + \delta_2\ \Delta d2_t + \beta_1\ \Delta X_{it1} + \dots + \beta_k\ \Delta X_{itk} + \Delta u_{it}
+\]
+for $t = 1,2$. We do not have a differenced equation for $t=0$ because there is nothing to subtract from the $t=0$ equation.
+
+If this equation satisfies the classical linear model assumptions, then pooled OLS gives unbiased estimators, and the usual $t$ and $F$ statistics are valid for hypothesis. 
+
+For OLS to be consistent, $\Delta u_{it}$ must be uncorrelated with $\Delta X_{itj}$ for all $j$ and $t=2,3$. 
+
+Another important point regarding the first differenced equation above concerns the differences in the year dummy variables. For $t=1, \Delta d1_t=1$ and $\Delta d2_t=0$. Similarly, for $t=2, \Delta d1_t = -1$ and $\Delta d2_t=1$. 
+\end{tcolorbox}
+
+\end{description}
+
+\bigskip
+***
+\bigskip
+
+### (3) Why might there by an omitted variable bias (as opposed to simultaneity bias) in a regression of crime on police?
+
+\begin{description}
+\item[Answer:]
+We may be omitting unemployment, for example. In places with high unemployment there may be higher crime rates, and because of fewer employment opportunities, police jobs may be even more attractive propositions.
+
+Overall simple regressions such as
+\[
+{crmrte}_{it} = \beta_0 + \beta_1\ {polpc}_{it} + u_{it}
+\]
+likely suffers from omitted variable problems. These omitted variables can relate to age distribution, gender distribution, education levels, law enforcement efforts etc. 
+
+One way to tackle this is to control for these factors in a multiple regression analysis. However, many factors may be hard to control for. 
+
+Alternatively, we could use lagged dependent variable, ${crmrte}_{it-1}$ as a proxy variable to help control for the fact that different cities have historically different crime rates.\footnote{see Wooldridge (2021) Section 9-2a for a detailed discussion.}
+
+Another alternative is to use \textit{first difference} or \textit{fixed effects} method as outlined in Question 2 above.
+\end{description}
+
+
+\bigskip
+***
+\bigskip
+
+### (4) Regress $lcrime$ on $lpolice, ldensity, urban, west,$ and $central$. What is the interpretation of the coefficient on $lpolice$?
+
+In R:
+
+```{r results='hide'}
+lm_FQA4 <- lm(lcrmrte ~ lpolpc + ldensity + urban + west + central, data = crime_df)
+summary(lm_FQA4)
+```
+
+In STATA:
+
+```{stata}
+quietly cd .. 
+use Data/crime4.dta
+regress lcrmrte lpolpc ldensity urban west central
+```
+
+\begin{description}
+\item[Answer:]
+The coefficient on $lpolice$ tells us the elasticity of crime with respect to police holding all else constant (i.e. partial effect). It implies that a $1\%$ increase in police per capita increases the crime rate by about $0.154\%$.
+\end{description}
+
+
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
+
+
+### (5) Now run a first differenced regression by regressing $clcrime$ on $clpolice$ and $cldensity$.
+
+\begin{description}
+\item[Answer:]
+These are all first differences of logged variables. We can regress them as follows:
+\end{description}
+
+In R:
+
+```{r results='hide'}
+lm_FQA4 <- lm(clcrmrte ~ clpolpc + cldensity, data = crime_df)
+summary(lm_FQA4)
+```
+
+In STATA:
+
+```{stata}
+quietly cd .. 
+use Data/crime4.dta
+regress clcrmrte clpolpc cldensity
+```
+
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
+
+### (6) How does your fd estimate of the effect of police compare with the OLS estimate above?
+
+\begin{description}
+\item[Answer:]
+The coefficient of $0.2696559$ is now higher, and still positive and significant.
+\end{description}
+
+
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
+
+### (7) IS $lpolpc$ strictly exogeneous? If not, how do you think this will affect the estimates?
+
+\begin{description}
+\item[Answer:]
+Recall from the Box in Question 2 above that we assume $\Delta u_i$ and $\Delta X_i$ are uncorrelated, which is another version of strict exogeneity condition for time series models. Here this assumption would be violated if more crime last period leads to more police this period, i.e. if ${lpolpc}_{it}$ and ${lcrmrte}_{it-1}$ were correlated. As a result, we would mistakenly conclude that police increase has positive effect on crime.
+
+\end{description}
+
+
+
+\bigskip\bigskip\bigskip
+\hdashrule[0.5ex]{\textwidth}{1pt}{3mm}
+\bigskip\bigskip\bigskip
+
+
+
+
+## QUESTION B: Maximum Likelihood Estimation
+
+\textbf{Suppose we want to test if a coin is fair. We toss the coin 10 times and get the following outcomes:}
+\begin{center}
+H H T T H T H H T H
+\end{center}
+### (a) Write down the likelihood function as a function of the probability of H in a single toss.
+
+\begin{description}
+\item[Answer:]
+Understanding of likelihood functions will help us understand probit and logit in Supervision 7.
+
+\begin{tcolorbox}[breakable, title=Likelihood Function\footnote{\textcolor{lightgray}{Wooldridge (2021, $7^{th}$ ed) Section c4b; Gujarati and Porter (2009) Appendix A; Dougherty (2016), Section 10.6}}, skin=enhancedlast]
+
+The \textit{likelihood function} is the joint probability distribution of the data, treated as a function of the unknown coefficients. Suppose random variable $X$ has a population probability density function of $f(X;\theta)$ which depends on a single parameter, $\theta$. We know the pdf but we do not know the parameter value. 
+
+Suppose we obtain a random sample of $X$ values with a sample size of $n$. The joint pdf of these $n$ values is:
+\[
+g(x_1, x_2, \dots, x_n\ ;\ \theta)
+\]
+Since it is a random sample, this can be written as a product of the individual pdfs:
+\[
+g(x_1, x_2, \dots, x_n\ ;\ \theta) = f(x_1; \theta)f(x_2;\theta)\dots f(x_n;\theta)
+\]
+This joint pdf has a dual interpretation:
+\begin{itemize}
+\item[(a)] If $\theta$ is known it can be interpreted as the joint probability of observing the given sample values. 
+\item[(b)] The joint pdf is a function of $\theta$ for given values of $x_1,\dots,x_n$. In this interpretation, the joint pdf is called \textbf{likelihood function (LF)} and write it as
+\[
+L(\theta\ ; \ x_1, x_2, \dots, x_n) = f(x_1; \theta)f(x_2;\theta)\dots f(x_n;\theta)
+\]
+Note the role reversal of $\theta$ in the joint pdf $g$ and the likelihood function $L$.
+
+The likelihood function is a random variable because it depends on the outcome of the random sample ${x_1,\dots,x_n}$.
+\end{itemize}
+
+As an illustration, consider two i.i.d. observations, $Y_1$ and $Y_2$ on a binary dependent variable with no regressors. This means $Y$ is a Bernoulli random variable, and the only unknown parameter to estimate is the probability $p$ that $Y=1$, which is also the mean of $Y$.
+
+To obtain an expression for the likelihood function, we need an expression for the joint probability distribution of the data. The joint probability distribution of thw two observations $Y_1$ and $Y_2$ is $\mathbb{P}(Y_1=y_1\ ,\ Y_2=y_2)$.
+
+Since they are independently distributed, the joint distribution is the product of their individual distributions, so
+\[
+\mathbb{P}(Y_1=y_1\ ,\ Y_2=y_2) = \mathbb{P}(Y_1=y_1)\ \mathbb{P}(Y_2=y_2)
+\]
+The Bernoulli distribution can be summarized as
+\[
+\mathbb{P}(Y=y) = p^y\ (1-p)^{1-y}
+\]
+which means, when $y=1$ we have $\mathbb{P}(Y=1) = p^1\ (1-p)^{1-1} = p$, and when $y=0$ we have $\mathbb{P}(Y=0) = p^0\ (1-p)^{1-0} = 1-p$. Thus the joint probability distribution of $Y_1$ and $Y_2$ is
+\begin{align*}
+\mathbb{P}(Y_1=y_1\ ,\ Y_2=y_2) &= \Big( p^{y_1}\ (1-p)^{1-y_1} \Big) \times \Big( p^{y_2}\ (1-p)^{1-y_2} \Big) \\
+&= p^{y_1 + y_2}\ (1-p)^{2-(y_1+y_2)}
+\end{align*}
+The likelihood function is the joint probability distribution, which is treated as a function of the unknown coefficients. For $n=2$ i.i.d. observations on Bernoulli random variables, the likelihood function is
+\[
+f(p\ ;\ Y_1,Y_2) = p^{Y_1+Y_2}(1-p)^{2-(Y_1+Y_2)}.
+\]
+\end{tcolorbox}
+
+\medskip 
+
+Let $X_i$ be the outcome of a coin toss so that $X_i \sim \text{Bern}(p)$ for $i=1,\dots,n$ and $p$ be some probability of observing heads. Then $\mathbb{P}(X_i=1\ |\ p) = p$ and $\mathbb{P}(X_i=0\ |\ p) = 1-p$. 
+
+For a given value of $p$, the probability mass function of $X_i$ is
+\[
+f(X_i\ ;\ p) = p^{X_i}(1-p)^{1-X_i}
+\]
+Provided that these random variables are independent and have the same mass function $f(X_i\ ;\ p)$, the likelihood function $L(p\ |\ \vec{\mathbf{X}})$ is then given by the joint probability of observing $\vec{\mathbf{X}} = (X_1,\dots,X_n)$, denoted by $f(\vec{\mathbf{X}}\ ;\ p)$:
+\[
+L(p\ ;\ \vec{\mathbf{X}}) = f(\vec{\mathbf{X}}\ ;\ p) = \prod_{i=1}^nf(X_i\ ;\ p) = \prod_{i=1}^n p^{X_i}(1-p)^{1-X_i}.
+\]
+We can also express the likelihood function in terms of number of observed heads in a sample of $n$ coin tosses. If we denote this number as $n_1$, and the number of tails as $n-n_1$, then
+\[
+L(p\ ;\ \vec{\mathbf{X}}) = f(\vec{\mathbf{X}}\ ;\ p) = p^{n_1}(1-p)^{n-n_1}.
+\]
+\end{description}
+
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
+
+### (b) What is the probability of obtaining the above sample if the probability of H is a single draw was 0.5?
+
+\begin{description}
+\item[Answer:]
+Denote the observed outcomes HHTTHTHHTH as $\vec{\mathbf{x}} = (1,1,0,0,1,0,1,1,0,1)$ where the number of heads is $n_1=6$ and the number of tails is $n - n_1=4$. If $p=0.5$, then the joint probability of observing $\vec{\mathbf{x}}$ is
+\[
+f(\vec{\mathbf{x}}\ ;\ p=0.5) = \prod_{i=1}^n \Big( \frac{1}{2} \Big)^{x_i} \Big( \frac{1}{2} \Big)^{1-x_i} = \Big( \frac{1}{2} \Big)^{6}\Big( \frac{1}{2} \Big)^{4}=\Big( \frac{1}{64} \Big)\Big( \frac{1}{16} \Big) = \Big( \frac{1}{1024} \Big) = 0.000976563 = 9.77 \times 10^{-4}
+\]
+\end{description}
+
+
+
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
+
+### (c) What is the log likelihood? What is the value of the maximum likelihood estimator?
+
+\begin{description}
+\item[Answer:]
+The \textit{log likelihood function} is obtained by taking the natural log of the likelihood function:
+\[
+\ell(p\ ;\ \vec{\mathbf{X}}) = \ln L(p\ ;\ \vec{\mathbf{X}}) = \ln \bigg( \prod_{i=1}^n p^{X_i}(1-p)^{1-X_i} \bigg) = \sum_{i=1}^n \big[ X_i \ln p + (1-X_i) \ln (1-p) \big]
+\]
+Log likelihood functions are usually much easier to work with since $\log L$ is a monotonically increasing function of $L$. 
+
+The \textit{maximum likelihood function} is obtained by finding the value of the parameter that maximizes the likelihood, or log likelihood, function. Accordingly, denote $\hat{p}$ as the maximum likelihood estimate of $p$ given the data $\vec{\mathbf{X}}$. Then to obtain the maximum of the likelihood function:
+\[
+\frac{\partial}{\partial p}\ell(p\ ;\ \vec{\mathbf{X}}) = \sum_{i=1}^n\bigg( \frac{X_i}{p}-\frac{1-X_i}{1-p} \bigg) = 0 \Longrightarrow \hat{p}=\frac{1}{n}\sum_{i=1}^n X_i
+\]
+This means the maximum likelihood estimator is the sample mean. 
+
+We can check to make sure that this is indeed the maximum of the likelihood function:
+\[
+\frac{\partial^2}{\partial p^2}\ell(p\ ;\ \vec{\mathbf{X}}) = \sum_{i=1}^n\bigg( -\frac{X_i}{p^2}-\frac{1-X_i}{(1-p)^2} \bigg) < 0
+\]
+for all values of $p$. Therefore, $\hat{p}$ is indeed the maximum of the log likelihood function $\ell(p\ ;\ \vec{\mathbf{X}})$.
+
+For the observed data with six heads and four tails, the estimate is then the proportion of heads, namely $\hat{p}=\frac{1}{10}\sum_{i=1}^{10} (X_i=n_1) = 0.6$.
+\end{description} 
+
+
+
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
+
+### (d) Can you estimate the variance of this estimator?
+
+\begin{description}
+\item[Answer:]
+Recall that if $X_i$ is a Bernoulli variable, $X_i \sim \text{Bern}(p)$, then its variance is $Var(X_i) = p(1-p)$. 
+
+To see this, recall that the variance is the probability-weighted average of the squared deviation from the expected value across all possible values:
+\begin{align*}
+Var(X_i) &= \sum_{i=1}^n \big(x - \mathbb{E}(X)\big)^2\times \mathbb{P}(X=x) \\
+&= \mathbb{E}(X^2)-\mathbb{E}(X)^2 \\
+&= \mathbb{E}(X^2)-p^2 \ \ \ \ \text{since } X_i \sim \text{Bern}(p) \Rightarrow \mathbb{E}(X_i)=p \\
+&= \Big( 0^2\ \mathbb{P}(X=0) + 1^2\ \mathbb{P}(X=1) \Big) - p^2 \\
+&= \Big( 0(1-p) + 1p \Big) - p^2 \\
+&= p-p^2 \\
+&= p(1-p)
+\end{align*}
+Accordingly, the variance of the maximum likelihood estimator is
+\[
+Var(\hat{p}) = Var\bigg(\frac{1}{n}\sum_{i=1}^nX_i \bigg) = \frac{1}{n^2}\sum_{i=1}^nVar(X_i)=\frac{p(1-p)}{n}
+\]
+the latter equality holds because $X_i$ are independent and $Cov(X_i, X_j)=0$ for all $i\neq j$.
+
+For the observed sample, this estimate is based on $\hat{p}$ rather than the unobserved parameter $p$:
+\[
+Var(\hat{p}) = \frac{\hat{p}(1-\hat{p})}{n} = \frac{0.6 \times 0.4}{10} = 0.024.
+\]
+\end{description}
+
+
+
+
+
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
+
+### (e) What is the probability of obtaining the above sample if the true probability of H in a single draw was equal to the maximum likelihood estimate? Compare with your result in part (b).
+
+\begin{description}
+\item[Answer:]
+In part (c) above we established that the maximum likelihood estimate is $\hat{p}=0.6$. IF the true probability of H in a single draw, $p$ was equal to this $\hat{p}$, then the probability of observing the above sample with six heads and four tails would be:
+\[
+f(\vec{\mathbf{x}}\ ;\ p=0.6) = 0.6^6\times 0.4^4 = 0.046656\times 0.0256 = 0.001194394 = 1.19\times 10^{-3}
+\]
+
+\end{description}
+
+
+
+
+
+
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
+
+### (f) What is your conclusion regarding the fairness of the coin?
+
+\begin{description}
+\item[Answer:]
+To see if this is a fair coin, we can compare the above probability to the probability of observing the above sample when the true probability is 0.5:
+\[
+f(\vec{\mathbf{x}}\ ;\ p=0.5) = 0.5^6\times 0.5^4 = 0.0009765625 = 9.76\times 10^{-4}
+\]
+Since $f(\vec{\mathbf{x}}\ ;\ p=0.6) > f(\vec{\mathbf{x}}\ ;\ p=0.5)$, the sample is more likely for an unfair coin. 
+
+We can test the fairness of the coin. For that, we want to test
+\[
+\mathbb{H}_0: p = p_0 = 0.5 \ \ \ \ \text{against } \ \ \ \mathbb{H}_1: p\neq 0.5
+\]
+The sample size of 10 is too small for central limit theorem to apply, so the following test is only a very rough approximation.
+
+In large samples, under the null hypothesis we would have
+\[
+\hat{p}\sim N\bigg( p_0\ ,\ \frac{p_0(1-p_0)}{n} \bigg) \Longleftrightarrow T = \frac{\hat{p}-p_0}{\sqrt{\displaystyle\frac{p_0(1-p_0)}{n}}} \overset{a}{\sim}N(0,1)
+\]
+So we would reject the null at $5\%$ if the observed test statistic $t$ is such that $|t|>1.96$:
+\[
+t = \frac{0.6-0.5}{\displaystyle\sqrt{\frac{0.5\times0.5}{10}}}=0.632 < 1.96
+\]
+Therefore, there is not sufficient evidence to suggest that the coin is unfair. This, again, is a very rough approximation, since we only have a sample size of 10.
+\end{description}
+
+
+
+
+
+
+
+
+\bigskip\bigskip\bigskip
+\hdashrule[0.5ex]{\textwidth}{1pt}{3mm}
+\bigskip\bigskip\bigskip
+
+
+
+
+## QUESTION C: Limited dependent variables
+
+\textbf{We are interested in the determinants of childhood obesity.}
+
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
+
+### (1) Downlaod the dataset for obesekids.dta
+
+In R:
+
+```{r}
+obesekids_df <- read_dta("../Data/obesekids.dta")
+```
+
+
+
+
+
+\bigskip
+***
+\bigskip
+
+### (2) See what the variables mean by typing "des"
+
+In STATA:
+
+```{stata eval = !knitr::is_latex_output()}
+quietly cd .. 
+use Data/obesekids.dta
+des
+```
+
+
+\bigskip
+***
+\bigskip
+
+### (3) Summarize the data usng the command "summ"
+
+In STATA:
+
+```{stata eval = !knitr::is_latex_output()}
+quietly cd .. 
+use Data/obesekids.dta
+summ
+```
+
+
+### (4) The variable "obesec" is  dummy for whether the child is obese
+
+\begin{description}
+\item[Answer:]
+We have to consider some of the unique properties when the regression model has a binary dependent variable.
+
+\begin{tcolorbox}[breakable, title=Qualitative Response and Binary Dependent Variable Regression Models\footnote{\textcolor{lightgray}{Wooldridge (2021, $7^{th}$ ed) Ch 17; Gujarati and Porter (2009) Ch 15; Dougherty (2016) Ch 10}}, skin=enhancedlast]
+The models that deal with "Why X does/are this while others do/are not?" types of questions are called \textbf{binary choice models} or \textbf{qualitative response models}. 
+
+Broadly speaking there are four approaches to developing a probability model for a binary response variable:
+\begin{itemize}
+\item linear probability model (LPM)
+\item logit model
+\item probit model
+\item tobit model
+\end{itemize}
+While the LPM is estimated by OLS, the rest are fitted using maximum likelihood estimation.
+
+\bigskip
+\underline{\textbf{The LPM}}:
+
+Consider the model
+\[
+Y_i = \beta_0 + \beta_1 X_i + u_i
+\]
+where $Y_i$ is a binary variable. This means, the conditional expectation of $Y_i$ given $X_i$, i.e. $\mathbb{E}(Y_i\ |\ X_i)$, can be interpreted as the \textit{conditional probability} that the event will occur given $X_i$, i.e. $\mathbb{P}(Y_i=1\ |\ X_i)$.
+
+To have unbiased estimators assume $\mathbb{E}(u_i)=0$. Then the probability of the event occuring, $p_i$, is assumed to be a linear function of a set of explanatory variables:
+\[
+p_i = 1\times \mathbb{P}(Y=1\ |\ X_i) + 0\times \mathbb{P}(Y_i=0\ |\ X_i)  = \mathbb{P}(Y_i=1\ |\ X_i) = \mathbb{E}(Y_i\ |\ X_i) = \beta_0 + \beta_1X_i
+\]
+To see this, notice that since the probability of event occuring, $p_i$, is the probability that $Y_i=1$, and $(1-p_i)$ is the probability that $Y_i=0$, then the variable $Y_i$ follows the \textit{Bernoulli probability distribution}. Accordingly,
+\[
+\mathbb{E}(Y_i) = 0(1-p_i)+1p_i = p_i.
+\]
+We can then equate
+\[
+\mathbb{E}(Y_i\ |\ X_i) = \beta+0 + \beta_1X_i = \mathbb{E}(Y_i) = p_i.
+\]
+This means, the conditional expectation of the LPM model can be interpreted as the conditional probability of $Y_i$.
+
+In general, the expectation of Bernoulli random variable is the probability that the random variable equals 1.
+
+Also note that if there are $n$ independent trials, each with a probability $p$ of success and probability $(1-p)$ of failure, and $X$ of these trials represent the number of successes, then $X$ follows the \textit{binomial distribution}. The mean of the binomial distribution is $np$ and its variance is $np(1-p)$. 
+
+Finally, since $p_i$ must be between 0 and 1, then we have the restriction that $0\leq \mathbb{E}(Y_i\ |\ X_i) \leq 1$.
+
+\bigskip
+\underline{Drawbacks}
+\begin{itemize}
+\item Nonfulfillment of $0\leq \mathbb{E}(Y_i\ |\ X_i) \leq 1$
+\subitem Although Y takes a value of 0 or 1, there is no guarantee that the estimated values of $Y$ will necessarily lie between 0 and 1. In an application, some $\hat{Y}_i$ values can turn out to be negative and some can exceed 1. 
+\item Errors also follow Bernoulli distribution or binomial probability distribution.
+  \subitem Although OLS does not require $u_i$ to be normally distributed we assume them to be the case for the purposes of statistical inference.
+\item Error term has heteroskedastic variances
+  \subitem For Bernoulli distribution the therotical mean is $p$ and variance $p(1-p)$. This means the variance is a function of the mean, hence the error variance is heteroskedastic.
+\item $R^2$ is not meaningful
+  \subitem since $Y$ takes only two values, 0 and 1, the conventionally computed $R^2$ value is likely to be much lower than 1
+\item It is not logically attractive model
+  \subitem It assumes that $p_i = \mathbb{E}(Y=1\ | X)$ increases linearly with $X$. That is, the marginal effect of $X$ remains constant throughout. This is unrealistic. In reality, we would expect that $p_i$ is nonlinearly related to $X$.
+\end{itemize}
+
+Because of these drawbacks, what we instead need is a probability model that has two features:
+\begin{itemize}
+\item[(a)] As $X_i$ increases, $p_i = \mathbb{E}(Y=1\ |\ X)$ also increases but never steps outside the 0-1 interval, and
+\item[(b)] the relationship between $p_i$ and $X_i$ is nonlinear whereby it approaches 0 and 1 at slower rates as $X_i$ gets smaller and larger, respectively.
+\end{itemize}
+In other words, we need a sigmoid, or S-shaped, curve. Notice that cumulative distribution function of a random variable has that kind of shape. Therefore, we can use the cdf to mdel regressions where the response variable is dichotomous, i.e. binary.
+
+The question then becomes which cdf? For historical and practical reasons, the cdfs commonly chosen to represen the 0-1 response models are
+\begin{itemize}
+\item \textit{logistic} which gives rise to the logit model
+\item \textit{normal} which gives rise to the probit (or normit) model
+\end{itemize}
+
+\underline{\textbf{The Logit Model}}
+
+Suppose instead of the conditional expectation of the LPM model, which can be interpreted as the conditional probability of $Y_i$, being in the form where the probability of the event occuring, $p_i$, is assumed to be a linear function of a set of explanatory variables (i.e. $p_i = \mathbb{P}(Y_i=1\ |\ X_i) = \mathbb{E}(Y_i\ |\ X_i) = \beta_0 + \beta_1X_i$) as discussed above, it is instead of the form:
+\[
+p_i = \mathbb{P}(Y_i=1\ |\ X_i) = \frac{1}{1+e^{-(\beta_0+\beta_1X_i)}}.
+\]
+If we denote $Z_i = \beta_0 + \beta_1X_i$ then this becomes:
+\[
+p_i = \mathbb{P}(Y_i=1\ |\ X_i) = \frac{1}{1+e^{-(Z_i)}} = \frac{e^{Z_i}}{1+e^{Z_i}}.
+\]
+This expression is known in statistics as (cumulative) \textbf{logistic distribution function} which is used extensively in analyzing growth phenomena such as population, GDP, money supply, etc.
+
+Notice that we are satisfying the two features needed for the probability model as outlined above. 
+\begin{itemize}
+\item[$1^{st}:$] as $Z_i$ increases from $-\infty$ to $+\infty$, $p_i$ also increases but never steps outside the 0-1 interval. 
+\item[$2^{nd}$] the relationship between $p_i$ and $Z_i$ (and thus $X_i$) is nonlinear.
+\end{itemize}
+However, $p_i$ is nonlinear not only in $X$ but also in the parameters, i.e. $\beta$s, which means we cannot use the OLS procedure to estimate them unless we linearize them first. 
+
+Now if $p_i = \mathbb{P}(Y_i=1\ |\ X_i)$ then 
+\[
+1-p_i = \mathbb{P}(Y_i=0\ |\ X_i) = \frac{1}{1+e^{Z_i}}.
+\]
+Therefore,
+\[
+\frac{p_i}{1-p_i} = \frac{1+e^{Z_i}}{1+e^{-Z_i}} = e^{Z_i}.
+\]
+Also notice that the fraction $p_i/(1-p_i)$ is the \textit{odds ratio}. So if $p_i=0.8$ it means that odds are 4 to 1 in favor of $Y_i=1$.
+
+Taking the natural logarithm of this expression gives:
+\[
+L_i = \ln\bigg( \frac{p_i}{1-{p_i}} \bigg) = Z_i = \beta_0 + \beta_1X_i.
+\]
+Thus, $L_i$, the log of odds ratio, is not only linear in $X$ but also linear in parameters. $L$ is called the \textbf{logit}, and hence the name \textbf{logit model}.
+
+The interpretation of this model is not straight forward because $p_i$ is not linearly related to $X_i$. Thus we have the following interpretation:
+\begin{itemize}
+\item The slope $\beta_1$ measures the change in $L$ for a unit change in $X$. This means it tells how the log-odds in favor of $Y=1$ change as $X$ changes by a unit.
+\item The intercept $\beta_0$ is the value of the log-odds in favor of $Y=1$ if $X=0$. Like most interpretations of intercepts, this interpretation may not have any physical meaning. 
+\end{itemize}
+But change in log-odds is not as clear as it can be for interpretation. To obtain an interpretation that makes clearer sense, we can differentiate the model with respect to $X_i$:
+\begin{align*}
+\frac{\partial}{\partial X_i}\ln\bigg( \frac{p_i}{1-{p_i}} \bigg) &= \frac{\partial}{\partial X_i}\big( \beta_0 + \beta_1X_i \big) \\
+\frac{\partial p_i}{\partial X_i} \frac{1}{p_i} + \frac{\partial p_i}{\partial X_i}\frac{1}{1-p_i} &= \beta_1 \\
+\frac{\partial p_i}{\partial X_i} &= \beta_1\Big( \frac{p_i(1-p_i)}{p_i + 1 - {p_i}} \Big) = \beta_1 p_i(1-p_i) \\
+\end{align*}
+and since $p_i = \mathbb{P}(Y_i=1\ |\ X_i)$, this can be expressed as:
+\[
+\frac{\partial}{\partial X_i}\hat{Y}_i = \hat{\beta}_1\hat{Y}_i(1-\hat{Y}_i)
+\]
+which says that the change in the expected value of $\hat{Y}_i$ caused by one unit increase in $X_i$ equals $\hat{\beta}_1\hat{Y}_i(1-\hat{Y}_i)$.
+
+\underline{Features of the Logit Model}:
+\begin{itemize}
+\item As $p$ goes from 0 to 1 (i.e. $e^{-Z}$ tends to 0 as Z to $+\infty$ and $p$ has an upper bound of 1), the logit $L$ goes from $-\infty$ to $+\infty$.
+\subitem This means that although the probabilities lie between 0 and 1, the logits are not so bounded.
+\item Although $L$ is linear in $X$, the probabilities themselves are not.
+\subitem This property contrasts with the LPM model where the probabilities increase linearly with $X$.
+\item If $L$ is positive, it means that as the value of the regressor increases, so does the odds that the regressand equals 1 (i.e. an event of interest occurs). If $L$ is negative, the odds that the regressand equals 1 decreases as the value of $X$ increases.
+\subitem That is, the logit becomes negative and increasingly large in magnitude as the odds ratio decreases from 1 to 0. Conversely, it becomes increasingly large and positive as the odds ratio increases from 1 to $\infty$.
+\item Whereas the LPM assumes $p_i$ is linearly related to $X_i$, the logit model assumes that the log of the odds ratio is linearly related to $X_i$.
+\end{itemize}
+
+\underline{\textbf{Probit Model}}
+
+Probit model is an altarnetive model to address the LPM's problem of obtaining probabilities beyond (0,1) interval. In the logit model we used the cumulative logistic function. The probit model provides an alternative approach to binary choice where we instead use the cumulative standardized normal distribution to model the sigmoid relationship.
+
+The logit and probit procedures are so closely related that they rarely produce results that are significantly different.
+
+Recall that if a variable $S$ follows a normal distribution with mean $\mu$ and variance $\sigma^2$, its probability distribution function is:
+\[
+f(S) = \frac{1}{\sqrt{2\sigma^2\pi}}e^{-\frac{(S-\mu)^2}{2\sigma^2}}
+\]
+and its cumulative distribution function is
+\[
+F(S) = \int_{-\infty}^{S_0}\frac{1}{\sqrt{2\sigma^2\pi}}e^{-\frac{(S-\mu)^2}{2\sigma^2}}dS
+\]
+where $X_0$ is some specified value of $X$. A standardized normal distribution is then the one with 0 mean and unit variance.
+
+$Z_i$ is the inverse of the normal cumulative distribution function which would give us the linear function of the variables that determine the probability
+\[
+Z_i = \Phi^{-1}(p_i) = \beta_0 + \beta_1 X_i
+\]
+or when we have multiple regressors
+\[
+Z_i = \Phi^{-1}(p_i) = \beta_0 + \beta_1 X_i + \dots + \beta_kX_k
+\]
+
+The cumulative standardized normal distribution, $F(Z_i)$ is then:
+\[
+p_i = \mathbb{P}(Y_i = 1\ |\ X) = F(Z_i) = \int_{-\infty}^{Z_i} \phi(Z)dZ = \int_{-\infty}^{Z_i} \frac{1}{\sqrt{2\pi}}e^{-\frac{1}{2}Z^2} dZ.
+\]
+Expressing $Z$ as the inverse of the normal cumulative density function, we have:
+\[
+Z_i = F^{-1}(p_i) = \beta_0 + \beta_1X_1 +\beta_2X_2 + \dots + \beta_kX_{ki}
+\]
+which is the expression of the probit model. 
+
+Since $\mathbb{P}$ represents the probability that an event will occur, it is measured by the area under the standard normal curve from $-\infty$ to $Z_i$.
+
+So, for example, for a regression model with two regressors
+\[
+\mathbb{P}(Y=1\ |\ X_1, X_2) = \Phi(\beta_0 + \beta_1X_1 +\beta_2X_2) 
+\]
+where $\beta_0=-1.6, \beta_1 =2, \beta_2=0.5, X_1 = 0.4, X_2 = 1$, then 
+\[
+\mathbb{P}(Y=1\ |\ X_1=0.4, X_2=1) = \Phi(-1.6+2\times 0.4 + 0.5\times 1) = \Phi(-0.3) = 38\%.
+\]
+We can generalize this as follows:
+
+The population probit model with multiple regressors is
+\[
+\mathbb{P}(Y=1\ |\ X_1, X_2, \dots, X_k) = \Phi(\beta_0 + \beta_1X_1 +\beta_2X_2, \dots, \beta_kX_k)
+\]
+where the dependent variable $Y$ is binary, $\Phi$ is the cumulative standard normal distribution. We can then interpret the change effect of a change in regressor by
+\begin{itemize}
+\item[(1)] computing the predicted probability for the initial value of the regressor,
+\item[(2)] computing the predicted probability for the new or changed value of the regressor,
+\item[(3)] taking the difference of the two.
+\end{itemize}
+The predicted probability that $Y=1$ given values of $X_1, X_2, \dots, X_k$ is calculated by computing the $z$-value, $z=\beta_0 + \beta_1X_1 +\beta_2X_2 + \dots + \beta_kX_k$ and then looking up this $z$-value in the normal distribution table.
+
+The probit model is estimated by appling the maximum-likelihood method. Since probit and logit are similar, they also have similar properties in that interpretation of the coefficients is not straightforward and the $R^2$ does not provide a valid measure for the overall goodness of fit.
+
+To calculate the marginal effect of a change in $X$ on a change in the probability $p_i=1$ we need to differentiate with respect to $X_i$:
+\[
+\frac{\partial p}{\partial X_i} = \frac{\partial p}{\partial Z}\frac{\partial Z}{\partial X_i} = F'(Z)\beta_i = f(Z)\beta_i
+\]
+where
+\begin{align*}
+F(Z) = \frac{1}{2\pi}e^{\frac{1}{2}Z^2} \\
+F'(Z) = f(Z) = \frac{1}{\sqrt{2\pi}}e^{-\frac{1}{2}Z^2}
+\end{align*}
+
+In order to obtain a statistic for the marginal effect, we first calculate $Z$ for the mean values of the explanatory variables, then calculate $F'(Z)$, and the multiply this result by $\beta_i$ to get the final result.
+
+Generally, logit and probit analyses provide similar results and similar marginal effects, especially for large samples. However, since the shapes of the tails of the logit and probit distributions are different, the two models produce different results in terms of 0 and 1 values in the dependent dummy variable if the sample is unbalanced. 
+
+\bigskip
+\underline{\textbf{Tobit Model}}
+
+Tobit model is an extension of the probit model developed by the Nobel laureate James Tobin (1958).\footnote{Tobin, James (1958) "Estimation of relationships for limited dependent variables" \textit{Econometrica} 26(1):24-36.} It is also called \textit{censored regression model} because it is regressed on a censored sample, or \textit{limited dependent variable regression model} because of the restriction put on the values taken by the regressand. Here, censored sample refers to a sample in which information on the regressand is available for some observations. That is, for a subset of the sample, $n_1$, we have information on both the regressors and the regressand, and for the rest, $n_2$, we only have information on the regressors but not the regressand. 
+
+Consider the regressand $Y$ that is essentially continuous over strictly positive values but that takes on a value of zero with positive probability:
+\begin{align*}
+Y_i &= \beta_0 + \beta_1X_i + \dots + \beta_kX_k + u_i \ \ \ \ \text{if   RHS}>0 \\
+ &=0 \ \ \ \ \text{otherwise}
+\end{align*}
+where RHS stands for right hand side. In simple OLS we have the problem that it will 'ignore' the zero values of the censored dependent variable, which will in turn provide results thst are biased and inconsistent. The Tobit model resolves the problem by providing appropriate parameter estimates.
+\end{tcolorbox}
+
+\end{description}
+
+
+
+\bigskip
+***
+\bigskip
+
+### (5) Run a probit regression with the command `probit obesec ageyrs female white black hisp tvyest povrat`
+
+\begin{description}
+\item[Answer:]
+\end{description}
+
+```{stata}
+quietly cd .. 
+use Data/obesekids.dta
+probit obesec ageyrs female white black hisp tvyest povrat
+```
+
+
+
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
+
+### (6) What do you infer from the row corresponding to `hisp`?
+
+\begin{description}
+\item[Answer:]
+Relative to Asians (non-white, non-black, and non-Hispanic), Hispanic kids have a higher chance of being obese, given the same age, gender, poverty, and TV watched.
+\end{description}
+
+
+
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
+
+### (7) Calculate the predicted probability of being obese for a 16 year old female white child who watched 3 hours of TV yesterday and whose family's income-to-needs ratio is 4.56.
+\begin{description}
+\item[Answer:]
+The probit predicted probability of $\hat{\mathbb{P}}({obesec}_i = 1\ |\ \vec{\mathbf{x}}_i)$ where $\vec{\mathbf{x}}_i$ contains the explanatory variables with values given in the question are given by the standard normal cdf:
+\[
+\Phi(-1.5604 + (0.0076\times 16) + (0.0296\times 1) + (0.0236\times 1) +(0.2038\times 0) + (0.2611\times 0) + (0.0567\times 3) + (0.0019\times 4.56))
+\]
+The $z$-score is equal to $-1.206$ and hence the predicted probability of being obese for a 16 year old female white child who watched 3 hours of TV, and whose family's income-to-needs ratio is 4.56 is $\Phi(-1.206)=0.1139$.
+\end{description}
+
+
+
+
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
+
+### (8) How much would this probability fall if we took an identical person as above but who watched no TV yesterday? Is the fall statistically significant? How can you tell?
+
+\begin{description}
+\item[Answer:]
+Find the same predicted probability as above but now set TV hours to 0:
+\[
+\Phi(-1.5604 + (0.0076\times 16) + (0.0296\times 1) + (0.0236\times 1) +(0.2038\times 0) + (0.2611\times 0) + (0.0567\times 0) + (0.0019\times 4.56))
+\]
+The $z$-score is $-1.376$ and the corresponding predicted probability is 0.0844, so the drop is 0.0295, which is statistically significant, given that `tvyest` has a significance coefficient.
+\end{description}
+
+
+
+
+
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
+
+### (9) How would you test that race has no effect on the probabilty of being obese? Now test it using the corresponding stata command. What do you conclude?
+\begin{description}
+\item[Answer:]
+Conduct a test that dummies white, black, and Hispanic are jointly zero.
+\end{description}
+
+```{stata}
+quietly cd .. 
+use Data/obesekids.dta
+quietly probit obesec ageyrs female white black hisp tvyest povrat
+test white black hisp
+```
+
+This is a likelihood ratio test, the test statistic has a $\chi_3^2$ asymptotic distribution. The sample test statistic is 19.69 with a $p$-value of 0.0002, so reject the null with very low significance levels. The race dummies are jointly significant.
+
+
+
+
+
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
+
+### (10) What does your overall analysis tell us about whether we should discourage young children from watching TV in order to prevent them from being obese?
+\begin{description}
+\item[Answer:]
+Introduce some discussion of omitted variables and reverse causality - reasons why obese status may be the cause of more TV watching.
+\end{description}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -109,7 +966,7 @@ Question A deals with pooled cross-sections in order to make the comparison with
 \item[Answer:]
 Let's first define the two types of data sets.
 
-\subitem{Indy-pooled X-section:} When we sample randomly from a population at different points in time we obtain an \textit{independently pooled cross section}. These data sets consist of independently sampled observations which, among other things, ensures error terms across different observations would not be correlated.
+\subitem{Indy-pooled X-section:} When we sample randomly from a population at different points in time we obtain an \textit{independently pooled cross section}. These data sets consist of independently sampled observations which, among other things, ensures that the error terms across different observations would not be correlated.
 
 One reason for using independently pooled cross sections is to increase the sample size, which would result in more precise estimators as well as in test statistics with more power. As long as the relationship between at least some of the explanatory variables and the response variable remains constant over time.
 
@@ -135,13 +992,13 @@ Given these definitions, both types of data sets can have both heteroskedasticit
 
 #### (a) Using data in the "houseprices" worksheet, and noting the definitions of each variable, estimate the following equation for 1981:
 \begin{equation}\label{eq:SQA2a}
-log(rprice)_i = \beta_0 + \beta_1\ {nearinc}_i + u_i
+log({rprice}_i) = \beta_0 + \beta_1\ {nearinc}_i + u_i
 \end{equation}
 \textbf{Given that the building of the incinerator was completed before 1981, interpret your results. Do your results imply that the building of the incinerator causes house prices to fall?}\footnote{This question is from Wooldridge (2021), Section 13-2: Policy Analysis with Pooled Cross Sections, Example 13.3, and and is based on Kiel, K A and McClain, K T (1995) "House Prices During Siting Decision Stages: The Case of an Incinerator from Rumor through Operation" \textit{Journal of Environmental Economics and Management} 28:241-255.}
 
 \begin{description}
 \item[Answer:]
-Since we are going to estimate this equation for only 1981 only we need to select that year in our regression. In STATA this can be done in a number of ways. The following is one of them:
+Since we are going to estimate this equation for 1981 only we need to select that year in our regression. In STATA this can be done in a number of ways. The following is one of them:
 \end{description}
 
 ```{stata}
@@ -157,7 +1014,7 @@ Since we are going to estimate this equation for only 1981 only we need to selec
 
 and in R:
 
-```{r eval = FALSE}
+```{r results='hide'}
 # Load the data
 houseprices_df <- read_excel("../Data/panel1.xls", sheet = "houseprices")
 
@@ -169,7 +1026,7 @@ SQA2a_lm <- lm(lrprice ~ nearinc, data = houseprices_1981_df)
 summary(SQA2a_lm)
 ```
 
-Since this is a simple regression on a dummy variable, the intercept of $11.47852$ is the average selling price for homes that are not near the incinerator. The slope coefficient of $-0.40257$ for $nearinc$ indicates the percentage difference in the average selling price between homes that are near the incinerator and those that are not. In this instance, houses near the incinerator seem to sell on average $0.4$ percent less than those that are not near it. It is statistically significant with $t$ value of $-6.233$ thus we would reject the null that there is no difference in house prices with respect to proximity to the incinerator, i.e. $\mathbb{H}_0:\beta_1=0$.  However, this does not imply that building incinerator caused house prices to fall, the causation could be the other way around. We can run the same regression for 1978 before the rumors about incinerator began.
+Since this is a simple regression on a dummy variable, the intercept of 11.47852 is the average log selling price for homes that are not near the incinerator. The slope coefficient of -0.40257 for $nearinc$ indicates the percentage difference in the average log selling price between homes that are near the incinerator and those that are not. In this instance, houses near the incinerator seem to sell on average 33 percent ($1-e^{-0.4} = 0.33$) less than those that are not near it. It is statistically significant with $t$ value of $-6.233$ thus we would reject the null that there is no difference in house prices with respect to proximity to the incinerator, i.e. $\mathbb{H}_0:\beta_1=0$.  However, this does not imply that building incinerator caused house prices to fall, the causation could be the other way around. We can run the same regression for 1978 before the rumors about incinerator began.
 
 
 
@@ -194,7 +1051,7 @@ regress lrprice nearinc if year==1978
 
 and in R:
 
-```{r eval = FALSE}
+```{r results='hide'}
 houseprices_1978_df <- houseprices_df[houseprices_df$year==1978,]
 
 # run the regression on this subset
@@ -202,7 +1059,7 @@ SQA2b_lm <- lm(lrprice ~ nearinc, data = houseprices_1978_df)
 summary(SQA2b_lm)
 ```
 
-This shows that even before there was even a talk of an incinerator, the average value of a home near the site was $0.3$ percent lower than the average value of a home far from the site. That difference is statistically significant with $t$-statistic of $-6.35$.This result seems to be consistent with the view that the incinerator was built in an area with lower housing values.
+This shows that even before there was even a talk of an incinerator, the average value of a home near the site was about 29 percent ($1-e^{-(-0.4)}=0.29$) lower than the average value of a home far from the site. That difference is statistically significant with $t$-statistic of $-6.35$.This result seems to be consistent with the view that the incinerator was built in an area with lower housing values.
 
 To see if building an incinerator impacts house prices, we can use \textit{difference-in-differences estimator}, or (DiD estimator) which is the difference over time in the average house price differences in two locations. We can then check if this estimator is statistically different from zero.
 
@@ -246,7 +1103,12 @@ The parameter $\delta_1$ can be given an interpretation as an \textit{average tr
 Finally, when include the explanatory variables, the OLS estimate of $\delta_1$ no longer has the simple form of DiD above, but its interpretation is similar. 
 \end{tcolorbox}
 
-So in order to obtain the DiD estimate, we will do the following:
+So the equation of interest is:
+\[
+lrprice = \beta_0 + \delta_0y81 + \beta_1nearinc + \delta_1y81\times nearinc + u
+\]
+
+In order to obtain the DiD estimate, we will do the following:
 \[
 \hat{\delta}_1 = \Big(\overline{lrprice}_{81,near} - \overline{lrprice}_{81,far} \Big) - \Big(\overline{lrprice}_{78,near} - \overline{lrprice}_{78,far} \Big) 
 \]
@@ -283,7 +1145,7 @@ quietly cd ..
 quietly import excel using Data/panel1.xls, sheet("houseprices") firstrow
 
 /* Run the DiD regression */
-quietly didregress (lrprice) (y81nrinc), group(nearinc) time(y81)
+didregress (lrprice) (y81nrinc), group(nearinc) time(y81)
 
 /* The DiD estimate is the first row of the first column of resulting table */
 display r(table)[1,1]
@@ -291,11 +1153,11 @@ display r(table)[1,1]
 
 In R it is the coefficient of the cross-product term:
 
-```{r eval=FALSE}
+```{r}
 summary(lm(lrprice ~ y81*nearinc, data=houseprices_df))
 ```
 
-where the coefficient for the cross-product of $y81$ and $nearinc$ gives us the same result.
+where the coefficient for the cross-product of $y81$ and $nearinc$ gives us the same result. Notice that the probability of $t$-statistic for the cross-product is $0.453$ which is not significant. Therefore it appears that building an incinerator may not impact housing prices as the estimator may not be statistically different from zero.
 
 
 
@@ -305,30 +1167,31 @@ where the coefficient for the cross-product of $y81$ and $nearinc$ gives us the 
 
 ### (3) Estimate the following equations and intrepret your results:
 \begin{align}
-log(rprice)_i &= \beta_0 + \beta_1\ {nearinc}_i + \beta_2\ y81 \times {nearinc}_i + u_i \\[4pt]
-log(rprice)_i &= \gamma_0 + \gamma_1\ {y81}_i + \gamma_2\ y81 \times {nearinc}_i + \varepsilon_i \\[4pt]
-log(rprice)_i &= \lambda_0 + \lambda_1\ {y81}_i + \lambda_2\ {nearinc}_i + \lambda_3\ y81 \times {nearinc}_i + v_i
+log(rprice)_i &= \beta_0 + \beta_1{nearinc}_i + \beta_2y81 \times {nearinc}_i + u_i \\[4pt]
+log(rprice)_i &= \gamma_0 + \gamma_1{y81}_i + \gamma_2y81 \times {nearinc}_i + \varepsilon_i \\[4pt]
+log(rprice)_i &= \lambda_0 + \lambda_1{y81}_i + \lambda_2{nearinc}_i + \lambda_3y81 \times {nearinc}_i + v_i
 \end{align}
 \textbf{Why are the estimates so different? Use these results to test the significance of difference-in-differences estimator calculated in question A(2) above. (answers to this can be found in the help sheet, so no need to hand this in unless you have problems.)}
+\textbf{Note: y81=1 if in year 1981 and 0 if in year 1978; nearinc=1 if house is close to the incinerator and 0 if it isn't.}
 
 \begin{description}
 \item[Answer:] 
 First, lets look at the interpretation of these coefficients:
 \begin{itemize}
-\item[$\beta_0$:] The price of houses averaged over 1978 and 1981 that are not near the incinerator.
+\item[$\beta_0$:] The log price of houses averaged over 1978 and 1981 that are not near the incinerator.
 \item[$\beta_1$:] The difference between those houses near the incinerator in 1978 and those far from the incinerator in both years, which is not that interesting.
-\item[$\beta_2$:] The change in price over the two years for houses near the incinerator. This would be equivalent to the sum of $\lambda_1$ and $\lambda_3$.
+\item[$\beta_2$:] The change in log price over the two years for houses near the incinerator. This would be equivalent to the sum of $\lambda_1$ and $\lambda_3$.
 \bigskip
-\item[$\gamma_0$:] The price of houses in 1978 averaged over the whole area irrespective of their proximity to the incinerator site
-\item[$\gamma_1$:] Difference between prices of houses further away from incinerator in 1981 and all houses in 1978, which is again not very interesting
-\item[$\gamma_2$:] The difference in price between houses near the incinerator and those far from the incinerator in 1981. This is equivalent to the sum of $\lambda_2$ and $\lambda_3$.
+\item[$\gamma_0$:] The log price of houses in 1978 averaged over the whole area irrespective of their proximity to the incinerator site
+\item[$\gamma_1$:] Difference between log prices of houses further away from incinerator in 1981 and all houses in 1978, which is again not very interesting
+\item[$\gamma_2$:] The difference in log price between houses near the incinerator and those far from the incinerator in 1981. This is equivalent to the sum of $\lambda_2$ and $\lambda_3$.
 \bigskip
-\item[$\lambda_0$:] The average price of a house that is not near the incinerator in 1978
-\item[$\lambda_1$:] Changes in all housing values from 1978 to 1981
-\item[$\lambda_2$:] Difference in price between those houses near the incinerator and those far from it in 1978. That is, the location effect that is not due to the presence of incinerator. Recall from the earlier parts of the question above that even in 1978, homes near the incinerator site sold for less than houses not near it.
-\item[$\lambda_3$:] This is the parameter of interest. It measures the decline in housing values due to the new incinerator, provided we assume that houses both near and far from the incinerator site did not appreciate at different rates for other reasons. In other words, this is the estimate of the effect of the incinerator, the difference in differences estimate. This can be understood in two ways:
-\subitem as the difference between the price differences for houses near and far from the incinerator between 1978 and 1981, which is $\gamma_2 - \lambda_2$, and
-\subitem as the difference between the price differences in the two years between houses that are near and far from the incinerator, which is $\beta_2 - \lambda_1$.
+\item[$\lambda_0$:] The average log price of a house that is not near the incinerator in 1978
+\item[$\lambda_1$:] Changes in all housing log values from 1978 to 1981
+\item[$\lambda_2$:] Difference in log price between those houses near the incinerator and those far from it in 1978. That is, the location effect that is not due to the presence of incinerator. Recall from question 2(b) above that in 1978, even before even rumors of incinerator began, homes near the incinerator site sold for less than houses not near it.
+\item[$\lambda_3$:] This is the parameter of interest. It measures the decline in housing log values due to the new incinerator, provided we assume that houses both near and far from the incinerator site did not appreciate at different rates for other reasons. In other words, this is the estimate of the effect of the incinerator, the difference in differences estimate. This can be understood in two ways:
+\subitem as the difference between the log price differences for houses near and far from the incinerator between 1978 and 1981, which is $\gamma_2 - \lambda_2$, and
+\subitem as the difference between the log price differences in the two years between houses that are near and far from the incinerator, which is $\beta_2 - \lambda_1$.
 \end{itemize}
 
 To estimate these we will begin with creating a new variable that is the cross product of $y81$ and $nearinc$.
@@ -349,7 +1212,7 @@ regress lrprice y81 nearinc y81nearinc
 
 Notice that the coefficient on the interaction term are all different because the first two equations suffer from omitted variable bias. The first equation leaves out $y81$ and the second equation leaves out $nearinc$. In each case the variable left out must be related to the interaction term, so biasing the interaction term's coefficient estimate.
 
-Also notice that the coefficient of the interaction term in the last estimation is $-0.0626498$ which is exactly the same as the DiD estimate above. The $t$-statistic for this is $4.26$ which indicates that it is not significant.
+Also notice that the coefficient of the interaction term in the last estimation is $-0.0626498$ which is exactly the same as the DiD estimate above. The $t$-statistic for this is $-0.75$ with a $p$-value of $0.453$ which indicates that it is not significant.
 
 Also, notice that
 \begin{align*}
@@ -385,11 +1248,20 @@ generate y81nearinc = y81*nearinc
 regress lrprice y81 nearinc y81nearinc age agesq rooms baths lintst lland larea
 ```
 
-We see that the adjusted R-squared has risen to 0.7239. The estimate of the coefficient of the interaction term is $-0.1315137$ which is relatively close to that without any controls. However, its $t$-statistic is now $-2.53$ which is significant at $\alpha=0.05$. We also see a reduction in the standard error of the interaction term estimate from $0.0834408$ in the uncontrolled model to $0.0519713$ in the controlled model. In the model without the full set of controls, the coefficient of the interaction term implied that because of the new incinerator, houses near it lost about $6.3\%$ in value. However, this estimate was not statistically different from zero. Here, with the full set of controls, we see that the houses near the incinerator were devalued by about $13.2\%$.
+We see that the adjusted R-squared has risen to 0.7239. The estimate of the coefficient of the interaction term is -0.1315137 which is relatively close to that without any controls. However, its $t$-statistic is now -2.53 which is significant at $\alpha=0.05$. We also see a reduction in the standard error of the interaction term estimate from 0.0834408 in the uncontrolled model to 0.0519713 in the controlled model. In the model without the full set of controls, the coefficient of the interaction term implied that because of the new incinerator, houses near it lost about $6.3\%$ in value. However, this estimate was not statistically different from zero. Here, with the full set of controls, we see that the houses near the incinerator were devalued by about $13.2\%$.
 
 Also $nearinc$ is no longer significant and has a very small coefficient. This indicates that the characteristics included in this model largely capture the housing characteristics that are most important for determining housing prices.
  
- 
+We could try to run this regression again without $nearinc$:
+```{stata}
+quietly cd ..
+quietly import excel using Data/panel1.xls, sheet("houseprices") firstrow
+generate y81nearinc = y81*nearinc
+
+regress lrprice y81 y81nearinc age agesq rooms baths lintst lland larea
+```
+
+We see that the adjusted R-squared increases marginally by 0.0005 to 0.7244. The estimate of the coefficient of the interaction term is now -0.1120972 which is relatively close to what we obtained above. This is also the case for its $t$-statistic which is now -2.59 which is still significant at $\alpha=0.05$. We also see a further incremental reduction in the standard error of the interaction term to 0.433533. Now, with the full set of controls and without $nearinc$, we see that the houses near the incinerator were devalued by about $11.2\%$ on average.
  
 \bigskip\bigskip
 ***
@@ -476,7 +1348,7 @@ quietly import excel using Data/panel1.xls, sheet("houseprices") firstrow
 regress lrprice y81 ldist y81ldist age agesq rooms baths lintst lland larea
 ```
 
-We see that the adjusted $R$-squared rose from $0.2217$ to $0.7195$ after controlling for the relevant house characteristics. The estimate of the coefficient of the interaction term is $0.0624666$ which is relatively close to its value without the house characteristics controls. There is also a decline in the standard error from $0.081793$ to $0.0502789$ in the controlled model.The $t$-statistic is now $1.24$ which is still not high enough to reject the null hypothesis that it is significantly different from $0$. That is, the interaction term has not become significant with the addition of controls. 
+We see that the adjusted $R$-squared rose from $0.2217$ to $0.7195$ after controlling for the relevant house characteristics. The estimate of the coefficient of the interaction term is $0.0624666$ which is relatively close to its value without the house characteristics controls. There is also a decline in the standard error from $0.081793$ to $0.0502789$ in the controlled model. The $t$-statistic is now $1.24$ which is still not high enough to reject the null hypothesis that it is significantly different from $0$. That is, the interaction term has not become significant with the addition of controls. 
 
 Notice that in Question A(4) when we ran the model with proximity to the incinerator using the dummy variable $nearinc$, the interaction term $y81\times nearinc$ was significant. This means, for distances less than or equal to $15,840$ feet between a given house and the incinerator, the model seems to work well. That is, our $dist$ variable, which treats the distance as continuous, would work well for distances that are less than or equal to $15,840$ feet. It appears that it does not work well, however, outside of this, given that the interaction term here is not significant.
 
@@ -487,7 +1359,7 @@ quietly cd ..
 quietly import excel using Data/panel1.xls, sheet("houseprices") firstrow
 
 /* create new variable that will replace `ldist` whereby it is equal to `ldist` */
-/* when near incinerator and average distance when outside */
+/* when near incinerator and equal to average distance when outside */
 generate dis = ldist if nearinc==1
 egen meanldist0 = mean(ldist / (nearinc == 0))
 replace dis = meanldist0 if nearinc == 0
@@ -511,7 +1383,7 @@ generate disy81=dis*y81
 regress lrprice y81 disy81 age agesq rooms baths lintst lland larea
 ```
 
-Now it looks like with the full set of controls for house characteristics, and by treating the distance as continuous only in proximity, and fixed at the average distance when far, generates a statistically significant result with $t$-statistics for the interaction term at $2.84$. The coefficient of $0.1266185$ tells us that for each percentage change in distance from the incinerator impacts the house prices on average by $12.66\%$, holding everything else constant.
+Now it looks like with the full set of controls for house characteristics, and by treating the distance as continuous only in proximity and fixed at the average distance when far, we generate a statistically significant result with $t$-statistics for the interaction term at $2.84$. The coefficient of $0.1266185$ tells us that for each percentage change in distance from the incinerator impacts the house prices on average by $12.66\%$, holding everything else constant.
 
 Note that instead of averaging the distance for those distances that are far from the incinerator, we could instead have created an interaction between $ldist$ and $nearinc$ and interact $y81$ with that variable.
 
@@ -566,7 +1438,7 @@ regress crmrte unem if year==87
 
 The regression gives us
 \begin{alignat*}{3}
-\widehat{crmrte} & = && 128.35 - && 4.16\ unem \\
+\widehat{crmrte} & = && 128.38 - && 4.16\ unem \\
   &  && (20.76) && (3.42) \\
 n & = 46, &&  && R^2 = 0.033 
 \end{alignat*}
@@ -586,11 +1458,11 @@ Alternatively, as we discussed in Supervision 5, we can use a proxy variable. He
 
 \begin{description}
 \item[Answer:]
-Some cities have had high crime rates in the past. Many of the same unobserved factors contribute to both high current crime rats and past crime rates. Inertial effects are also captured by putting in lags of the dependent variable. Using a lagged dependent variable in a cross-sectional equation provides a simple way to account for historical factors that cause \textit{current} differences in the dependent variable which are difficult to account for in other ways.
+Some cities have had high crime rates in the past. Many of the same unobserved factors contribute to both high current crime rates and past crime rates. Inertial effects are also captured by putting in lags of the dependent variable. Using a lagged dependent variable in a cross-sectional equation provides a simple way to account for historical factors that cause \textit{current} differences in the dependent variable which are difficult to account for in other ways.
 
 Therefore in this question we are considering the following simple equation to explain city crime rates:
 \[
-crmrte = \beta_0 + \beta_1\ unem + \beta_2\ {crmrte}_{-1} + u
+{crmrte}_{it} = \beta_0 + \beta_1\ {unem}_{it} + \beta_2\ {crmrte}_{it-1} + u
 \]
 By using the lagged dependent variable, we are partialling out those factors that affect the crime rate in both 1982 and 1987. 
 
@@ -699,7 +1571,6 @@ The same result can also be obtained in STATA more compactly as follows:
 
 ```{stata eval=FALSE}
 quietly xtset County d87
-
 regress D.(crmrte unem)
 ```
 
@@ -717,7 +1588,7 @@ The intercept tells is that even if the unemployment rate does not change betwee
 
 \begin{description}
 \item[Answer:]
-The term "fixed effects" refers to the fact that each $i$'s intercept does not vary over time, i.e. time-invariant, although the intercept may differ across different $i$s.
+The term "fixed effects" refers to the fact that each $i$'s intercept does not vary over time, i.e. time-invariant, although the intercept may differ across different $i$'s.
 
 Here for $t=2$ the fixed effects transformation is:
 \[
@@ -735,7 +1606,7 @@ xtreg crmrte d87 unem, fe
 ```
 \begin{description}
 \item
-In the output $u$ corresponds to out $a$, the unobserved effect. Since it is fixed, it has no distribution and the reported $\hat{\sigma}_u$ is merely an arithmetic way to describe the range of estimated but fixed $a_i$. (If we were using the fixed-effects estimator of the random-effects model, this would be the estimate of $\sigma_a$ assuming no omitted variables.) Similarly, $e$ in the output is our $\varepsilon$ in this question.
+In the output $u$ corresponds to our $a$, the unobserved effect. Since it is fixed, it has no distribution and the reported $\hat{\sigma}_u$ is merely an arithmetic way to describe the range of estimated but fixed $a_i$. (If we were using the fixed-effects estimator of the random-effects model, this would be the estimate of $\sigma_a$ assuming no omitted variables.) Similarly, $e$ in the output is our $\varepsilon$ in this question.
 
 This approach also gives us a positive, statistically significant relationship between crime rate and unemployment rate.
 \end{description}
@@ -763,13 +1634,13 @@ This approach also gives us a positive, statistically significant relationship b
 
 \begin{description}
 \item[Answer:]
-We have already defined unobserved or fixed effect in Question B(3). So we will look at the fixed effects model and differencing when we have two time periods as in Question B and when we have more than two time periods.
+We have already defined unobserved or fixed effect in Question B(4). So we will look at the fixed effects model and differencing when we have two time periods as in Question B and when we have more than two time periods.
 
 \underline{Fixed effects model when $t=2$}:\footnote{Stock and Watson (2020), Sections 10.3 and 10.4; Gujarati and Porter (2009) Section 16.4; Wooldridge (2021) Sections 13.3-5, 14.1.}
 
 Consider the model
 \[
-Y_{it} = \beta_0 + \beta_1 X_{it} + \beta_2 Z_t + u_{it}
+Y_{it} = \beta_0 + \beta_1 X_{it} + \beta_2 Z_i + u_{it}
 \]
 where $Z_i$ is an unobserved variable that varies from one entity $i$ to the next but does not change over time. We can interpret this as the model having $n$ intercepts, one for each entity. We are interested in $\beta_1$, the effect of $X$ on $Y$, holding constant the unobserved entity characteristics $Z$.
 
@@ -808,6 +1679,7 @@ Y_{it} = \alpha_i + \delta_0 D_t + \beta_1 X_{it} + u_{it}
 in this setup, the intercept for $t=1$ is $\alpha_i$ and the intercept for $t=2$ is $\alpha_i + \delta_0$. Thus $\delta_0$ tells us by how much the intercept value of the of second period differs from the first period for entity $i$.
 
 \underline{Fixed effects model when $t>2$}:
+
 The above reasoning can be extended to more than one time periods. In this case the general unobserved effects model is:
 \[
 Y_{it} = \alpha_i + \delta_2\ D2_t + \dots + \delta_T\ DT_t + \beta_1 X_{it} + u_{it}
@@ -817,6 +1689,7 @@ for $t=1,\dots, T$, and where $D2_t=1$ if $t=2$, and $0$ otherwise, $D3_t=1$ if 
 
 \bigskip
 \underline{Differencing model when $t=2$}:
+
 Again consider the model
 \[
 Y_{it} = \alpha_i + \delta_0 D_t + \beta_1 X_{it} + u_{it}
@@ -856,7 +1729,7 @@ For $t=T$ periods, this model extends to:
 \bigskip
 \underline{How to decide which transformation to use}
 \begin{itemize}
-\item When $T=2$, the fixed-effect and first-difference estimates, as well as all test statistics are \textit{identical}, and so it does not matter which one we use. However, in this case the first-difference has the advantage of being straightforward to implement in any software package and it is easy to compute heteroskedasticity-rovust statistics after the first-differenced estimation, because when $T=2$ the first-difference estimation is just a cross-sectional regression.
+\item When $T=2$, the fixed-effect and first-difference estimates, as well as all test statistics are \textit{identical}, and so it does not matter which one we use. However, in this case the first-difference has the advantage of being straightforward to implement in any software package and it is easy to compute heteroskedasticity-robust statistics after the first-differenced estimation, because when $T=2$ the first-difference estimation is just a cross-sectional regression.
 
 \item When $T>2$, the fixed-effect and first-difference estimators are \underline{not the same}. Both are unbiased and consistent with $T$ fixed as $N \to \infty$.
 
@@ -869,14 +1742,14 @@ For $t=T$ periods, this model extends to:
     \item If $u_{it}$ follows a random walk, meaning that there is a very substantial, positive serial correlation, then the difference $\Delta u_{it}$ is serially uncorrelated, and first differencing is better. In many cases, the $u_{it}$ exhibit some positive serial correlation, but perhaps not as much as a random walk. Then, we cannot easily compare the efficiency of the fixed-effects and first-difference estimators.
     \item If there is substantial negative serial correlation in the $\Delta u_{it}$, fixed-effect is probably better.
     \end{itemize}
-  \item When $T$ is large, and especially wen $N$ is not very large (i.e. $N<T$), we need to exercise caution in using the fixed-effects estimator because inference can be very sensitive to violations of the assumptions in these cases. Specifically, inference with the fixed effects estimator is potentially more sensitive to nonnormality, heteroskedasticity, and serial correlation in the idiosyncratic errors.
+  \item When $T$ is large, and especially when $N$ is not very large (i.e. $N<T$), we need to exercise caution in using the fixed-effects estimator because inference can be very sensitive to violations of the assumptions in these cases. Specifically, inference with the fixed effects estimator is potentially more sensitive to nonnormality, heteroskedasticity, and serial correlation in the idiosyncratic errors.
     \begin{itemize}
     \item First differencing has the advantage of turning an integrated time series process into a weakly dependent process. Therefore, with first-differencing, we can appeal to the central limit theorem even in cases where $T>N$.
     \item Normality in the idiosyncratic errors is not needed, and heteroskedasticity and serial correlation can be dealt with.
     \end{itemize}
   \end{itemize}
   
-\item When classical measurement error in one of more explanatory variables is present the the fixed effects estimator and the first difference estimator can be very sensitive. However, if each $X_{itj}$ is uncorrelated with $u_{it}$, but the strict exogeneity assumption is otherwise violated, then the fixed-effect estimator likely has substantially lest bias than the first difference estimator, unless $T=2$.
+\item When classical measurement error in one of more explanatory variables is present the fixed effects estimator and the first difference estimator can be very sensitive. However, if each $X_{itj}$ is uncorrelated with $u_{it}$, but the strict exogeneity assumption is otherwise violated, then the fixed-effect estimator likely has substantially less bias than the first difference estimator, unless $T=2$.
 \subitem The important theoretical fact is that the bias in the first difference estimator does not depend on $T$, while the bias in the fixed-effect estimator tends to $0$ at the rate $1/T$.
 \subitem Strict exogeneity assumption may otherwise be violated when for example a lagged dependent variable is included among the regressors or there is a feedback between $u_{it}$ and future outcomes of the explanatory variable.
 \end{itemize}
@@ -884,6 +1757,10 @@ For $t=T$ periods, this model extends to:
 Generally, it is difficult to choose between fixed-effect and first-difference when they give substantially different results. It makes sense to report both sets of results and to try to determine why they differ.
 \end{description}
 
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
 
 
 ### (2) Using the data from the "crime2" worksheet, estimate the following relationship between crime and the average sentence in 1987 and comment on your results (especially why this equation is unlikely to provide good results?):
@@ -908,7 +1785,7 @@ regress lcrmrte lavgsen if d87==1
 \item
 The regression gives us
 \begin{alignat*}{3}
-\widehat{lcrmrte} & = && -3.644 + && 0.046\ lavgsen \\
+\widehat{lcrmrte}_{87} & = && -3.644\ +\ && 0.046\ {lavgsen}_{87} \\
   &  && (0.47) && (0.21) \\
 n & = 90, &&  && R^2 = 0.0005 
 \end{alignat*}
@@ -925,7 +1802,7 @@ Alternatively, as we discussed in Supervision 5, we can use a proxy variable. He
 \bigskip\bigskip
 
 
-### (3) Re-estimate equation(\ref{eq:SQC2}) now including a lagged dependent variable in the equation (i.e. ${lcrmrte}_{86}$). Comment on your results and the reasoning behind including the lagged dependent variable in this case.
+### (3) Re-estimate equation (\ref{eq:SQC2}) now including a lagged dependent variable in the equation (i.e. ${lcrmrte}_{86}$). Comment on your results and the reasoning behind including the lagged dependent variable in this case.
 
 \begin{description}
 \item[Answer:]
@@ -948,7 +1825,7 @@ regress lcrmrte lavgsen L.lcrmrte if d87==1
 \item
 The regression now gives us
 \begin{alignat*}{4}
-\widehat{lcrmrte} & = && -0.188 - && 0.154\ lavgsen && 0.083\ {lcrmrte}_{-1} \\
+\widehat{lcrmrte}_{87} & = && -0.188\ -\ && 0.154\ {lavgsen}_{87}\ +\ && 0.083\ {lcrmrte}_{86} \\
   &  && (0.24) && (0.08) && (0.37) \\
 n & = 90, &&  && \bar{R}^2 = 0.8514 
 \end{alignat*}
@@ -981,14 +1858,23 @@ use Data/crime4
 regress lcrmrte d87 lavgsen if year>85
 ```
 
-The coefficient on $lavgsen$ is positive but has a very small $t$-statistic of $0.84$ and thus insignificant. So using pooled OLS on the two years has not substantially changed anything from using a single cross section. This is not surprising because pooled OLS does not solve the omitted variables problem.
+\begin{description}
+\item
+The regression now gives us
+\begin{alignat*}{4}
+\widehat{lcrmrte}_{87} & = && -3.663\ +\ && 0.075\ d87\ +\ && 0.205\ {lavgsen}_{87} \\
+  &  && (0.35) && (0.09) && (0.16) \\
+n & = 180, &&  && R^2 = 0.0045 
+\end{alignat*}
+The coefficient on $lavgsen$ is positive but has a very small $t$-statistic of $0.13$ and thus insignificant. So using pooled OLS on the two years has not substantially changed anything from using a single cross section. This is not surprising because pooled OLS does not solve the omitted variables problem.
+\end{description}
 
 
 \bigskip\bigskip
 ***
 \bigskip\bigskip
 
-### (5) Show that estimating equation (ref{eq:SQC4}) using the first difference transformation (for the same years) would involve estimating the following equation:
+### (5) Show that estimating equation (\ref{eq:SQC4}) on page \pageref{eq:SQC4} using the first difference transformation (for the same years) would involve estimating the following equation:
 \begin{equation}\label{eq:SQC5}
 \Delta{lcrmrte}_i = \delta + \beta_1\Delta{lavgsen}_i + \Delta\varepsilon_i
 \end{equation}
@@ -998,7 +1884,7 @@ The coefficient on $lavgsen$ is positive but has a very small $t$-statistic of $
 Usually the main reason for collecting panel data is to allow for the unobserved effect, $a_i$, to be correlated with the explanatory variables. Here, we want to allow the unmeasured county factors in $a_i$ that affect the crime rate also to be correlated with the average sentence length. To do this, denote $t=1$ for $1986$, and $t=2$ as $1987$. Then we can difference the data across the two years as follows:
 \begin{align*}
 {lcrmrte}_{i2} &= (\beta_0 + \delta) + \beta_1\ {lavgsen}_{i2} + a_i + \varepsilon_{i2} \ \ &( \text{when }t=2) \\
-{crmrte}_{i1} &= \beta_0 + \beta_1\ {unem}_{i1} + a_i + \varepsilon_{i1}  &( \text{when }t=1)
+{crmrte}_{i1} &= \beta_0 + \beta_1\ {lavgsen}_{i1} + a_i + \varepsilon_{i1}  &( \text{when }t=1)
 \end{align*}
 If we subtract the latter equation from the former then we get
 \[
@@ -1044,12 +1930,9 @@ regress clcrmrte clavgsen if year > 86
 
 We can also obtain the same results using either of the following commands:
 
-```{stata eval=FALSE}
+```{stata eval="FALSE"} 
 quietly xtset county year
-
 regress D.(lcrmrte lavgsen) if year > 86
-/* OR */
-xtreg lcrmrte d87 lavgsen if year > 85, fe
 ```
 
 \begin{description}
@@ -1058,25 +1941,41 @@ We get the same output that shows a negative and statistically significant relat
 
 The intercept tells us that even if the average sentence length does not change between the two periods, the crime rate increases by about $0.1\%$ reflecting a secular increase in crime rates across 90 counties of North Carolina from 1986 to 1987.
 
-We can also do the fixed effects transformation manually:
+We can also estimate using fixed effects transformation:
 \end{description}
 
 ```{stata}
 quietly cd ..
 use Data/crime4
+quietly xtset county year
 
-/* generate averages */
-quietly egen avc = mean(lcrmrte) if year > 85, by (county)
-quietly egen avs = mean(lavgsen) if year > 85, by (county)
-
-/* generate "entity-demeaned" variables */
-quietly gen cfe = lcrmrte - avc if year > 85
-quietly gen sfe = lavgsen-avs if year > 85
-
-/* run the regression using "entity-demeaned" variables */
-reg cfe d87 sfe
+xtreg lcrmrte d87 lavgsen if year > 85, fe
 ```
 
+We can also do the fixed effects transformation manually:
+
+```{stata eval="FALSE"}
+quietly cd ..
+use Data/crime4
+
+/* generate averages */
+quietly egen avcrm = mean(lcrmrte) if year > 85, by (county)
+quietly egen avsen = mean(lavgsen) if year > 85, by (county)
+
+/* generate "entity-demeaned" variables */
+quietly gen crmfe = lcrmrte - avcrm if year > 85
+quietly gen senfe = lavgsen - avsen if year > 85
+
+/* run the regression using "entity-demeaned" variables */
+reg crmfe d87 senfe
+```
+
+Which gives us
+\begin{alignat*}{4}
+\widehat{lcrmrte}_{87} & = && -3.018\ +\ && 0.108\ d87\ && - 0.283\ {lavgsen}_{87} \\
+  &  && (0.16) && (0.03) && (0.07) \\
+n & = 180, &&  && R^2 = 0.226 
+\end{alignat*}
 
 
 
@@ -1095,7 +1994,7 @@ log(crmrte)_{it} &= \delta_1 + \delta_2\ {d82}_i + \delta_3\ {d83}_i + \delta_4\
 
 \begin{description}
 \item[Answer:]
-Pooled cross section in STATA can be obtained as follows:
+We are now looking at $T>2$ and $N>T$. Pooled cross section in STATA can be obtained as follows:
 \end{description}
 
 ```{stata}
@@ -1130,6 +2029,12 @@ xtreg lcrmrte d82 d83 d84 d85 d86 d87 lprbarr lprbconv lprbpris lavgsen lpolpc, 
 ```
 
 
+Thus we get:
+\begin{align*}
+\text{Pooled: } \ \ \widehat{lcrmrte} & = -2.082 + 0.005\ d82 + \dots - 0.086\ {lavgsen} \\
+\text{FD: } \ \ \Delta\widehat{lcrmrte} & = 0.008 - 0.099\ d83 + \dots - 0.022\ {lavgsen} \\
+\text{FE: } \ \ \widehat{lcrmrte} & = -1.604 + 0.013\ d82 + \dots - 0.004\ {lavgsen} \\
+\end{align*}
 
 
 \bigskip\bigskip
@@ -1140,6 +2045,13 @@ xtreg lcrmrte d82 d83 d84 d85 d86 d87 lprbarr lprbconv lprbpris lavgsen lpolpc, 
 
 \begin{description}
 \item[Answer:]
+
+\item[a)]
+Whether pooled, FD, or FE, all the "deterrent" variables are significant except for the logarithm of average sentence length measured in days. The signs of these variables are all negative as expected - since deterrence and crime would work conversely - except for logarithm of police per capita, which is positive in all three approaches. 
+
+Curiously, the logarithm of the probability of prison sentence is also positive when we work with the pooled cross section but is negative when we employ FD and FE.
+
+\item[b)]
 The problem with assessing the disturbances in the pooled cross section is that the disturbances are unobservable. Most econometricians thus focus upon the first difference equation. If this is OK, then use these results, if it is not then go for fixed-effects transformation.
 
 However, recall that we have strict exogeneity and homoskedasticity assumptions. So we need to test for these.

@@ -1540,24 +1540,24 @@ Table below summarizes the results of the BP and White tests for each strategy:
 \begin{tabular}{|| c | c | c | c c c | ||}
 \multicolumn{6}{r}{Heteroskedasticity Test} \\
  \hline
- &  F & Adj $R^2$ & & BP & White \\
+ &  F & $R^2$ & & BP & White \\
 \hline\hline
-\multirow{2}{8em}{Scaling by BDRMS} & \multirow{2}{3em}{37.39} & \multirow{2}{3em}{0.557} & $\chi^2$ & 2.59 & 14.13 \\
+\multirow{2}{8em}{Scaling by BDRMS} & \multirow{2}{3em}{37.39} & \multirow{2}{3em}{0.5718} & $\chi^2$ & 2.59 & 14.13 \\
  & & & $p$-value & 0.459 & 0.118 \\
 \hline
-\multirow{2}{8em}{Scaling by LOTSIZE} & \multirow{2}{3em}{480.77} & \multirow{2}{3em}{0.943} & $\chi^2$ & 5.96 & 8.74 \\
+\multirow{2}{8em}{Scaling by LOTSIZE} & \multirow{2}{3em}{480.77} & \multirow{2}{3em}{0.9450} & $\chi^2$ & 5.96 & 8.74 \\
  & & & $p$ value & 0.113 & 0.462 \\
 \hline
-\multirow{2}{8em}{log transformation} & \multirow{2}{3em}{50.42} & \multirow{2}{3em}{0.63} & $\chi^2$ & 4.22 & 9.55 \\
+\multirow{2}{8em}{log transformation} & \multirow{2}{3em}{50.42} & \multirow{2}{3em}{0.6430} & $\chi^2$ & 4.22 & 9.55 \\
  & & & $p$ value & 0.238 & 0.388 \\
 \hline
-\multirow{2}{8em}{remove outliers in LOTSIZE} & \multirow{2}{3em}{65.83} & \multirow{2}{3em}{0.701} & $\chi^2$ & 5.97 & 9.26 \\
+\multirow{2}{8em}{remove outliers in LOTSIZE} & \multirow{2}{3em}{65.83} & \multirow{2}{3em}{0.7117} & $\chi^2$ & 5.97 & 9.26 \\
  & & & $p$ value & 0.113 & 0.414 \\
 \hline
 \end{tabular}
 \end{center}
 
-Looking at the table, we can see that in all approaches we are able to tackle heteroskedasticity since in all of them we fail to reject the null hypothesis of homoskedasticity. However, the $F$ value and the adjusted $R^2$ is considerably higher for "scaling by $LOTSIZE$" strategy. This may be because the error variance is proportional to $LOTSIZE$ and there are outliers in the $LOTSIZE$ dimension. Scaling gets rid of both problems. 
+Looking at the table, we can see that in all approaches we are able to tackle heteroskedasticity since in all of them we fail to reject the null hypothesis of homoskedasticity. However, the $F$ value and the $R^2$ is considerably higher for "scaling by $LOTSIZE$" strategy. This may be because the error variance is proportional to $LOTSIZE$ and there are outliers in the $LOTSIZE$ dimension. Scaling gets rid of both problems. 
 
 \end{description}
 
@@ -2476,7 +2476,7 @@ As before, we can also use Breusch Godfrey to check for autocorrelation:
 bgtest(SQ3g_lm)
 ```
 
-with $chi^2=70.241$ and a $p$ value that is practically zero, we would reject the null hypothesis that there is no autocorrelation in the residuals.
+with $\chi^2=70.241$ and a $p$ value that is practically zero, we would reject the null hypothesis that there is no autocorrelation in the residuals.
 
 
 

@@ -76,7 +76,7 @@ options(scipen = 999)
 
 ## QUESTION A: INSTRUMENTAL VARIABLES
 
-\textbf{We are interested in the determinants of crime. We use Cornwell and Trumbull (1994) data on 90 counties in North Caroline for the years 1981 through 1987.}\footnote{This question is based on Cornwell, C and Trumbull, W N (1994) "Estimating the Economic Model of Crime Using Panel Data", \textit{Review of Economics and Statistics}, 76:360-366, and is covered in Wooldridge (2021) Ch 13.}
+\textbf{We are interested in the determinants of crime. We use Cornwell and Trumbull (1994) data on 90 counties in North Carolina for the years 1981 through 1987.}\footnote{This question is based on Cornwell, C and Trumbull, W N (1994) "Estimating the Economic Model of Crime Using Panel Data", \textit{Review of Economics and Statistics}, 76:360-366, and is covered in Wooldridge (2021) Ch 13.}
 
 ### 1. Download the dataset crime4.dta
 
@@ -200,53 +200,17 @@ Unless the police themselves are involved in the crime, the positive coefficient
 
 Overall there is likely to be simultaneity in the relationship between police and crime rates. Simultaneity would be present because increase in law enforcement would at least be partially dependent on the expected crime rate, and the crime rate would at least be partially dependent on the size of the police force. This type of bi-directional causality causes endogeneity and is a major source of bias in the OLS estimator. 
 
-\begin{tcolorbox}[breakable, title=Simultaneity Bias in OLS\footnote{Wooldridge (2021, $7^{th}$ ed) Section 16-2: Simultaneity Bias in OLS}, skin=enhancedlast]
-Consider the two-equation model
-\begin{align*}
-Y &= \beta_0 + \beta_1\ X + \beta_2\ Z_1 + u \\
-X &= \gamma_0 + \gamma_1\ Y + \gamma_2\ Z_2 + v
-\end{align*}
-The variables $Z_1$ and $Z_2$ are exogeneous, i.e. each is uncorrelated with $u$ and $v$. Rearranging this for $X$ gives:
-\begin{align*}
-X &= \gamma_0 + \gamma_1\ (\beta_0 + \beta_1\ X + \beta_2\ Z_1 + u) + \gamma_2\ Z_2 + v \\
-(1-\gamma_1\beta_1)X &= (\gamma_0 + \gamma_1\beta_0) + \gamma_1\beta_2\ Z_1 + \gamma_2\ Z_2 + (\gamma_1u+v)
-\end{align*}
-Assume $\gamma_1\beta_1\neq1$. Whether this assumption is restrictive depends on the application. If this assumption holds, then
-\begin{align*}
-X &= \frac{\gamma_0 + \gamma_1\beta_0}{1-\gamma_1\beta_1} + \frac{\gamma_1\beta_2}{1-\gamma_1\beta_1}Z_1 + \frac{\gamma_2}{1-\gamma_1\beta_1}Z_2 + \frac{\gamma_1u+v}{1-\gamma_1\beta_1} \\
-X &= \pi_0 + \pi_{21}\ Z_1 + \pi_{22}\ Z_2 + \epsilon
-\end{align*}
-This equation that expresses $X$ in terms of the exogeneous variables and the error terms is the \textbf{reduced form equation} for $X$.
-
-The parameters $\pi_{21}$ and $\pi_{22}$ are the \textit{reduced form parameters} which are nonlinear functions of the \textit{structural parameters}.
-
-The \textit{reduced form error}, $\epsilon$ is a linear function of the structural error terms $u$ and $v$. Therefore, we can consistently estimate $\pi_{21}$ and $\pi_{22}$ by OLS, something that is used for 2-stage least squares estimation. 
-
-A reduced form also exists for $Y$ insofar as the assumption $\gamma_1\beta_1\neq1$ holds. The algebra is similar and has the same properties as the reduced form equation for $X$.
-
-Estimating $Y = \beta_0 + \beta_1\ X + \beta_2\ Z_1 + u$ with OLS will produce biased and inconsistent estimators for the $\beta$s. Since by assumption $Z_1$ and $u$ are uncorrelated, the issue is whether $X$ and $u$ are uncorrelated. From the reduced form we see that $X$ and $u$ are correlated if and only if $\epsilon$ and $u$ are correlated, since $Z_1$ and $Z_2$ are assumed exogeneous. $\epsilon$ is a linear function of $u$ and $v$ so it is generally correlated with $u$. 
-
-We can also suppose $u$ and $v$ are uncorrelated. Then we can consider two cases where $\gamma_1=0$ and $\gamma_1\neq 0$:
-\begin{itemize}
-\item When $\gamma_1=0$ and $u$ and $v$ are uncorrelated, $X$ and $u$ are also uncorrelated.
-\subitem Notice in this case $X$ is not simultaneously determined with $Y$. If $Corr(u,v)=0$ then this rules out omitted variables or measurement errors in $u$ that are correlated with $X$. It would then not be surprising in this case to see that OLS estimation of $Y = \beta_0 + \beta_1\ X + \beta_2\ Z_1 + u$ works.
-\item When $\gamma_1\neq 0$ and $u$ and $v$ are uncorrelated, $u$ and $\epsilon$ must be correlated. Also note that, if $u$ and $v$ are correlated, and $\gamma_1=0$, $u$ and $\epsilon$ will still be correlated.
-\end{itemize}
-When $X$ is correlated with $u$ because of simultaneity, it is said that OLS suffers from \textit{simultaneity bias}. Obtaining the direction of the bias in the coefficients is generally complicated, as discussed in the omitted variable bias supervision.
-\end{tcolorbox}
-
-
 In this case, we suspect that the bias is positive and large in magnitude. In order to correct for the estimation bias we use an instrument $taxpc$ for police per capita and run a 2-stage least squares estimation (2SLS). Accordingly, we will estimate the following system of simultaneous equations (SEM):
 \begin{align*}
 {crmrte}_i &= \beta_0 + \beta_1\ {polpc}_i + \beta_2\ {taxpc}_i + \delta_{11}\ {west}_i + \delta_{12}\ {central}_i + \delta_{13}\ {urban}_i + u_i \\
-{polpc}_i &= \gamma_0 + \gamma_1\ {crmrte}_i + \gamma_2\ {taxpc}_i + \delta_{11}\ {west}_i + \delta_{12}\ {central}_i + \delta_{13}\ {urban}_i + v_i \\
+{polpc}_i &= \gamma_0 + \gamma_1\ {crmrte}_i + \gamma_2\ {taxpc}_i + \delta_{11}\ {west}_i + \delta_{12}\ {central}_i + \delta_{13}\ {urban}_i + v_i
 \end{align*}
 
 For identification of the IV we need:
 \begin{itemize}
-\item \textit{Instrument relevance:} whereby the tax rate must have non-trivial explanatory power for police per capita, i.e. 
+\item[Instrument relevance:] whereby the tax rate must have non-trivial explanatory power for police per capita, i.e. 
 $Cov(taxpc, polpc)\neq 0$;
-\item \textit{Instrument exogeneity:} whereby the tax rate must affect the crime rate only through its influence on police per capita and not in any other way. That is, $taxpc$ must be exogeneous with respect to $u$, i.e. $\mathbb{E}(u|taxpc)=0$. This exogeneity of $taxpc$ implies that $Cov(taxpc, u)=0$.
+\item \textit[Instrument exogeneity:] whereby the tax rate must affect the crime rate only through its influence on police per capita and not in any other way. That is, $taxpc$ must be exogeneous with respect to $u$, i.e. $\mathbb{E}(u|taxpc)=0$. This exogeneity of $taxpc$ implies that $Cov(taxpc, u)=0$.
 \end{itemize}
 
 For identification of an equation (i.e. which equation can be estimated), we need:
@@ -367,9 +331,9 @@ If we suppose that the taxes need to be raised in place with high crime rates to
 
 \begin{description}
 \item[Answer]
-The underlying point in this question is that most economic data are subject to some element of measurement error. The issue is whether it is potentially serious enough to require the use of IV instead of OLS to fit a model. If there is no simultaneity problem, the OLS estimators produce consistent and efficient estimators. If there is simultaneity, then the OLS estimators are not even consistent. 
+The underlying point in this question is that most economic data are subject to some element of measurement error. The issue is whether it is potentially serious enough to require the use of IV instead of OLS to fit a model. If there is no simultaneity problem, the OLS estimators produce consistent and efficient estimators. If there is simultaneity, then the OLS estimators are not even consistent. In these situations we'd use 2SLS and IV to obtain estimators that are consistent and efficient. However, if we use these methods instead of OLS when there isn't simultaneity, we will get consistent but inefficient estimators. This is why it is important to check for simultaneity first.
 
-Simultaneity problem arises because some of the regressors are endogeneous and are therefore likely to be correlated with the error term. Therefore, we need to test this. So, essentially, a test of simultaneity is a test of whether and endogeneous regressor is correlated with the error term. The test for this is called \textit{Hausman's specification error test}, or \textit{Wu-Hausman specification test}, or \textit{Durbin-Wu-Hausman (DWH) specification test}. This is because although the standard reference is Hausman (1978),\footnote{Hausman, J A (1978), "Specification tests in econometrics", \textit{Econometrica} 46(6):1251-71.} Durbin (1954)\footnote{Durbin, J (1954) "Errors in variables", \textit{Review of the International Statistical Institute} 22(1):23-32.} and Wu (1973)\footnote{Wu,D-M (1973) "Alternative tests of independence between stochastic regressors and disturbances", \textit{Econometrica} 41(4):733-50} made important contributions to its development.
+Simultaneity problem arises because some of the regressors are endogeneous and are therefore likely to be correlated with the error term. So, essentially, a test of simultaneity is a test of whether an endogeneous regressor is correlated with the error term. The test for this is called \textit{Hausman's specification error test}, or \textit{Wu-Hausman specification test}, or \textit{Durbin-Wu-Hausman (DWH) specification test}. This is because although the standard reference is Hausman (1978),\footnote{Hausman, J A (1978), "Specification tests in econometrics", \textit{Econometrica} 46(6):1251-71.} Durbin (1954)\footnote{Durbin, J (1954) "Errors in variables", \textit{Review of the International Statistical Institute} 22(1):23-32.} and Wu (1973)\footnote{Wu,D-M (1973) "Alternative tests of independence between stochastic regressors and disturbances", \textit{Econometrica} 41(4):733-50} made important contributions to its development.
 
 \begin{tcolorbox}[breakable, title=The Durbin-Wu-Hausman (DWH) specification test, skin=enhancedlast]
 Consider the model
@@ -447,17 +411,17 @@ The $F$-test statistic for this test has a $p$-value of $0.5398$ so we do not re
 
 \textbf{We are interested in estimating how women's hours of work respond to the wages they get. Consider the simultaneous equations relating wages earned and hours worked for women in the labour force:}
 \begin{align}
-{hours}_i &= \beta_0 + \beta_1\ {wage}_i + \beta_2\ {kids}_i + u_i \label{eq:FQB1} \\ 
-{wage}_i &= \gamma_0 + \gamma_1\ {hours}_i + \gamma_2\ {kids}_i + v_i. \label{eq:FQB2}
+{hours}_i &= \beta_0 + \beta_1\ {wage}_i + \beta_2\ {kids}_i + u_i \label{eq:FQBhrs} \\ 
+{wage}_i &= \gamma_0 + \gamma_1\ {hours}_i + \gamma_2\ {kids}_i + v_i. \label{eq:FQBwg}
 \end{align}
 
 
 ### A. Where do you think these equations come from - i.e. what are the economic rationale for these equations?
 \begin{description}
 \item[Answer:]
-Equation (\ref{eq:FQB1}) is the labor supply decision by workers;
+Equation (\ref{eq:FQBhrs}) is the labor supply decision by workers;
 
-Equation (\ref{eq:FQB2}) is the labor demand decision of firms, who typically pay higher wages for those who work full time.
+Equation (\ref{eq:FQBwg}) is the labor demand decision of firms, who typically pay higher wages for those who work full time.
 
 \end{description}
 
@@ -471,7 +435,7 @@ Equation (\ref{eq:FQB2}) is the labor demand decision of firms, who typically pa
 
 \begin{description}
 \item[Answer:]
-Not consistent due to simultaneity.
+Not consistent due to simultaneity. The equations (\ref{eq:FQBhrs}) and (\ref{eq:FQBwg}) are the structural equations where the parameters have theoretical / structural interpretations whereby they are the coefficints of the equations that portray the structure of the behavior of an economic agent, in this case labor supply of women. These cannot be estimated by OLS due to endogeneity. Supplementary Question 1(b) below on page \pageref{q:SQ1b} as well as Supervision 4, Faculty Question 1(c) show why the results would be biased and inconsistent.
 \end{description}
 
 
@@ -479,6 +443,167 @@ Not consistent due to simultaneity.
 \bigskip\bigskip
 ***
 \bigskip\bigskip
+
+
+
+### C. Solve for hours and wage in terms of kids, $u$ and $v$ by solving the equations (\ref{eq:FQBhrs}) and (\ref{eq:FQBwg}) on page \pageref{eq:FQBhrs}. Now consider equation (\ref{eq:FQBhrs}) and check if any of the Gauss-Markov assumptions is necessarily violated for this equation.
+
+\begin{description}
+\item[Answer:]
+Since we cannot estimate the structural equations by OLS, we need to re-write them to as the reduced-form equations in order to estimate the coefficients.
+
+\begin{tcolorbox}[breakable, title=Reduced-Form Equation to address Simultaneity \footnote{Wooldridge (2021, $7^{th}$ ed) Section 16-2: Simultaneity Bias in OLS}, skin=enhancedlast]
+Consider the two-equation model
+\begin{align*}
+Y &= \beta_0 + \beta_1\ X + \beta_2\ Z_1 + u \\
+X &= \gamma_0 + \gamma_1\ Y + \gamma_2\ Z_2 + v
+\end{align*}
+The variables $Z_1$ and $Z_2$ are exogeneous, i.e. each is uncorrelated with $u$ and $v$. Rearranging this for $X$ gives:
+\begin{align*}
+X &= \gamma_0 + \gamma_1\ (\beta_0 + \beta_1\ X + \beta_2\ Z_1 + u) + \gamma_2\ Z_2 + v \\
+(1-\gamma_1\beta_1)X &= (\gamma_0 + \gamma_1\beta_0) + \gamma_1\beta_2\ Z_1 + \gamma_2\ Z_2 + (\gamma_1u+v)
+\end{align*}
+Assume $\gamma_1\beta_1\neq1$. Whether this assumption is restrictive depends on the application. If this assumption holds, then
+\begin{align*}
+X &= \frac{\gamma_0 + \gamma_1\beta_0}{1-\gamma_1\beta_1} + \frac{\gamma_1\beta_2}{1-\gamma_1\beta_1}Z_1 + \frac{\gamma_2}{1-\gamma_1\beta_1}Z_2 + \frac{\gamma_1u+v}{1-\gamma_1\beta_1} \\
+X &= \pi_{20} + \pi_{21}\ Z_1 + \pi_{22}\ Z_2 + \epsilon
+\end{align*}
+This equation that expresses $X$ in terms of the exogeneous variables and the error terms is the \textbf{reduced form equation} for $X$.
+
+The parameters $\pi_{21}$ and $\pi_{22}$ are the \textit{reduced form parameters} which are nonlinear functions of the \textit{structural parameters}.
+
+The \textit{reduced form error}, $\epsilon$ is a linear function of the structural error terms $u$ and $v$. Therefore, we can consistently estimate $\pi_{21}$ and $\pi_{22}$ by OLS, something that is used for 2-stage least squares estimation. 
+
+A reduced form also exists for $Y$ insofar as the assumption $\gamma_1\beta_1\neq1$ holds. The algebra is similar and has the same properties as the reduced form equation for $X$.
+
+Estimating $Y = \beta_0 + \beta_1\ X + \beta_2\ Z_1 + u$ with OLS will produce biased and inconsistent estimators for the $\beta$s. Since by assumption $Z_1$ and $u$ are uncorrelated, the issue is whether $X$ and $u$ are uncorrelated. From the reduced form we see that $X$ and $u$ are correlated if and only if $\epsilon$ and $u$ are correlated, since $Z_1$ and $Z_2$ are assumed exogeneous. $\epsilon$ is a linear function of $u$ and $v$ so it is generally correlated with $u$. 
+
+We can also suppose $u$ and $v$ are uncorrelated. Then we can consider two cases where $\gamma_1=0$ and $\gamma_1\neq 0$:
+\begin{itemize}
+\item When $\gamma_1=0$ and $u$ and $v$ are uncorrelated, $X$ and $u$ are also uncorrelated.
+\subitem Notice in this case $X$ is not simultaneously determined with $Y$. If $Corr(u,v)=0$ then this rules out omitted variables or measurement errors in $u$ that are correlated with $X$. It would then not be surprising in this case to see that OLS estimation of $Y = \beta_0 + \beta_1\ X + \beta_2\ Z_1 + u$ works.
+\item When $\gamma_1\neq 0$ and $u$ and $v$ are uncorrelated, $u$ and $\epsilon$ must be correlated. Also note that, if $u$ and $v$ are correlated, and $\gamma_1=0$, $u$ and $\epsilon$ will still be correlated.
+\end{itemize}
+When $X$ is correlated with $u$ because of simultaneity, it is said that OLS suffers from \textit{simultaneity bias}. Obtaining the direction of the bias in the coefficients is generally complicated, as discussed in the omitted variable bias supervision.
+\end{tcolorbox}
+
+We therefore can obtain the reduced form equation in two ways: either substitute $wage$ into $hours$, or $hours$ into $wage$.
+
+\subitem \underline{Substitute $hours$ into $wage$} 
+\begin{align*}
+{wage}_i &= \gamma_0 + \gamma_1\ (\beta_0 + \beta_1\ {wage}_i + \beta_2\ {kids}_i + u_i) + \gamma_2\ {kids}_i + v_i \\
+(1-\gamma_1\beta_1)\ {wage}_i &= (\gamma_0 + \gamma_1\beta_0) + (\gamma_1\beta_2+\gamma_2)\ {kids}_i + \gamma_1u_i + v_i \\
+{wage}_i &= \frac{\gamma_0 + \gamma_1\beta_0}{1-\gamma_1\beta_1} + \frac{\gamma_1\beta_2+\gamma_2}{1-\gamma_1\beta_1}\ {kids}_i + \frac{\gamma_1u_i + v_i}{1-\gamma_1\beta_1} \\
+{wage}_i &= \pi_{20} + \pi_{21}\ {kids}_i + \varepsilon_{2i}
+\end{align*}
+where $\gamma_1\beta_1\neq 0$. 
+
+\subitem \underline{Substitute $hours$ into $wage$} 
+\begin{align*}
+{hours}_i &= \beta_0 + \beta_1\ (\gamma_0 + \gamma_1\ {hours}_i + \gamma_2\ {kids}_i + v_i) + \beta_2\ {kids}_i + u_i \\ 
+(1-\beta_1\gamma_1)\ {hours}_i &= (\beta_0+\beta_1\gamma_0) + (\beta_1\gamma_2 + \beta_2)\ {kids}_i + (\beta_1v_i + u_i) \\
+{hours}_i &= \frac{\beta_0+\beta_1\gamma_0}{1-\beta_1\gamma_1} + \frac{\beta_1\gamma_2 + \beta_2}{1-\beta_1\gamma_1}{kids}_i + \frac{\beta_1v_i + u_i}{1-\beta_1\gamma_1} \\
+{hours}_i &= \pi_{10} + \pi_{11}\ {kids}_i + \varepsilon_{1i}
+\end{align*}
+
+The second part of the question asks us to consider equation (\ref{eq:FQBhrs}) on page \pageref{eq:FQBhrs} and check if any of the Gauss-Markov assumptions is necessarily violated for this equation. Since $hours$ is endogenous in regression (\ref{eq:FQBhrs}), it will be biased for $\beta_1$. To see this,
+\begin{align*}
+Cov(u_i, {wage}_i) &= Cov\Big( u_i\ ,\ \frac{\gamma_0 + \gamma_1\beta_0}{1-\gamma_1\beta_1} + \frac{\gamma_1\beta_2+\gamma_2}{1-\gamma_1\beta_1}\ {kids}_i + \frac{\gamma_1u_i + v_i}{1-\gamma_1\beta_1} \Big) \\
+&=  Cov\Big( u_i\ ,\ \frac{\gamma_1}{1-\gamma_1\beta_1}\ u_i + \frac{1}{1-\gamma_1\beta_1} v_i \Big) \ \ \ \text{since we assume } \ Cov(u_i, {kids}_i) = 0 \\
+&= \frac{\gamma_1}{1-\gamma_1\beta_1}\ Cov(u_i, u_i) + \frac{1}{1-\gamma_1\beta_1} Cov(u_i, v_i) \\
+&= \frac{\gamma_1}{1-\gamma_1\beta_1} \sigma_u^2 \ \ \ \text{since we assume } Cov(u_i, v_i)=0.
+\end{align*}
+Therefore, $Cov(u_i, {wage}_i)\neq 0$ which is a violation of the Gauss-Markov assumption of exogeneity of ${wage}_i$ required for the OLS estimators to be unbiased and consistent. 
+
+The asymptotic bias/inconsistency of $\hat{\beta}_1$ will have the same sign as the coefficient $\frac{\gamma_1}{1-\gamma_1\beta_1}$.
+
+A similar argument can be made for equation (\ref{eq:FQBwg}), whereby $Cov(v_i,{hours}_i)\neq 0)$, making $hours$ endogeneous in that equation and thus biasing the OLS estimator of $\gamma_1$.
+
+\end{description}
+
+
+
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
+
+
+### D. We want to use "kids" as an IV to get rid of the simultaneity problem. How would you do that? Please state carefully what assumptions you need to make and what equation is being identified.
+
+\begin{description}
+\item[Answer:]
+In order to correct for the simultaneity problem we could use $kids$ as an instrument for $wage$ and run a 2-stage least squares (2SLS) estimation as long as the equation identification requirements are satisfied, namely the order and rank conditions.
+
+\begin{itemize}
+\item The order condition requires us to have at least as many excluded exogeneous variables as there are included endogeneous explanatory variables in the structural equation. Here we have one instrument for one endogeneous variable.
+\item The rank condition requires that at least one of the excluded exogeneous variable must have a nonzero population coefficient in the second equation. 
+\end{itemize}
+
+These would be the case when $\beta_2 = 0$ and $\gamma_2\neq 0$, since this satisfies the exclusion restriction. This implies that we can use $kids$ as a valid instrument for the endogeneous variable $wage$ in equation (\ref{eq:FQBhrs}) and hence identify, i.e. consistently estimate, $\beta_1$. However, we will no longer be able to use $kids$ again as an instrument for another endogeneous variable, and so we will need another IV in order to identify $\gamma_1$ in equation (\ref{eq:FQBwg}).
+
+Also note that, for us to choose $kids$ as an IV in the first place, it needs to satisfy the identification of IV requirements, namely instrument relevance and instrument exogeneity. 
+
+\begin{itemize}
+\item Instrument relevance requires that $kids$ should have non-trivial explanatory power for $wage$, i.e. $Cov(wage, kids)\neq 0$.
+\item Instrument exogeneity requires that $kids$ must affect $hours$ only though its influence on $wage$ and not in any other way. That is, $kids$ must be exogeneous with respect to $u$, i.e. $\mathbb{E}(u|kids) = 0$. This exogeneity implies that $Cov(u, kids)=0$.
+\end{itemize}
+
+\end{description}
+
+
+
+
+
+
+
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
+
+
+### E. Suppose that the covariance between $u_i$ and $v_i$ across households is zero, and suppose $kids$ is a valid IV for $wage$ in equation (\ref{eq:FQBhrs}) on page \pageref{eq:FQBhrs}. Can you describe a way to consistently estimate $\gamma_1$, the coefficient of $hours$ in equation (\ref{eq:FQBwg})?
+
+\begin{description}
+\item[Answer:]
+This question is asking us to conduct 2SLS, where we first use $kids$ as the instrument for $wage$ in equation (\ref{eq:FQBwg}) to consistently estimate $\beta_1$.
+
+\underline{Stage 1:}
+Estimate
+\[
+{wage}_i = \pi_{10}+\pi_{11}\ {kids}_i + \varepsilon_{1i}, \ \ \ \ i=1,\dots,n
+\]
+\underline{Stage 2:}
+Save the predicted values of $\widehat{wage}_i$, which we then use in the second stage
+\[
+{hours}_i = \beta_0 + \beta_1\ \widehat{wage}_i + u_i, \ \ \ \ i=1,\dots,n
+\]
+to consistently estimate $\beta_1$.
+
+In order to identify $\gamma_1$ in equation (\ref{eq:FQBwg}), we could then use the predicted residuals from the above second-stage regression:
+\[
+\hat{u}_i = {hours}_i - \hat{\beta}_0 + \hat{\beta}_1\ {wage}_i, \ \ \ \ i=1,\dots,n
+\]
+These OLS fitted $\hat{u}_i$ will be consistent estimators of the structural unobserved shocks $u_i$.
+
+Also, it follows that these predicted residuals are correlated with ${hours}_i$, since
+\[
+Cov(\hat{u}_i\ ,\ {hours}_i ) = Cov({hours}_i-\hat{\beta}_0 + \hat{\beta}_1\ {wage}_i\ ,\ {hours}_i)\neq 0.
+\]
+
+Since we are told that $Cov(u_i, v_i)=0$, and know that $\hat{u}_i$ are consistent for $u_i$, then $u_i$ also satisfy the exclusion restriction for equation (\ref{eq:FQBwg}). We can then conduct a 2-SLS estimation procedure, where in the first stage we estimate
+\[
+{hours}_i = \delta_0 + \delta_1\hat{u}_i + \varepsilon_i
+\]
+and save the predicted values $\widehat{hours}_i=\hat{\delta_0}+\hat{\delta}_1\hat{u}_i$.
+
+In the second stage, regress
+\[
+{wage}_i = \gamma_0 +\gamma_1\widehat{hours}_i + v_i
+\]
+The OLS estimatior for $\hat{\gamma_1}$ from this regression will be consistent for $\gamma_1$.
+\end{description}
 
 
 
@@ -518,7 +643,7 @@ Since unibasedness depends on $Cov(\varepsilon_i, X_i)=0$, this dependency betwe
 ***
 \bigskip\bigskip
 
-### (b) Suppose that $Y_i = \alpha + \beta X_i + \lambda W_i + \varepsilon_i$ where there also exists a relationship between $X_i$ and $W_i$ of the form $W_i = \rho + \phi X_i + v_i$. Show that if $Y_i$ is estimated using only the $X_i$ variable then the estimate of $\beta$ obtained is biased. Under what circumstances would this estimate of $\beta$ be biased downwards?
+### (b) Suppose that $Y_i = \alpha + \beta X_i + \lambda W_i + \varepsilon_i$ where there also exists a relationship between $X_i$ and $W_i$ of the form $W_i = \rho + \phi X_i + v_i$. Show that if $Y_i$ is estimated using only the $X_i$ variable then the estimate of $\beta$ obtained is biased. Under what circumstances would this estimate of $\beta$ be biased downwards? \label{q:SQ1b}
 
 \begin{description}
 \item[Answer:] 

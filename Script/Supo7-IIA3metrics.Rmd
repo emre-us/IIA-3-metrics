@@ -1,0 +1,1145 @@
+---
+title: "IIA-3 Econometrics: Supervision 7"
+author: "Emre Usenmez"
+date: "Lent Term 2025"
+output: pdf_document
+header-includes: 
+  - \usepackage{amsmath, tcolorbox, dashrule, booktabs, fancyhdr, multirow, tikz, bbm, multirow}
+  - \tcbuselibrary{listings,most}
+  - \allowdisplaybreaks
+---
+
+<!-- This comment will not be displayed in the output. Below change to CSS style is to ensure the blocktexts are in the same form size as the rest of the text.-->
+
+```{css style settings, echo = FALSE} 
+blockquote {
+    padding: 10px 20px;
+    margin: 0 0 20px;
+    font-size: 14px;
+    border-left: 5px solid #eee;
+}
+```
+
+<!-- below ensures the output are not presented in Scientific mode (e.g. 0.023+e4) but regular decimals -->
+```{r, echo=FALSE}
+options(scipen = 999, digits = 6)
+```
+
+
+\pagestyle{fancy}
+\fancyhead[L]{2024-25 Part IIA Paper 3}
+\fancyhead[R]{Supervision 6 Solutions}
+\fancyfoot[L]{Gonville \& Caius}
+\fancyfoot[R]{Emre Usenmez}
+
+\bigskip\bigskip
+
+\textbf{\underline{Topics Covered}}
+\begin{description}
+\item[Faculty Qs:] 
+\item[Supplementary Qs:] Independently pooled cross-section; panel data; difference-in-differences (DiD) estimator;
+\end{description}
+
+\bigskip
+
+\textbf{\underline{Related Reading:}}
+\begin{description}
+\item Dougherty (2016), \textit{Introduction to Econometrics}, $5^{th}$ ed, OUP
+  \subitem Chapter 10: Binary Choice and Limited Dependent Variable Models, and Maximum Likelihood Estimation
+  \subitem Chapter 14: Introduction to Panel Data Models
+\item Wooldridge J M (2021) \textit{Introductory Econometrics: A Modern Approach}, $7^{th}$ ed, 
+  \subitem Section 7-5: A Binary Dependent Variable: The Linear Probability Model
+  \subitem Chapter 13: Pooling Cross Sections across Time: Simple Panel Data Methods
+  \subitem Chapter 17: Limited Dependent Variable Model and Sample Selection Corrections
+\item Gujarati, D N and Porter, D (2009) \textit{Basic Econometrics}, $7^{th}$ International ed, McGraw-Hill 
+  \subitem Chapter 15: Qualitative Response Regression Models
+  \subitem Chapter 16: Panel Data Regression Models
+\item Gujarati, D (2022) \textit{Essentials of Econometrics}, $5^{th}$ ed, Sage
+  \subitem Chapter 6: Qualitative or Dummy Variable Regression Models
+  \subitem Chapter 12: Panel Data Regression Models
+\item Stock, J H and Watson M W (2020) \textit{Introduction to Econometrics}. $4^{th}$ Global ed, Pearson
+  \subitem Chapter 10: Regression with Panel Data
+  \subitem Chapter 11: Regression with a Binary Dependent Variable
+\end{description}
+
+\bigskip
+
+
+\small Very grateful to Dr Oleg Kitov and Dr Clive Lawson for the very informative stylized answers to previous iterations of the supervision questions.
+\normalsize
+
+```{r include=FALSE}
+libraries <- c("haven",       # to import/export SPSS, STATA, SAS files
+               "readxl",      # to import/export Excel files   
+               "tidyverse",   # for tidy data
+               "ggplot2", # for visualization
+               "Statamarkdown", # for using STATA commands in R
+               "ivreg", #for regressions with instrumental variables
+               "margins", # STATA's margins command in R for marginal effects
+               "mnormt", #for creating bivariate normal distributions
+               "modelsummary", #for building regression output comparison tables
+               "lmtest", #for various tests on regressions
+               "skedastic", #for heterskedasticity tests and correction
+               "kableExtra", # for creating nice tables in R
+               "rstatix")     # converts stats functions to a tidyverse-friendly format
+
+invisible(lapply(libraries, library, character.only=TRUE))  # will load the libraries
+```
+
+
+
+\pagebreak
+
+
+# FACULTY QUESTIONS
+
+\bigskip\bigskip
+ 
+
+## QUESTION A: 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+\pagebreak
+
+# SUPPLEMENTARY QUESTIONS
+
+\bigskip\bigskip
+
+## QUESTION A
+
+\bigskip
+
+### (1) Explain why the following is termed a Linear Probability Model (LPM) if $Y_i$ is a binary dependent variable (i.e. $Y_i$ takes only the values 0 and 1):
+\begin{equation} \label{eq:SQA1}
+Y_i = \beta_0 + \beta_1X_i + v_i
+\end{equation}
+
+\begin{description}
+\item[Answer:]
+When the dichotomous dummy variable is the dependent variable are of the form
+\[
+Y_i = 
+  \begin{cases}
+  1 & \text{if some condition is satisfied}\\
+  0 & \text{if some condition is not satisfied}
+  \end{cases}
+\]
+then $\mathbb{E}(Y_i\ |\ X_i)$ can be interpreted as the \textit{conditional probability} that the event will occur given $X_i$, i.e. $\mathbb{P}(Y_i = 1\ |\ X_i)$.
+
+Assume $\mathbb{E}(u_i)=0$ in order to have unbiased estimators. Then the probability of the event occuring, $p_i$, is assumed to be a linear function of a set of explanatory variables:
+\begin{align*}
+p_i &= 1\times \mathbb{P}(Y=1\ |\ X_i) + 0\times \mathbb{P}(Y_i=0\ |\ X_i)  \\
+&= \mathbb{P}(Y_i=1\ |\ X_i) \\
+&= \mathbb{E}(Y_i\ |\ X_i) \\
+&= \beta_0 + \beta_1X_i
+\end{align*}
+Notice that
+\[
+Y_i = 
+  \begin{cases}
+  1 & \text{with probability } p_i \\
+  0 & \text{with probability } 1-p_i
+  \end{cases}
+\]
+then $Y_i$ follows the \textit{Bernoulli probability distribution}. That is $Y_i \sim \text{Bern}(p_i) $ where $p_i = \beta_0+\beta_1X_i$. Accordingly,
+\[
+\mathbb{E}(Y_i) = 0(1-p_i)+1p_i = p_i.
+\]
+We can then equate
+\begin{align*}
+\mathbb{E}(Y_i\ |\ X_i) &= \beta+0 + \beta_1X_i \\
+  &= \mathbb{E}(Y_i) \\
+  &= p_i.
+\end{align*}
+This means, the conditional expectation of the LPM model can be interpreted as the conditional probability of $Y_i$.
+
+In general, the expectation of Bernoulli random variable is the probability that the random variable equals 1.
+
+Also note that if there are $n$ independent trials, each with a probability $p$ of success and probability $(1-p)$ of failure, and $X$ of these trials represent the number of successes, then $X$ follows the \textit{binomial distribution}. The mean of the binomial distribution is $np$ and its variance is $np(1-p)$. 
+
+Finally, since $p_i$ must be between 0 and 1, then we have the restriction that $0\leq \mathbb{E}(Y_i\ |\ X_i) \leq 1$.
+\end{description}
+
+
+
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
+
+### (2) Carefully outline the main problems associated with LPMs.
+
+\begin{description}
+\item[Answer:]
+\begin{itemize}
+\item[i)] Nonfulfillment of $0\leq \mathbb{E}(Y_i\ |\ X_i) \leq 1$
+\subitem[-] Although Y takes a value of 0 or 1, there is no guarantee that the estimated values of $Y$ will necessarily lie between 0 and 1. In an application, some $\hat{Y}_i$ values can turn out to be negative and some can exceed 1.
+
+The problem emerges from the fact that OLS will fit a straight line to these points for the estimated values of $\beta_0$ nad $\beta_1$ while nothing preventing the intercept from being negative. Similarly, for high levels of $X$ we can obtain probability higher than 1. This is a problem since a negative probability or probability higher than 1 is meaningless.
+
+\medskip
+\begin{center}
+\begin{tikzpicture}
+
+\draw[thick,->] (0,0) -- (5.9,0) node[anchor=north] {$X_i$};
+\draw[thick,->] (0,0) -- (0,5.9) node[anchor=east] {$Y_i$};
+\draw[dotted] (0,5) -- (5.5,5);
+\draw[dashed] (1,-0.5) -- (4.75,6.2);
+
+\filldraw[black] (0.6,0) circle (1pt);
+\filldraw[black] (0.8,0) circle (1pt);
+\filldraw[black] (1.1,0) circle (1pt);
+\filldraw[black] (1.3,0) circle (1pt);
+\filldraw[black] (1.5,0) circle (1pt);
+\filldraw[black] (1.6,0) circle (1pt);
+\filldraw[black] (3.7,5) circle (1pt);
+\filldraw[black] (3.9,5) circle (1pt);
+\filldraw[black] (4,5) circle (1pt);
+\filldraw[black] (4.3,5) circle (1pt);
+\filldraw[black] (4.4,5) circle (1pt);
+\filldraw[black] (4.6,5) circle (1pt);
+
+\foreach \i [count=\j from 0] in {0.2, 0.4, 0.6, 0.8, 1}
+{
+   \draw (\j+1,2pt) -- ++ (0,-4pt) node[below] {$\i$};
+   \draw (2pt,\j+1) -- ++ (-4pt,0) node[left]  {$\i$};
+}
+\end{tikzpicture}
+\end{center}
+
+\item[ii)] Errors  are non-normal and follow Bernoulli distribution or binomial probability distribution.
+  \subitem[-] Although OLS does not require $u_i$ to be normally distributed to get unbiased estimates, we assume them to be the case for the purposes of statistical inference.
+  \subitem[-] Since $v_i$ takes only the following two values
+  \[
+  Y_i =
+  \begin{cases}
+  1 & v_i = 1 - \beta_0 - \beta_1X_{1i} \ \ \ \ \text{with prob. } p_i \\
+  0 & v_i = -\beta_0 - \beta_1X_{1i} \ \ \ \ \ \ \ \text{with prob. } 1-p_i
+  \end{cases}
+  \]
+  it is non-normal. It instead follows a Bernoulli distribution:
+  \begin{align*}
+  f(Y_i) &=
+  \begin{cases}
+  p_i & Y_i = 1 \\
+  1-p_i & Y_i = 0
+  \end{cases} \\
+  &\equiv p^{Y_i}(1-p)^{1-Y_i}
+  \end{align*}
+\item[iii)] Error term has heteroskedastic variances
+  \subitem[-] For Bernoulli distribution the theoretical mean is $p$ and variance $p(1-p)$. This means the variance is a function of the mean, hence the error variance is heteroskedastic.
+  \begin{align*}
+  Var(v_i) 
+    &= \mathbb{E}(v_i^2) - \big( \mathbb{E}(v_i)^2 \big) \\
+    &= \mathbb{E}(v_i^2) - 0 \\
+    &= \mathbb{E}((Y_i\ |\ X_{1i})^2) \\
+    &= \mathbb{P}(Y_i = 1\ |\ X_{1i})(\text{value of $v_i$ when } Y_i=1)^2 + \mathbb{P}(Y_i = 0\ |\ X_{1i})(\text{value of $v_i$ when } Y_i=0)^2 \\
+    &= \mathbb{P}(Y_i = 1\ |\ X_{1i})(1-(\beta_0+\beta_1X_{1i}))^2 + \mathbb{P}(Y_i = 0\ |\ X_{1i})(0-(\beta_0+\beta_1X_{1i}))^2 \\ 
+    &= p_i(1-p_i)^2 + (1-p_i)(0-p_i)^2 \ \ \ \ \ \text{since } \mathbb{E}(Y_i\ |\ X_{1i})=p_i=\beta_0+\beta_1X_{1i} \\
+    &= p_i(1+p_i^2-2p_i) + (1-p_i)p_i^2 \\
+    &= p_i + p_i^3 - 2p_i^2 + p_i^2 - p_i^3 \\
+    &= p_i - p_i^2 \\
+    &= p_i(1-p_i)
+  \end{align*}
+  since $p_i$ differs for each $i$, and since $Var(v_i)$ depends on $p_i$, the disturbance is heteroskedastic. Since $p_i = \mathbb{E}(Y_i)=\beta_0+\beta_1X_{1i}$, this can also be expressed as:
+  \[
+  Var(v_i) = (\beta_0+\beta_1X_{1i})(1-\beta_0-\beta_1X_{1i})
+  \]
+  which varies with $X_i$.
+\item[iv)] $R^2$ is not meaningful
+  \subitem since $Y$ takes only two values, 0 and 1, the conventionally computed $R^2$ value is likely to be much lower than 1
+\item[iv)] It is not logically attractive model since the marginal effects are constant
+  \subitem It assumes that $p_i = \mathbb{E}(Y=1\ | X)$ increases linearly with $X$. That is, the marginal effect of $X$ remains constant throughout. This is unrealistic. In reality, we would expect that $p_i$ is nonlinearly related to $X$.
+\end{itemize}
+\end{description}
+
+
+
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
+
+### (3) If you have not done so already, derive $Var(v)$ and use this to find a transformation that can deal with the problem of heteroskedasticity in equation (\ref{eq:SQA1}) on page \pageref{eq:SQA1}.\label{SQA3}
+
+\begin{description}
+\item[Answer:]
+We have already derived the variance of the disturbance term. 
+
+Recall that in the presence of heteroskedasticity the OLS estimators are unbiased but inefficient. In Supervision 4, we discussed a number of ways to handle heteroskedasticity problem. Since the variance of $v_i$ depends on $X_i$, one way to resolve the heteroskedasticity problem is to transform the model (\ref{eq:SQA1}) as follows:
+\[
+\frac{Y_i}{\sqrt{w_i}} = \beta_0\frac{1}{\sqrt{w_i}} + \beta_1\frac{X_i}{\sqrt{w_i}} + \frac{v_i}{\sqrt{w_i}}
+\]
+where $\sqrt{w_i} = var(v_i) = \sqrt{\big(\mathbb{E}(Y_i\ |\ X_i)\big)\big(1-\mathbb{E}(Y_i\ |\ X_i)\big)} = \sqrt{p_i(1-p_i)}$. With this transformation, the transformed error term is now homoskedastic.
+
+To see this, set $\sqrt{w_i}=\sigma_i$. then:
+\begin{align*}
+Var(\frac{v_i}{\sigma_i}) 
+& = \mathbb{E}\bigg[\Big(\frac{v_i}{\sigma_i} \Big)^2\bigg] - \bigg[\mathbb{E}\Big(\frac{v_i}{\sigma_i} \Big) \bigg]^2 \\
+& = \mathbb{E}\bigg[\Big(\frac{v_i}{\sigma_i} \Big)^2\bigg] \ \ \ \ \text{since } \mathbb{E}\Big(\frac{v_i}{\sigma_i} \Big)=0 \\
+& = \frac{1}{\sigma_i^2}\mathbb{E}(v_i^2) \ \ \ \ \text{since $\sigma_i^2$ is known; thus it is a collection of constants} \\
+& = \frac{1}{\sigma_i^2}\sigma_i^2 = 1
+\end{align*}
+which is a constant. 
+
+In practice, the true $\mathbb{E}(Y_i\ |\ X_i)$ is unknown, so the weights $w_i$ of this weighted least squared regression are also unknown. To estimate the $w_i$, we can use the following two step-procedure:
+\begin{itemize}
+\item[Step 1:] Run the OLS regression equation (\ref{eq:SQA1}) despite the homoskedasticity problem and obtain $\hat{Y}_i$, which is the estimate of the true $\mathbb{E}(Y_i\ |\ X_i)$
+\item[Step 2:] Obtain $\hat{w}_i = \hat{Y}_i(1-\hat{Y}_i)$, which is the estimate of $w_i$.
+\item[Step 3:] Use the estimated $w_i$ to transform the data as above and estimate the transformed equation by OLS (i.e., by weighted least squares).
+\end{itemize}
+Also note that if the sample is reasonably large, we can use White's heteroskedasticity-corrected standard errors to deal with heteroskedasticity.
+\end{description}
+
+
+
+
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
+
+### (4) In considering the utility from taking a paid job, a married woman considers only the effect of the wage that could be earned ($X_i$). Let $U_i$ denote the utility difference between working and not working, then assuming a linear relationship we can write:
+\[
+U_i = \alpha + \beta X_i + \varepsilon_i
+\]
+\textbf{where $\varepsilon_i$ denotes unobserved characteristics associated with individual $i$, and is assumed to be a random variable that is independent and identically distributed with probability density function $f(\varepsilon_i)$.}
+
+\textbf{Assuming that we observe an indicator variable $Y_i$, which takes the value 1 if the individual works and the utility difference exceeds zero, write down an expression for the probability that a given woman works. Assuming that the probability of working is independent across women, derive an expression for the likelihood function based on a sample of size $n$.}
+
+\begin{description}
+\item[Answer:] In this question we are told, using the indicator function notation, that:
+\[
+Y_i = \mathbbm{1}[U_i>0].
+\]
+We can estimate the probability that a given woman works in two ways:
+
+\item[(i) Bernoulli:]
+The dichotomous dependent variable can be expressed as a Bernoulli distribution:
+\begin{align*}
+  f(Y_i) &=
+  \begin{cases}
+  p_i & Y_i = 1 \\
+  1-p_i & Y_i = 0
+  \end{cases} \\
+  &\equiv p^{Y_i}(1-p)^{1-Y_i}
+  \end{align*}
+Therefore, the probability of some particular sample of size $n$ is
+\[
+\prod_{i=1}^n p^{Y_i}(1-p)^{1-Y_i} \ \ \ \ \text{for } i=1,\dots, n \ \text{and }  Y_i=0,1
+\]
+\item[(ii) Likelihood Function:]
+The likelihood function gives the joint probability density given the sample of observations. Since $Y_i \sim \text{i.i.d. Bern}(p)$, for a given value of $p$, the probability mass functon of $Y_i$ is:
+\[
+f(Y_i\ ;\ p) = p^{Y_i}(1-p)^{Y_i}.
+\]
+The likelihood function $L(p\ |\ \mathbf{\vec{Y}})$ is then given by the joint probability of observing $\mathbf{\vec{Y}} = (Y_1,\dots,Y_n)$ denoted by $f(\mathbf{\vec{Y}}\ ;\ p)$:
+\[
+L(p\ ;\ \mathbf{\vec{Y}}) = f(\mathbf{\vec{Y}}\ ;\ p) = \prod_{i=1}^n
+f(Y_i\ ;\ p) = \prod_{i=1}^n p^{Y_i}(1-p)^{1-Y_i}.
+\]
+So the probability that a given woman works is expressed as:
+\[
+L(p) = \prod_{i=1}^n p^{Y_i}(1-p)^{1-Y_i}
+\]
+if we take the natural log of both sides,
+\[
+\ell(p) = \ln p \sum_{i=1}^n Y_i + \ln(1-p)\sum_{i=1}^n(1-Y_i).
+\]
+In order to estimate the unknown parameter in such a manner that the probability of observing the given $Y$'s is as high as possible, we apply the \textit{maximum likelihood method}:
+\begin{align*}
+\frac{\partial\ell(p)}{\partial p} = \frac{1}{p} \sum_{i=1}^n Y_i - \frac{1}{1-p}\sum_{i=1}^n (1-Y_i) &\overset{\mathrm{set}}{=} 0 \\
+\sum_{i=1}^n Y_i - p \sum_{i=1}^n Y_i &= p\sum_{i=1}^n (1-Y_i) \\
+p &= \frac{1}{n}\sum_{i=1}^n Y_i.
+\end{align*}
+So, if say we have a sample of 17 and 2 of them wants extra work, the probability that a given woman works is $p=2/17$. This is also the frequency of the sample and thus equivalent to the estimate of the parameter via method of moments.
+
+However, notice that $\varepsilon_i$ is not directly observable. This is known as \textit{unobservable}, or \textbf{latent}, variable. In this question, $U_i$ is the \textit{latent variable} where 
+\[
+Y_i = \mathbbm{1}[U_i>0].
+\]
+We can derive the response probability for $Y$ as follows assuming $\varepsilon$ is symmetrically distributed about zero:
+\begin{align*}
+\mathbb{P}(Y_i=1\ |\ X_i) &= \mathbb{P}(U_i > 0\ |\ X_i) \\
+  &= \mathbb{P}(\varepsilon_i > - (\alpha+\beta X_i)\ |\ X_i) \\
+  &= 1 - F(-(\alpha+\beta X_i)) \\
+  &= F(\alpha+\beta X_i).
+\end{align*}
+Note that our assumption $\varepsilon$ is symmetrically distributed about zero means that $1-F(-s)=F(s)$ for all real numbers $s$.
+
+In the binomial model, in order to estimate the nonlinear binary response models we maximized with respect to $p$. Here, and in general where there are explanatory variables, we can use maximum likelihood estimation to estimate nonlinear models where we maximize with respect to $\alpha$ and $\beta$. 
+
+Let $f(Y\ |\ X, \beta)$ denote the density function for a random draw $Y_i$ from the population, conditional on $X_i=x$. The maximum likelihood estimator (MLE) of $\beta$ that maximizes the log-likelihood function:
+\[
+\underset{b}{max} \sum_{i=1}^n\ln f(Y_i\ |\ X_i, b)
+\]
+where $b$ is the dummy argument in the maximization problem. 
+
+In most cases $\hat{\beta}$, i.e. the MLE, is consistent and has an approximate normal distribution in large samples. This is true even though we cannot write down a formula for $\hat{\beta}$, except in very special circumstances.
+
+For the binary response case, the conditional density is determined by two values:
+\begin{align*}
+f(1\ |\ X, \beta) &= \mathbb{P}(Y_i=1\ |\ X_i) = F(\beta X_i) \\ 
+\text{and} \\
+f(0\ |\ X, \beta) &= \mathbb{P}(Y_i=0\ |\ X_i) = 1-F(\beta X_i)
+\end{align*}
+This density can be written succinctly as
+\[
+f(Y\ |\ X, \beta) = [F(\beta X)]^Y[1-F(\beta X)]^{1-Y} \ \ \text{for } Y=0,1
+\]
+where we get $[F(\beta X)]^Y$ when $Y=1$ and $[1-F(\beta X)]^{1-Y}$ when $Y=0$. 
+
+The \textit{log-likelihood function} for observation $i$ is a function of the parameters and the data $(X_i, Y_i)$ and is obtained by:
+\[
+\ell_i(\beta) = Y_i\ln[F(\beta X_i)]+(1-Y_i)\ln[1-F(\beta X_i)].
+\]
+The log-likelihood for a sample size $n$ is then obtained by summing this up across all observations:
+\[
+L(\beta) = \sum_{i=1}^n \ell_i(\beta).
+\]
+The MLE of $\beta$, denoted $\hat{\beta}$, maximizes this log-likelihood. 
+\begin{itemize}
+\item If $F(\cdot)$ is standard normal cdf, then $\hat{\beta}$ is the \textit{probit estimator},
+\item If $F(\cdot)$ is standard logit cdf, then $\hat{\beta}$ is the \textit{logit estimator}
+\end{itemize}
+So the maximization equation becomes:
+\begin{align*}
+&\underset{\beta}{max} \sum_{i=1}^n\ln f(Y_i\ |\ X_i, \beta) \\
+&\underset{\beta}{max} \sum_{i=1}^n\ln \Big([F(\beta X)]^Y[1-F(\beta X)]^{1-Y}\Big) \\
+&\underset{\beta}{max} \sum_{i=1}^n \Big(Y_i\ln F(\beta X_i) + (1-Y_i)\ln [1-F(\beta X_i)]\Big).
+\end{align*}
+
+\end{description}
+
+
+
+
+
+\bigskip\bigskip\bigskip
+\hdashrule[0.5ex]{\textwidth}{1pt}{3mm}
+\bigskip\bigskip\bigskip
+
+
+
+
+## QUESTION B
+
+### (1) Using the 'labour force' data from the data set (`limdep.xls`) estimate the following LPM:
+\begin{equation} \label{eq:SQB1}
+{inlf}_i=\alpha + \beta\ {educ}_i + \gamma\ {kids}_i + \varepsilon_i
+\end{equation}
+
+\begin{description}
+\item[Answer:]
+The variables are:
+\subitem[id:] identification number
+\subitem[inlf:] =1 if in labor force, 1975
+\subitem[Kids:] number of kids less than 6 years old
+\subitem[educ:] years of schooling
+\end{description}
+
+In R:
+
+```{r results='hide'}
+laborforce_df <- read_excel("../Data/limdep.xls", sheet = "labour force")
+SQB1_lm <- lm(inlf ~ Kids + educ, data = laborforce_df)
+summary(SQB1_lm)
+```
+
+In STATA: 
+
+```{stata}
+quietly cd .. 
+quietly import excel Data/limdep.xls, sheet("labour force") firstrow
+reg inlf Kids educ
+```
+
+which gives us:
+\begin{alignat*}{6}
+i\widehat{nl}f = {} & 0.053   & {}+{} & 0.046\ educ & {}-{} & 0.224\ kids \\
+t: {}               & [0.56]  &       & [6.08]      &       & [-6.76] \\
+se: {}              & (0.095) &       & (0.008)     &       & (0.033) \\
+\end{alignat*}
+
+
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
+
+### (2) Plot the fitted values and comment on the plausibility of your results.
+
+
+In STATA:
+
+```{stata eval = !knitr::is_latex_output()}
+quietly cd .. 
+quietly import excel Data/limdep.xls, sheet("labour force") firstrow
+quietly reg inlf Kids educ
+predict Y
+scatter Y id
+```
+
+In R:
+```{r}
+Y <- predict(SQB1_lm)
+ggplot(data = laborforce_df, 
+       aes(x=id, y=Y)) +
+         geom_point() +
+  geom_text(aes(label=ifelse(Y<0, round(Y,2), '')),
+            hjust=-0.25, vjust=0)
+```
+
+Notice that all data points are within 0 and 1 except for three points which are negative, though very close to 0 at -0.02 and -0.07.
+
+
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
+
+### (3) How does the probability of being involved in the labor force change if a woman goes from having no children to having 1 child? How does this probability change if the woman has another child?
+
+\begin{description}
+\item[Answer:]
+Since it is a linear probability model, it always falls by 0.224.
+\end{description}
+
+
+
+
+
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
+
+### (4) If education (`educ`) can be assumed fixed at its mean value, what is the probability of being in the labor force if the woman has 3 children?
+
+\begin{description}
+\item[Answer:]
+In this question we are trying to obtain the probability value for 
+\[
+i\widehat{nl}f = 0.053 +0.046\ \overline{educ} - 0.224\ kids
+\]
+So we first need to obtain the mean value of $educ$. 
+\end{description}
+
+In STATA:
+```{stata eval = !knitr::is_latex_output()}
+quietly cd .. 
+quietly import excel Data/limdep.xls, sheet("labour force") firstrow
+sum educ
+```
+
+
+In R:
+```{r}
+0.046*mean(laborforce_df$educ) + 0.053 - .224*3
+```
+
+So we are interested in the probability of being in the labor force if a woman has three children:
+\begin{align*}
+i\widehat{nl}f &= 0.053 +0.046\times 12.28685 - 0.224\ kids \\
+ &= 0.053 +0.5651952 - 0.224\ kids \\
+ &= 0.6181952 - 0.224\times 3 \\
+ &= -0.05380478
+\end{align*}
+
+
+
+
+
+
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
+
+### (5) Do your results suggest that the problems you outlined in Question A(2) are present in equation (\ref{eq:SQB1})?
+
+\begin{description}
+\item[Answer:]
+The results do not satisfy the probability requirement $0 \leq \mathbb{E}(Y_i\ |\ X_i) \leq 1$ since the probability we obtained in the previous question is negative. 
+
+We can also check for heteroskedasticity using BP test first. However, since that test assumes heteroskedasticity is linear, we also perform White test.
+\end{description}
+
+BP test in R that gives the LM-statistic:
+
+```{r results='hide'}
+bptest(SQB1_lm, studentize=FALSE)
+# or from the `skedastic` package:
+# breusch_pagan(SQB1_lm, koenker=FALSE)
+```
+
+BP test in STATA for both F-statistic and LM-statistic:
+
+```{stata}
+quietly cd .. 
+quietly import excel Data/limdep.xls, sheet("labour force") firstrow
+quietly reg inlf Kids educ
+hettest, rhs fstat
+hettest, rhs
+```
+
+
+BP test manually in STATA:
+
+```{stata eval = !knitr::is_latex_output()}
+quietly cd .. 
+quietly import excel Data/limdep.xls, sheet("labour force") firstrow
+quietly reg inlf Kids educ
+predict u, residuals
+generate u2 = u^2
+quietly regress u2 Kids educ
+display e(F)
+display e(r2)*e(N)
+```
+
+
+White test in R using the `skedastic` package:
+
+```{r results='hide'}
+white(SQB1_lm, interactions = TRUE)
+```
+
+In STATA:
+```{stata}
+quietly cd .. 
+quietly import excel Data/limdep.xls, sheet("labour force") firstrow
+quietly reg inlf Kids educ
+imtest, white
+```
+
+Manually in STATA:
+
+```{stata eval = !knitr::is_latex_output()}
+quietly cd .. 
+quietly import excel Data/limdep.xls, sheet("labour force") firstrow
+quietly reg inlf Kids educ
+predict u, residuals
+generate u2 = u^2
+generate k2 = Kids^2
+generate e2 = educ^2
+generate ke = Kids * educ
+quietly regress u2 Kids educ k2 e2 ke
+display e(N)*e(r2)
+```
+
+Thus in both BP and White tests we reject the null of homoskedasticity and conclude that presence of heteroskedasticity is very likely.
+
+We can also check if the residuals are non-normal:
+
+```{r}
+ggplot(laborforce_df, 
+       mapping = aes(x = resid(SQB1_lm))) +
+         geom_histogram(
+           aes(y=after_stat(density)),
+           binwidth = 0.05,
+           color = "black",
+           fill = "white"
+         ) +
+  stat_function(fun = dnorm, args = list(mean = mean(resid(SQB1_lm)), sd=sd(resid(SQB1_lm))))
+```
+
+From the graph we can see that the residuals are not normally distributed. Finally, having a linear, constant marginal effects does not make much sense.
+
+Therefore we see all three problems we outlined in Question A(2) present in equation (\ref{eq:SQB1}).
+
+
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
+
+### (6) Estimate a Logit model of the same relationship, i.e., for
+\begin{equation} \label{eq:SQB6}
+\mathbb{P}(inlf = 1\ |\ educ, kids)
+\end{equation}
+\textbf{and repeat parts B(3) and B(4). Verify that the results you obtain using the `margins` command in STATA are the same as those obtained by putting different values of Kids (and the mean value of education) into logit function.}
+
+\begin{description}
+\item[Answer:]
+In R we build logit model by appling the `glm()` function. For the logistic regression model we specify `family=binomial`.
+\end{description}
+
+```{r results='hide'}
+SQB6_glm <- glm(inlf ~ Kids + educ, data = laborforce_df, family = 'binomial')
+summary(SQB6_glm)
+```
+
+In STATA we can do the same via:
+
+```{stata}
+quietly cd .. 
+quietly import excel Data/limdep.xls, sheet("labour force") firstrow
+logit inlf Kids educ, nolog
+/* nolog avoids displaying the iteration log */
+```
+
+which gives us:
+\begin{alignat*}{6}
+i\widehat{nl}f = {} & -2.054   & {}+{} & 0.210\ educ & {}-{} & -1.01\ kids \\
+z: {}               & [-4.62]  &       & [5.76]      &       & [-6.21] \\
+se: {}              & (0.00)   &       & (0.00)      &       & (0.00) \\
+\end{alignat*}
+
+In Question B(3) we were asked to compare the probabilities of being involved in the labor force changes as a woman going from 0 child to 1, and from 1 child to 2.
+
+In order to obtain the marginal effects of having kids, we keep the education at its mean value and then calculate the probability using the logistic distribution function given by:
+\[
+p_i = \mathbb{P}(Y_i=1\ |\ X_i) = \frac{1}{1+e^{-(\beta_0+\beta_1 X_i)}}.
+\]
+
+In R, we can do this by:
+```{r}
+# when kids=0
+1/(1 + exp(-(SQB6_glm$coefficients[1] + SQB6_glm$coefficients[3]*mean(laborforce_df$educ))))
+# when kids=1
+1/(1 + exp(-(SQB6_glm$coefficients[1] + SQB6_glm$coefficients[3]*mean(laborforce_df$educ) 
+             + SQB6_glm$coefficients[2]*1)))
+# when kids=2
+1/(1 + exp(-(SQB6_glm$coefficients[1] + SQB6_glm$coefficients[3]*mean(laborforce_df$educ) 
+             + SQB6_glm$coefficients[2]*2)))
+```
+
+
+We can automate this process in STATA using the `margins` function with the options of `at` and `atmeans`. The `at` option calculates the marginal effects at specified values. The `atmeans` option calculates the marginal effects at mean of a dataset rather than the default behavior of calculating the average marginal effects. Finally, the `post` option causes STATA to overwrite the original regression estimates with the "margins" estimates.
+
+```{stata}
+quietly cd .. 
+quietly import excel Data/limdep.xls, sheet("labour force") firstrow
+quietly logit inlf Kids educ
+margins, at (Kids = (0 1 2 3)) atmeans noatlegend post
+```
+
+
+In R, this is a more protracted process. One can use `margins()` function that replicates STATA's `margins` but it does not have the `atmeans` option. So we have to add the mean values into a new dataset first:
+
+```{r results='hide'}
+newdata_SQB6 <- expand.grid(educ = mean(laborforce_df$educ),
+                            Kids = seq(0,3,1))
+pred_newdata_SQB6 <- predict(object = SQB6_glm,
+                             newdata = newdata_SQB6,
+                             type = "response",
+                             se.fit = TRUE)
+mult_SQB6 <- qnorm(0.5*(1-0.95))
+out_SQB6 <- cbind(pred_newdata_SQB6$fit,
+                  pred_newdata_SQB6$se.fit,
+                  pred_newdata_SQB6$fit + pred_newdata_SQB6$se.fit * mult_SQB6,
+                  pred_newdata_SQB6$fit - pred_newdata_SQB6$se.fit * mult_SQB6)
+rownames(out_SQB6) <- seq(1,4,1)
+colnames(out_SQB6) <- c("margin", "Std. Err.", "lower 95% conf", "upper 95% conf")
+out_SQB6
+```
+
+We can plot the margins using the `marginsplot` function in STATA or the following in R:
+
+```{r}
+newdata_SQB6 <- expand.grid(educ = mean(laborforce_df$educ),
+                            Kids = seq(-5,8,1))
+pred_newdata_SQB6 <- predict(object = SQB6_glm,
+                             newdata = newdata_SQB6,
+                             type = "response",
+                             se.fit = TRUE)
+plot(newdata_SQB6$Kids,pred_newdata_SQB6$fit)
+```
+
+
+If we are interested in the actual marginal effects at different points rather than the differences between them, then we can use:
+
+```{stata}
+quietly cd .. 
+quietly import excel Data/limdep.xls, sheet("labour force") firstrow
+quietly logit inlf Kids educ
+margins, dydx (Kids) at (Kids = (0 1 2 3)) atmeans noatlegend
+```
+
+In R, we can get similar marginal effects via:
+```{r}
+margins(SQB6_glm, variables = "Kids", at = list(Kids=(0:3)))
+```
+
+
+
+
+
+
+
+
+\bigskip\bigskip\bigskip
+\hdashrule[0.5ex]{\textwidth}{1pt}{3mm}
+\bigskip\bigskip\bigskip
+
+
+
+
+## QUESTION C
+\bigskip
+\textbf{Using the `loans` data from the data set `limdep.xls`:}
+
+### (1) Regress `approve` on `white` and report your results. Interpret the coefficient on `white`. Is it statistically significant? Is it practically large? What is the probability of getting a loan if you are white? \label{SQC1}
+
+\begin{description}
+\item[Answer:]
+In R:
+\end{description}
+
+```{r results='hide'}
+loans_df <- read_excel("../Data/limdep.xls", sheet = "loans")
+SQC1_lm <- lm(approve ~ white, data = loans_df)
+summary(SQC1_lm)
+```
+
+in STATA:
+
+```{stata}
+quietly cd .. 
+quietly import excel Data/limdep.xls, sheet("loans") firstrow
+reg approve white
+```
+
+The coefficient of 20% is significant with $t$-statistic of 10.11. 
+
+In order to find out the probability of getting a loan if white, we need to obtain the marginal probability: \label{mod:SQC1-margins}
+
+```{stata}
+quietly cd .. 
+quietly import excel Data/limdep.xls, sheet("loans") firstrow
+quietly reg approve white
+margins, at (white=(1 0))
+```
+
+or in R: 
+
+```{r results='hide'}
+predict(SQC1_lm)[1]
+```
+
+Therefore, the probability of approval is about 91%.
+
+
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
+
+
+### (2) Given your answers to Question A(3) on page \pageref{SQA3} above, compute the weighted least square estimates for part C(1) by first computing your own weights and using these to transform the relevant variables. Verify these results using a weighted least squares option in STATA. Show that in this case the results obtained are identical to those resulting from the use of the robust estimates of C(1). Generally would you expect these results to be the same?
+
+\begin{description}
+\item[Answer:]
+Recall in Question A(3) we weighted the LPM to deal with heteroskedasticity as follows:
+\[
+\frac{Y_i}{\sqrt{w_i}} = \beta_0\frac{1}{\sqrt{w_i}} + \beta_1\frac{X_i}{\sqrt{w_i}} + \frac{u_i}{\sqrt{w_i}}
+\]
+where $\sqrt{w_i} = \sqrt{\big(\mathbb{E}(Y_i\ |\ X_i)\big)\big(1-\mathbb{E}(Y_i\ |\ X_i)\big)} = \sqrt{p_i(1-p_i)}$. 
+
+We will therefore generate the weights based on the product of $p_i$ and $1-p_i$.
+\end{description}
+
+```{stata}
+quietly cd .. 
+quietly import excel Data/limdep.xls, sheet("loans") firstrow
+quietly reg approve white
+/* using own weights */
+quietly predict yhat
+generate w = sqrt(yhat*(1-yhat))
+generate approve_w = approve/w
+generate white_w = white/w
+generate cons_w = 1/w
+reg approve_w white_w cons_w, noconstant
+
+/* using weighted least squares */
+vwls approve white, sd(w)
+
+/* using robust estimates */
+reg approve white, robust
+```
+
+These confirm that there are very little differences in the results with $t$-statistic 27.3 and 7.47, respectively.
+
+
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
+
+
+### (3) Add the variables $obrat, loanprc, chist$, and $pubrec$ as controls. Test the hypothesis that the newly added variables are jointly significant. Is there still evidence of discrimination against non-white? \label{SQC3}
+
+In R: 
+
+```{r results='hide'}
+summary(lm(approve ~ white + obrat + loanprc + pubrec + chist, data = loans_df))
+```
+
+In STATA:
+
+```{stata}
+quietly cd .. 
+quietly import excel Data/limdep.xls, sheet("loans") firstrow
+reg approve white obrat loanprc pubrec chist
+test obrat loanprc pubrec chist
+```
+
+All the coefficients are individually and jointly significant. The F-stat was calculated using:
+\[
+F = \frac{\frac{RSS_1 - RSS_2}{k_2 - k_1}}{\frac{RSS_2}{n-k_2}} = \frac{\frac{203.59303-181.623398}{6-2}}{\frac{181.623398}{1989-6}}=59.97
+\]
+
+We can also do the same using the robust estimates:
+
+```{stata}
+quietly cd .. 
+quietly import excel Data/limdep.xls, sheet("loans") firstrow
+reg approve white obrat loanprc pubrec chist, robust
+test obrat loanprc pubrec chist
+```
+
+Therefore, there still seems to be significant evidence of discrimination, $t$-stat on white is either 6.78, or in the robust estimates, 5.16.
+
+
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
+
+### (4) Now let the effect of race interact with the variable measuring other obligations as a percent of income ($obrat$). Is the interaction term significant? Interpret your results - especially, interpret the coefficients on $white, obrat$ and the interaction term $white.obrat$.
+
+\begin{description}
+\item[Answer:]
+\end{description}
+
+```{stata}
+quietly cd .. 
+quietly import excel Data/limdep.xls, sheet("loans") firstrow
+gen whiteobrat = white*obrat
+reg approve white obrat loanprc pubrec chist whiteobrat
+```
+
+Which gives us:
+\begin{alignat*}{14}
+ap\widehat{pro}ve = {} & {} 1.157 & {}-{} & 0.127\ white & {}-{} & 0.011\ obrat & {}-{} & 0.152 loanprc & {}-{} & 0.246 pubrec & {}+{} & 0.131 chist & {}+{} & 0.008 whiteobrat \\
+t: {}                & [14.22] &       & [-1.58]      &       & [-5.22]      &       & [-4.11]       &       & [-8.81]      &       & [6.85]      &       & [3.33] \\
+se: {}               & (0.081) &       & (0.112)      &       & (0.000)      &       & (0.000)       &       & (0.000)      &       & (0.000)     &       & (0.001) \\
+\end{alignat*}
+
+
+
+or, using robust estimates:
+
+```{stata}
+quietly cd ..
+quietly import excel Data/limdep.xls, sheet("loans") firstrow
+gen whiteobrat = white*obrat
+reg approve white obrat loanprc pubrec chist whiteobrat, robust
+```
+
+Which gives us:
+\begin{alignat*}{14}
+ap\widehat{pro}ve = {} & {} 1.157 & {}-{} & 0.127\ white & {}-{} & 0.011\ obrat & {}-{} & 0.152 loanprc & {}-{} & 0.246 pubrec & {}+{} & 0.131 chist & {}+{} & 0.008 whiteobrat \\
+t: {}                &    [10.94] &       & [-1.22]      &       & [-3.77]      &       & [-4.01]       &       & [-5.80]      &       & [5.31]      &       & [2.46 \\
+se: {}               &    (0.000) &       & (0.223)      &       & (0.000)      &       & (0.000)       &       & (0.000)      &       & (0.000)     &       & (0.014) \\
+\end{alignat*}
+
+The interaction term is significant, although not at $\alpha=1\%$ if robust estimates are considered. $white$ is not significant in either, thus it is not different than 0 in explaining whether a loan application would be approved or not. An applicant gets penalized for having high ratio of other obligations as a percent of total income. As that ratio increases by one unit, the probability of loan declines by 0.01. Thus the cross product shows that although having higher $obrat$ penalizes, this penalty appears lower for $white$ since its coefficient is 0.008.
+
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
+
+### (5) Estimate the coefficient (marginal effect) of $white$ if $obrat$ is at its mean, using your results from Question C(4). Show that this result can be obtained by running the previous regerssion once more but this time with an amended interaction term $white\times (obrat - \overline{obrat})$, where $\overline{obrat}$ is the mean of $obrat$. Discuss your results, especially the interpretation of your coefficient on $white$.
+
+\begin{description}
+\item[Answer:]
+The marginal effect of $white$ if $obrat$ is at its mean is going to be:
+\[
+\beta_1\ white + (\beta_6\ whiteobrat) \times \overline{obrat}
+\]
+\end{description}
+
+In STATA:
+
+```{stata}
+quietly cd ..
+quietly import excel Data/limdep.xls, sheet("loans") firstrow
+generate whiteobrat = white*obrat
+quietly reg approve white obrat loanprc pubrec chist whiteobrat, robust
+egen obratavg = mean(obrat)
+display _b[white] + _b[whiteobrat]*obratavg
+```
+
+
+The second part of the question is asking for us to run the regression in Question C(4) but this time with the amended interaction term $white\times (obrat - \overline{obrat})$.
+
+```{stata}
+quietly cd ..
+quietly import excel Data/limdep.xls, sheet("loans") firstrow
+generate whiteobrat = white*obrat
+egen obratavg = mean(obrat)
+gen whitrat = white * (obrat-obratavg)
+reg approve white obrat loanprc pubrec chist whitrat
+```
+
+and with robust estimators:
+
+```{stata}
+quietly cd ..
+quietly import excel Data/limdep.xls, sheet("loans") firstrow
+generate whiteobrat = white*obrat
+egen obratavg = mean(obrat)
+gen whitrat = white * (obrat-obratavg)
+reg approve white obrat loanprc pubrec chist whitrat, robust
+```
+
+Thus, in all approaches the marginal effect of $white$ if $obrat$ is at its mean is $\beta_{white} = 0.1188$. Notice that $\overline{obrat}=32.39$, so coefficient on $white$ is the race differential when $obrat = 32.39$.
+
+
+
+### (6) Now estimate a Probit model of $approve$ on $white$. Find the estimated probability of loan approval for both white and non-whites. How do these compare with the estimates from the LPM?
+
+```{stata}
+quietly cd ..
+quietly import excel Data/limdep.xls, sheet("loans") firstrow
+probit approve white, nolog
+display normal(_b[_cons])
+display normal(_b[_cons]+_b[white])
+```
+
+From the regression we have
+\[
+ap\widehat{pro}ve = \Phi(0.547 + 0.784\ {white})
+\begin{cases}
+\mathbb{P}(1) = \Phi(1.331) = 0.908 \\
+\mathbb{P}(0) = \Phi(0.547) = 0.708
+\end{cases}
+\]
+
+Alternatively, we can use the `margins` command:
+
+```{stata}
+quietly cd ..
+quietly import excel Data/limdep.xls, sheet("loans") firstrow
+quietly probit approve white
+margins, at (white = (0 1)) noatlegend
+```
+
+In either case we see that the results are the same as the marginal effect we obtained in Question C(1) on page \pageref{mod:SQC1-margins}.
+
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
+
+### (7) Now add the same variables as in Question C(3) on page \pageref{SQC3} to the probit model. Use the likelihood ratio test to assess whether the extra variables should be included in the equation. Does any statistically significant evidence of discrimination against non-whites remain?
+
+\begin{description}
+\item[Answer:]
+In the first part of the question we will add all the control variables to our probit model.
+\end{description}
+
+```{stata}
+quietly cd ..
+quietly import excel Data/limdep.xls, sheet("loans") firstrow
+probit approve white obrat loanprc pubrec chist, nolog
+```
+
+With the likelihood test we are testing if the coefficients of the control variables are jointly 0. The likelihood ratio test is given by:
+\[
+\lambda_{LR}= -2 \ln\Big( \frac{L^{unr}(\theta)}{L^{res}(\theta)} \Big)
+\]
+or in log-likelihoods:
+\[
+\lambda_{LR} = -2 \big(\ell^{unr}(\theta) - \ell^{res}(\theta) \big).
+\]
+
+In this question $\ell^{unr}(\theta) = -616.25975$ and $\ell^{res}=-700.87744$. Therefore,
+\[
+\lambda_{LR} = -2 (-616.25975 + 700.87744) = 169.235
+\]
+
+This is $\chi^2$ distributed with 4 degrees of freedom. The probability is:
+
+```{r}
+pchisq(169.235,4, lower.tail = FALSE)
+```
+
+therefore we reject the null and conclude that the control variables are jointly significant. We can do the same test using the `lrtest` command:
+
+```{stata}
+quietly cd ..
+quietly import excel Data/limdep.xls, sheet("loans") firstrow
+quietly probit approve white
+estimates store restricted
+quietly probit approve white obrat loanprc pubrec chist
+lrtest restricted
+```
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
+
+### (8) Calculate the probability of getting a loan if you are white and non-white. Compare your results with those from Question C(1) on page \pageref{SQC1}.
+
+```{stata}
+quietly cd ..
+quietly import excel Data/limdep.xls, sheet("loans") firstrow
+quietly probit approve white obrat loanprc pubrec chist
+margins, at (white = (1 0)) atmeans noatlegend
+```
+
+Manually these marginal rates are obtained as follows:
+
+\begin{center}
+\begin{tabular}{||c | c | c | c ||}
+\hline
+ & $\hat{\beta}_i$ & $\bar{X}$ & $\hat{\beta}_i\bar{X}_i$ \\ [0.5 ex]
+\hline\hline
+white &  0.5291924 & 1 & 0.5291924 \\
+obrat & -0.0243472 & 32.389 & -0.788581 \\
+loanprc & -0.9982303 & 0.7706 & -0.769236 \\
+pubrec & -.8080753 & 0.068879 & -0.0556594 \\
+chist & 0.5686446 & 0.8376 & 0.476297 \\[0.5 ex]
+constant & \multicolumn{3}{||r||}{2.014055} \\
+\hline\hline
+\multicolumn{4}{||r||}{$\sum\hat{\beta}_i\bar{X} = 1.40607$} \\
+\multicolumn{4}{||r||}{$\Phi(1.40607)=0.920148$} \\
+\hline
+\end{tabular}
+\end{center}
+
+```{r}
+
+-0.788581-0.769236-0.0556594+0.476297+2.014055
+
+-0.0243472 * 32.389
+pnorm(0.876876)
+0.920148-0.8092723
+```
+
+
+Similarly, if $white=0$ then $\sum = 0.876876$ and $\Phi(0.876876)=0.809723$. So now we see a difference of only 11.09%.
