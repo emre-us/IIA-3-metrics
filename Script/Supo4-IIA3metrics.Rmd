@@ -1941,7 +1941,7 @@ In many situations it has been found that the upper limit $d_U$ is approximately
 
 \bigskip
 
-We have already completed step 1 above in part (c) sn we can now move to step 2 and compute the Durbin-Watson statistic.
+We have already completed step 1 above in part (c) so we can now move to step 2 and compute the Durbin-Watson statistic.
 
 For this, in R we use `durbinWatsonTest()` function from the `car` package, or `dwtest` from the `lmtest` package:
 

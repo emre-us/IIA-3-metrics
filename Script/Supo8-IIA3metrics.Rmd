@@ -1,0 +1,1452 @@
+---
+title: "IIA-3 Econometrics: Supervision 8"
+author: "Emre Usenmez"
+date: "Lent Term 2025"
+output: 
+  pdf_document
+header-includes: 
+  - \usepackage{amsmath, tcolorbox, dashrule, booktabs, fancyhdr, multirow, tikz, bbm, multirow}
+  - \tcbuselibrary{listings,most}
+  - \allowdisplaybreaks
+---
+
+<!-- This comment will not be displayed in the output. Below change to CSS style is to ensure the blocktexts are in the same form size as the rest of the text.-->
+
+```{css style settings, echo = FALSE} 
+blockquote {
+    padding: 10px 20px;
+    margin: 0 0 20px;
+    font-size: 14px;
+    border-left: 5px solid #eee;
+}
+```
+
+<!-- below ensures the output are not presented in Scientific mode (e.g. 0.023+e4) but regular decimals -->
+```{r, echo=FALSE}
+options(scipen = 999, digits = 6)
+```
+
+
+\pagestyle{fancy}
+\fancyhead[L]{2024-25 Part IIA Paper 3}
+\fancyhead[R]{Supervision 8 Solutions}
+\fancyfoot[L]{Gonville \& Caius}
+\fancyfoot[R]{Emre Usenmez}
+
+\bigskip\bigskip
+
+\textbf{\underline{Topics Covered}}
+\begin{description}
+\item[Faculty Qs:] 
+\item[Supplementary Qs:] stationary stochastic process; AR(1) process; random walk; correlogram; autocorrelation function (ACF); Box-Pierce Q statistic; Ljung-Box (LB) statistic; unit root test; Dickey-Fuller (DF) test; tau statistic; augmented Dickey-Fuller (ADF) test; overdifferencing; underdifferencing; difference-stationary process; trend-stationary process; detrended time series; autoregressive distributed lag (ARDL) model; spurious regression; cointegration; error correction mechanism (ECM); disequilibrium error; and error correction term
+\end{description}
+
+\bigskip
+
+\textbf{\underline{Related Reading:}}
+\begin{description}
+\item Dougherty (2016), \textit{Introduction to Econometrics}, $5^{th}$ ed, OUP
+  \subitem Chapter 11: Models Using Time Series Data
+  \subitem Chapter 12: Autocorrelation
+  \subitem Chapter 13: Introduction to Nonstationary Time Series
+\item Wooldridge J M (2021) \textit{Introductory Econometrics: A Modern Approach}, $7^{th}$ ed, 
+  \subitem Chaoter 10: Basic Regression Analysis with Time Series Data
+  \subitem Chapter 11: Further Issues in Using OLS with Time Series Data
+  \subitem Chapter 12: Serial Correlation and Heteroskedasticity in Time Series Regressions
+\item Gujarati, D N and Porter, D (2009) \textit{Basic Econometrics}, $7^{th}$ International ed, McGraw-Hill 
+  \subitem Chapter 21: Time Series Econometrics: Some Basic Concepts
+\item Gujarati, D (2022) \textit{Essentials of Econometrics}, $5^{th}$ ed, Sage
+  \subitem Chapter 21: Elements of Time-Series Econometrics
+\item Stock, J H and Watson M W (2020) \textit{Introduction to Econometrics}. $4^{th}$ Global ed, Pearson
+  \subitem Chapter 15: Introduction to Time Series Regression and Forecasting
+\end{description}
+
+\bigskip
+
+
+\small Very grateful to Dr Oleg Kitov and Dr Clive Lawson for the very informative stylized answers to previous iterations of the supervision questions.
+\normalsize
+
+```{r include=FALSE}
+libraries <- c("haven",       # to import/export SPSS, STATA, SAS files
+               "readxl",      # to import/export Excel files   
+               "tidyverse",   # for tidy data
+               "dplyr", #for data manipulation
+               "ggplot2", # for visualization
+               "gridExtra", #To plot graphs next to each other
+               "forecast", # for nicer looking correlograms
+               "urca", # for unit root and cointegration tests
+               "Statamarkdown", # for using STATA commands in R
+               "ivreg", #for regressions with instrumental variables
+               "margins", # STATA's margins command in R for marginal effects
+               "mnormt", #for creating bivariate normal distributions
+               "modelsummary", #for building regression output comparison tables
+               "lmtest", #for various tests on regressions
+               "skedastic", #for heterskedasticity tests and correction
+               "kableExtra", # for creating nice tables in R
+               "rstatix")     # converts stats functions to a tidyverse-friendly format
+
+invisible(lapply(libraries, library, character.only=TRUE))  # will load the libraries
+```
+
+
+
+\pagebreak
+
+
+# FACULTY QUESTIONS
+
+\bigskip\bigskip
+ 
+
+## QUESTION A: 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+\pagebreak
+
+# SUPPLEMENTARY QUESTIONS
+
+\bigskip\bigskip
+
+## QUESTION 1
+
+\bigskip
+
+### (i) State the conditions under which a univariate stochastic process, $z_t$, is (covariance) stationary.
+
+\begin{description}
+\item[Answer:]
+In the context of regression with time series data, the idea that historical relationships can be generalized to the future is formalized by the concept of stationarity. A time series is called \textit{stationary} if its statistical properties remain constant over time. Formally, a stochastic process\footnote{A stochastic process is a collection of random variables ordered in time. The word "stochastic" comes from the Greek word "stokhos" meaning "target" or "bull's eye".} $z_t$ is \textit{strictly} stationary if the joint distribution of $\{z_t: t=1,2,\dots\}$ is the same as the joint distribution of $\{z_{t+k}: t=1,2,\dots\} \ \ \forall \ k\in \mathbb{Z}^+$.
+
+This means that the joint distribution of the first two terms in the sequence, $(z_1, z_2)$, for example, must be the same as the joint distribution of $(z_6, z_7)$, or of $(z_t, z_{t+1})$ for any $t\geq 1$. Note that this places no restrictions on how $z_t$ and $z_{t+1}$ are related to each other. What stationarity requires is that the nature of any correlation between adjacent terms is the same across all time periods.
+
+On the other hand, a stochastic process $z_t$ is \textit{weakly stationary} if 
+\begin{itemize}
+\item mean is constant over time: $\mathbb{E}(z_t)=\mu$;
+\item variance is constant over time: $Var(z_t)= \mathbb{E}(z_t-\mu)^2=\sigma^2$; and 
+\item covariance between the two time periods is constant over time and depends only on the distance / gap / lag between them: $Cov(z_t, z_{t+k}) = \mathbb{E}\big[(z_t-\mu)(z_{t+k}-\mu) \big] = \gamma_k$
+\end{itemize}
+
+Notice that $\mu, \sigma^2$, and $\gamma_k$ are finite-valued numbers that do not depend on time $t$, and covariance $\gamma_k$ depends on $k$. Weakly stationary stochastic process is also referred to as \textit{covariance stationary stochastic process, second order stationary stochastic process}, or \textit{wide sense stationary stochastic process}. For the purposes of this class, and in most practical situations, this type of stationarity is usually sufficient.
+
+A time series is, therefore, strictly stationary if all the moments of its probability distribution are invariant over time, and weak stationary if just the first two moments - mean and variance - are invariant over time. Yet, if the stationary process is normal, then the weakly stationary stochastic process is also strictly stationary, for the normal stochastic process is fully specified by its two moments, mean and variance.
+\end{description}
+
+
+
+
+
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
+
+### (ii) Write out the moving average representation of the autoregressive process
+\[
+z_t=\rho z_{t-1}+\varepsilon_t, \ \ \ \ \varepsilon_t \sim NID(0,\sigma^2)
+\]
+\textbf{where }$NID(0, \sigma^2)$ \textbf{denotes normally and independently distributed with mean zero and variance }$\sigma^2$. \textbf{Hence, show it is stationary provided that }$|\rho|<1$.
+
+\begin{description}
+\item[Answer:]
+In order to derive the moving average representation of the given AR(1) process, begin by substituting $z_{t-1}$:
+\begin{align*}
+z_t 
+  &= \rho z_{t-1}+\varepsilon_t \\
+  &= \rho(\rho z_{t-2}+\varepsilon_{t-1}) + \varepsilon_t \\
+  &= \rho^2z_{t-2} + \rho\varepsilon_{t-1} + \varepsilon_t
+\end{align*}
+If we then continue with substituting $z_{t-2}$:
+\begin{align*}
+z_t
+  &= \rho^2(\rho z_{t-3}+\varepsilon_{t-2}) + \rho\varepsilon_{t-1} + \varepsilon_t \\
+  &= \rho^3z_{t-3} + \rho^2\varepsilon_{t-2} +\rho\varepsilon_{t-1} + \varepsilon_t
+\end{align*}
+If we do this type of substitution recursively $t$ times, then we get the moving average representation:
+\[
+z_t
+  = \rho^tz_{t-t} + \sum_{i=0}^{t-1}\rho^i\varepsilon_{t-i}.
+\]
+
+Next, in order to show that it is stationary, the three criteria in part (i) need to be satisfied.
+
+\textit{Criterion 1: $\mathbb{E}(z_t)=\mu$}
+
+Provided that $|\rho|<1$, as $t \to \infty, \ \rho^t\to 0$, so asymptotically
+\[
+z_t = \sum_{i=1}^\infty \rho^i\varepsilon_{t-i}.
+\]
+
+Since $\varepsilon_t \sim NID(0, \sigma^2)$ and thus have 0 mean, $\mathbb{E}(z_t) = 0$. Alternatively, it can be constant if $\mathbb{E}(z_0)=0$. Either approach satisfies this criterion.
+
+\textit{Criterion 2: $Var(z_t)= \mathbb{E}(z_t-\mu)^2=\sigma^2$}
+\begin{align*}
+Var(z_t) 
+  &= Var(\rho^tz_0) + Var\Big(\sum_{i=0}^{t-1}\rho^i\varepsilon_{t-i}\Big) \\
+  &= 0 + \sum_{i=0}^{t-1}Var(\rho^i\varepsilon_{t-i})
+\end{align*}
+since $\rho^tz_0$ is constant its variance is 0, and since $\varepsilon_t$ are independent, the variance of their sum equals the sum of their variances.
+
+Furthermore, since 
+\[
+Var(\rho^i\varepsilon_{t-i}) = (\rho^i)^2Var(\varepsilon_{t-i}) = \rho^{2i}\sigma_{\varepsilon}^2
+\]
+the variance of the stochastic process $z_t$ becomes:
+\begin{align*}
+Var(z_t)
+  &= \sum_{i=0}^{t-1}Var(\rho^i\varepsilon_{t-i}) \\
+  &= \sum_{i=0}^{t-1} \rho^{2i}\sigma_{\varepsilon}^2 \\
+  &= \sigma_{\varepsilon}^2 \sum_{i=0}^{t-1} \rho^{2i} \\
+  &= \sigma_{\varepsilon}^2(1 + \rho^2 + \rho^4 + \rho^6 + \dots)
+\end{align*}
+which is a geometric sum. That is,
+\begin{align*}
+Var(z_t) &= \sigma_{\varepsilon}^2 \rho^0 + \sigma^2 \rho^2 + \sigma^2\rho^4 + \sigma^2\rho^6 + \dots + \sigma_{\varepsilon}\rho^{t-1} = \sigma_{\varepsilon}^2\sum_{i=0}^{t-1}\rho^{2i} \\
+\rho^2 Var(z_t) &= \sigma_{\varepsilon}^2\rho^2 + \sigma_{\varepsilon}^2\rho^4 + \sigma_{\varepsilon}^2\rho^6 + \dots + \sigma_{\varepsilon}\rho^{t+1} \\
+Var(z_t) - \rho^2 Var(z_t) &= \sigma_{\varepsilon}^2\rho^0 - \sigma_{\varepsilon}^2\rho^{t+1} \\
+Var(z_t)(1-\rho^2) &= \sigma^2(1-\rho^{t+1}) \\
+Var(z_t) &= \sigma_{\varepsilon}^2\Big(\frac{1-\rho^{t+1}}{1-\rho^2}\Big) \\
+\lim_{t \to \infty} Var(z_t) &= \lim_{t\to\infty}\frac{\sigma_{\varepsilon}^2(1-\rho^{t+1})}{1-\rho^2} \\
+  &= \frac{\sigma_{\varepsilon}^2}{1-\rho^2}-\frac{\sigma_{\varepsilon}^2}{1-\rho^2}\lim_{t\to\infty}\rho^{t+1} \\
+  &= \frac{\sigma_{\varepsilon}^2}{1-\rho^2}
+\end{align*}
+which can only converge if the stability condition $|\rho|<1$ holds. Since that is the case in this question we therefore have a constant variance over time that is not dependent on $t$, thus the second criterion is also satisfied. 
+
+\textit{Criterion 3: $Cov(z_t, z_{t-k}) = \mathbb{E}\big[(z_t-\mu)(z_{t-k}-\mu) \big] = \gamma_k$}
+
+\begin{align*}
+Cov(z_t, z_{t-k}) = \gamma_k &= Cov\Big(\sum_{i=0}^{t-1}\rho^i\varepsilon_{t-i}\ , \sum_{j=0}^{t-k-1}\rho^j\varepsilon_{t-k-j}\Big) \\
+  &= \sum_{i=0}^{t-1}\sum_{j=0}^{t-k-1}\rho^i\rho^jCov(\varepsilon_{t-i}\ ,\ \varepsilon_{t-k-1})
+\end{align*}
+Since $\varepsilon_t \sim NID(0,\sigma^2)$, the error terms are independent which means their covariances are 0. The only time when we would have non-zero covariance is if they are the same error term where we have the variance, $\sigma^2$. This means,
+\[
+Cov(\varepsilon_{t-i}, \varepsilon_{t-k-j}) =
+\begin{cases}
+\sigma^2 & \text{if they refer to the same error term} \\
+0 & \text{otherwise}
+\end{cases}
+\]
+Therefore, most of the terms in the double summation are 0. We only need to sum over the cases where $t-i = t-k-j$ which only happens when $j=i-k$. Since $j$ has to be non-negative, this also means $k\leq i$. So the summation reduces to:
+\begin{align*}
+Cov(z_t, z_{t-k}) = \gamma_k 
+  &= \sum_{i=0}^{t-1}\sum_{j=0}^{t-k-1}\rho^i\rho^jCov(\varepsilon_{t-i}\ ,\ \varepsilon_{t-k-1}) \\
+  &= \sum_{i=k}^{t-1}\rho^i\rho^{i-k}\sigma^2 \\
+  &= \sigma^2\sum_{i=k}^{t-1}\rho^{2i-k} \\
+  &= \sigma^2\rho^{-k}\sum_{i=k}^{t-1} \rho^{2i} \\
+  &= \sigma^2\rho^k\sum_{i=k}^{t-1} \rho^{2(i-k)}
+\end{align*}
+If we let $j=i-k$, then this becomes:
+\[
+Cov(z_t, z_{t-k}) = \gamma_k
+  = \sigma^2\rho^k\sum_{j=0}^{t-1}\rho^{2j} \\
+\]
+which is again a geometric sum. So we can tackle it accordingly:
+\begin{align*}
+\gamma_k &= \sigma^2\rho^k(\rho^0 + \rho^2 + \rho^4 + \dots + \rho^{t-1}) \\
+\rho^2\gamma_k &= \sigma^2\rho^k(\rho^2 + \rho^4 + \rho^6 + \dots +\rho^{t+1}) \\
+\gamma_k-\rho^2\gamma_k &= \sigma^2\rho^k (\rho^0-\rho^{t+1}) \\
+\gamma_k &= \sigma^2\rho^k \Big(\frac{1-\rho^{t+1}}{1-\rho^2} \Big) \\
+\lim_{t\to\infty}\gamma_k &= \sigma^2\rho^k\frac{1}{1-\rho^2} - \sigma^2\rho^k\frac{1}{1-\rho^2}\lim_{t\to\infty}\rho^{t+1}\\
+  &= \frac{\sigma^2\rho^k}{1-\rho^2} \ \ \ \ \text{for } |\rho|<1 \\
+  &= \rho^kVar(z_t).
+\end{align*}
+Since the covariance is also not dependent on $t$ and is a constant, the third criterion is also satisfied. Given that all three criteria are satisfied, this stochastic process is stationary.
+\end{description}
+
+
+
+
+
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
+
+### (iii) What would the mean and variance of $z_t$ be if $\rho=1$?
+
+\begin{description}
+\item[Answer:]
+Since $\rho$ is a unity, the stochastic process would become
+\[
+z_t = z_{t-1}+\varepsilon_t \ \ \ , \ \ \ t=1,2,3,\dots.
+\]
+This process is called \textbf{random walk}.
+
+The expected value of $z_t$ can be obtained via recurring substitution as it was done in part (ii) above:
+\begin{align*}
+z_t 
+  &= z_{t-2} + \varepsilon_{t-1} + \varepsilon_t \\
+  &= z_{t-3} + \varepsilon_{t-2} + \varepsilon_{t-1} + \varepsilon_t \\
+ \vdots \\
+  &= z_{t-t} + \sum_{i=0}^{t-1}\varepsilon_{t-i}.
+\end{align*}
+Therefore, the expected value of $z_t$ is:
+\begin{align*}
+\mathbb{E}(z_t) 
+  &= \mathbb{E}(z_0 + \sum_{i=0}^{t-1}\varepsilon_{t-i}) \\
+  &= \mathbb{E}(z_0) + \mathbb{E}(\sum_{i=0}^{t-1}\varepsilon_{t-i}) \\
+  &= \mathbb{E}(z_0) = z_0 \ \ \ \ \forall\ t\geq1
+\end{align*}
+This means, the expected value of a random walk does not depend on $t$. 
+
+On the other hand, the variance of a random walk does change with $t$:
+\[
+Var(z_t) = Var(z_0) + Var(\varepsilon_1) + \dots + Var(\varepsilon_{t-2}) + Var(\varepsilon_{t-1}) + Var(\varepsilon_t)
+\]
+If we assume that $z_0$ is nonrandom so that $Var(z_0)=0$, then by the i.i.d. assumption for $\{\varepsilon_t\}$, the variance becomes:
+\[
+Var(z_t) = t\sigma_\varepsilon^2
+\]
+which means that the variance of a random walk increases as a linear function of time. This shows that the process cannot be stationary.
+
+We can also look at the covariance between two time periods and check if the third criterion holds. For this, we can assume $z_0 = 0$ to simplify the algebra. This common assumption states that the process begins at 0, and $\mathbb{E}(z_0)=z_0 = 0$ for all $t$. With this assumption, we then have:
+\[
+z_t = \sum_{i=0}^t\varepsilon_i \ \ \ \ \ , \ \ \ \ \ z_{t-k}=\sum_{j=0}^{t-k}\varepsilon_j.
+\]
+The autocovariance is then
+\begin{align*}
+Cov(z_t, z_{t-k}) = \gamma_k 
+  = Cov\Big(\sum_{i=0}^t\varepsilon_i\ ,\ \sum_{j=0}^{t-k}\varepsilon_j\Big) \\
+  = \sum_{i=0}^t\sum_{j=0}^{t-k}Cov(\varepsilon_i,\varepsilon_j).
+\end{align*}
+Since the error terms are independent
+\[
+Cov(\varepsilon_i, \varepsilon_j) =
+\begin{cases}
+\sigma^2 & \text{if } i = j \\
+0 & \text{otherwise}
+\end{cases}
+\]
+Since $j$ can only go up to $t-k$, and we have nonzero covariances when $i=j$, then $i\leq t-k$. This means, the effective range for the summation is from $i=1$ to $i=t-k$:
+\[
+\gamma_k = \sum_{i=1}^{t-k}\sigma^2 = (t-k)\sigma^2.
+\]
+Therefore, the autocovariance function of a random walk with lag $k$ is $\gamma_k = (t-k)\sigma^2$. This shows that the process is nonstationary and depends on $t$, thus not satisfying the third criterion either. As $t$ increases, random walk process's statistical properties changes such that the autocovariance increases linearly for any fixed lag $k$. Similarly, for a fixed $t$, the autocovariance decreases linearly as the lag $k$ increases. 
+
+\end{description}
+
+
+
+
+\bigskip\bigskip\bigskip
+\hdashrule[0.5ex]{\textwidth}{1pt}{3mm}
+\bigskip\bigskip\bigskip
+
+
+
+
+## QUESTION 2
+
+\textbf{Use the Stata file BoatRace.dta, which contains information on the annual Oxford Cambridge boar race for the period 1946-2013, for each of the following:}
+
+### (i) Obtain the time series plot of the variable `Winner` (Graphics/Time-series graphs/line plotes - (tsline)) and characterise the corresponding data generating process.
+
+\begin{description}
+\item[Answer:]
+\end{description}
+In Stata:
+
+```{stata eval = FALSE}
+quietly cd ..
+use Data/BoatRace.dta
+quietly tsset Year
+tsline Winner
+```
+
+
+In R:
+
+```{r}
+boat_df <- read_dta("../Data/BoatRace.dta")
+ggplot(boat_df,
+       aes(x=Year, y=Winner)) +
+  geom_line() +
+  theme_light()
+```
+
+The plot switches from 0 to 1 and looks pretty random. It would be difficult to predict. There does not seem to be a general increase or decrease in `Winner` over time so it does not seem to be trending. Similarly, it does not look like there is any clear pattern in the data so it does not look like there is seasonality. 
+
+However, there may still be autocorrelation. It looks like there are periods where one team was more successful then the other, which may perhaps be due to the possibility that the team members or a good coach remain the same for more than 1 year while they are pursuing their studie. Therefore we cannot yet conclude that the data is weakly stationary.
+
+
+
+
+
+
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
+
+### (ii) Obtain the sample correlogram of `Winner` (Graphics/Time-Series graphs/Correlogram - (ac)). What does the correlogram tell us about serial correlation in `Winner`?
+\begin{description}
+\item[Answer:]
+\end{description}
+In Stata:
+
+```{stata eval = FALSE}
+quietly cd ..
+use Data/BoatRace.dta
+quietly tsset Year
+ac Winner
+```
+
+In R:
+
+```{r}
+ggAcf(boat_df$Winner) + 
+  ggtitle("Autocorrelations of `Winner`") + 
+  theme_light()
+```
+
+For stationary series, we would ultimately expect to see autocorrelations decaying to zero at higher lags. Here we see the ACF's not significantly different from 0, except for the second lag. So this is not giving us a clear picture with respect to stationarity.
+
+Let's unpack what we just plotted. We are beginning to test for stationarity. This graphical test is called \textit{autocorrelation function} (ACF). 
+
+\begin{tcolorbox}[breakable, title=Stationary Test 1: ACF, skin=enhancedlast]
+The ACF at lag $k$ is defined as:
+\[
+{ACF}_k = \frac{\gamma_k}{\gamma_0} = \frac{\text{covariance at lag }k}{\text{variance}}.
+\]
+Since both the numerator and the denominator are measured in the same units of measurement, ${ACF}_k$ is a unitless number. It lies between +1 and -1 as any correlation coefficient. 
+
+We don't usually know the population but only a realization, i.e. sample, of a stochastic process, we can only compute the sample autocorrelation function, $\widehat{{ACF}}_k$:
+\[
+\widehat{{ACF}}_k = \frac{\hat{\gamma}_k}{\hat{\gamma}_0} = \frac{\displaystyle\frac{\sum(Y_t-\bar{Y})(Y_{t+k}-\bar{Y})}{n}}{\displaystyle\frac{\sum(Y_t-\bar{Y})^2}{n}}
+\]
+The graph above is the sample correlogram that plots $\widehat{{ACF}}_k$ against $k$. The dashed lines gives the 95\% confidence intervals that the autocorrelations are not different from 0. Bartlett (1946) has shown that for a time series that follows white noise, the standard error of the autocorrelation is approximately:\footnote{Bartlett, M S (1946) "On the Theoretical Specification of Sampling Properties of Autocorrelated Time Series", \textit{Journal of the Royal Statistical Society}, Series B, 27:27-41.}
+\[
+se(\widehat{{ACF}}_k) \approx \frac{1}{\sqrt{n}}
+\]
+The 95% confidence interval is then computed as:
+\[
+{CI}_{95\%} = \pm\frac{1.96}{se(\widehat{{ACF}}_k)} = \pm\frac{1.96}{\sqrt{n}}
+\]
+\end{tcolorbox}
+
+In this question $n=68$ so the 95\% CI is $\pm 0.2377$. The plot looks similar to a white noise where the autocorrelations seem to hover around 0 at various lags. At the same time there seems to be a positive correlation between $W_t$ and $W_{t-2}$ that is only just statistically significant. The third lag is also close to being significant. Perhaps this may be due to some combination of the boat staying the same for over 2 or 3 years, which is the length of stay for the undergraduates.
+
+We can also use the \textbf{Q statistic}. 
+
+\begin{tcolorbox}[breakable, title=Stationarity Test 2: Box-Pierce Q statistic\footnote{\textcolor{white}{Box G E P, and Pierce, D A (1970) "Distribution of Residual Autocorrelations in Autoregressive Integrated Moving Average Time Series Models" \textit{Journal of the American Statistical Association}}, 65:1509-1526.}, skin=enhancedlast]
+\textbf{Box-Pierce Q statistic}\footnote{} which instead of testing the statistical significance of any individual autocorrelation coefficient tests the joint hypothesis that all the $\widehat{{ACF}}_k$ up to certain lags are simultaneously equal to 0:
+\[
+Q = n\sum_{k=1}^m\widehat{{ACF}}_k^2
+\]
+where $n$ is the sample size and $m$ is the lag length. In large samples, it is \textit{approximately} distributed as $\chi^2$ distribution with $m$ degrees of freedom. If the computed $Q$ is greater than the critical $Q$ value from the $\chi^2$ distribution at the specified significance level, then the null hypothesis is rejected, meaning that at least one or more of the correlation coefficients are nonzero.
+\end{tcolorbox}
+
+A variant of the Box-Pierce Q statistic is the \textbf{Ljung-Box (LB) statistic}\footnote{Ljung, G M, and Box, G E P (1978) "On a Measure of Lack of Fit in Time Series Models", \textit{Biometrika}, 66:66-72.} 
+
+\begin{tcolorbox}[breakable, title=Stationarity Test 3: Ljung-Box (LB) statistic, skin=enhancedlast]
+LB statistic is defined as:
+\[
+LB = n(n+2)\sum_{k=1}^m\Bigg(\frac{\widehat{{ACF}}_k^2}{n-k}\Bigg) \sim \chi_m^2.
+\]
+Although in large samples both Q and LB statistics follow the chi-square distribution with $m$ degrees of freedom, the LB statistic has been found to have more statistically powerful small-sample properties than the Q statistic.
+\end{tcolorbox}
+
+Lets see what LB test would reveal for our boatrace. We can check for 
+
+```{stata}
+quietly cd ..
+use Data/BoatRace.dta
+ac Winner
+wntestq Winner, lags(4)
+wntestq Winner, lags(5)
+corrgram Winner
+```
+
+This looks pretty indecisive. We cannot reject the null that all the autocorrelation coefficients are jointly equal to 0 at 5\% significance when we use 5 lags, but we can reject when we use 4 lags. 
+
+There is not a direct equivalent command in R but we can replicate the table above in R by building our own function:
+
+```{r eval=FALSE}
+r_corrgram_extended <- function(time_series, lag.max = 20) {
+  n <- length(time_series)
+  
+  # Calculate ACF and PACF
+  acf_result <- acf(time_series, lag.max = lag.max, plot = FALSE)
+  pacf_result <- pacf(time_series, lag.max = lag.max, plot = FALSE)
+  
+  # Calculate standard errors
+  se_acf <- rep(1/sqrt(n), lag.max)
+  
+  # Initialize vectors for Q statistics and p-values
+  q_stats <- numeric(lag.max)
+  p_values <- numeric(lag.max)
+  
+  # Calculate Q statistics for each lag
+  for (i in 1:lag.max) {
+    box_test <- Box.test(time_series, lag = i, type = "Ljung-Box")
+    q_stats[i] <- box_test$statistic
+    p_values[i] <- box_test$p.value
+  }
+  
+  # Create results data frame
+  results <- data.frame(
+    Lag = 1:lag.max,
+    AC = round(acf_result$acf[-1],4),  # Remove lag 0
+    se_AC = round(se_acf,4),
+    PAC = round(pacf_result$acf,4),
+    Q = round(q_stats,4),
+    Prob_Q = round(p_values,4)
+  )
+  
+  return(results)
+}
+
+
+r_corrgram_extended(boat_df$Winner)  
+```
+
+
+Another test we can use to check for stationarity is the \textbf{unit root test}. 
+
+\begin{tcolorbox}[breakable, title=Stationarity Test 4: Unit Root test, skin=enhancedlast]
+Consider the stochastic process
+\[
+Y_t = \rho Y_{t-1}+u_t \ \ \ , \ \ \ -1\leq\rho\leq1
+\]
+where $u_t$ is a white noise error term. If $\rho=1$, i.e when we have a unit root, then the stochastic process above is a random walk model without drift, which is a nonstationary stochastic process. The idea of the test is then to regress $Y_t$ on its one lagged period and check if the estimated coefficient is equal to 1 or not. If it is, then $Y_t$ is nonstationary. 
+
+However, we cannot estimate this equation by OLS and use the usual $t$ test to test if the coefficient is equal to 1 because the test itself is severely biased in the case of a unit root. To tackle this, we subtract $Y_{t-1}$ from both sides to obtain:
+\begin{align*}
+Y_t - Y_{t-1} &= \rho Y_{t-1} - Y_{t-1} + u_t \\
+\Delta Y_t &= (\rho - 1)Y_{t-1} + u_t \\
+\Delta Y_t &= \delta Y_{t-1} + u_t.
+\end{align*}
+It is this equation that is then estimated. The null hypothesis is that $\delta=0$ with the alternative being $\delta<0$ since $|\rho|<1$ for stationarity to hold.\footnote{If $\delta=0$ then $\Delta Y_t = (Y_t-Y_{t-1}) = u_t$. Since $u_t$ is a white noise term it is stationary which means the first differences of a random walk time series are stationary.}
+
+The only thing left to consider now for the unit root test is which test to use to see if the coefficient of $Y_{t-1}$ is 0 or negative in this first differenced equation. We cannot use $t$ test because the $t$ value of $\hat{\delta}$ does not follow the $t$ distribution even in large samples; i.e. it does not have an asymptotic normal distribution. 
+\end{tcolorbox}
+
+The alternative approach is to use the \textbf{Dickey-Fuller (DF) test}, which is also called the \textbf{tau statistic}, or \textbf{tau test}.\footnote{Dicket, D A, and Fuller, W A (1979) "Distribution of the Estimators for Autoregressive Time Series with a Unit Root", \textit{Journal of the American Statistical Association}, Vol 74, p427-431; see also Fuller, W A (1976) "Introduction to Statistical Time Series", John Wiley \& Sons, NY.}
+
+\begin{tcolorbox}[breakable, title=Stationarity Test 5: Dickey-Fuller (DF) test, skin=enhancedlast]
+The procedure for implementing the DF test involves several decisions. First, recall that a random walk process can have a drift, or it may have both deterministic and stochastic trends. To allow for various possibilities, the DF test is estimated in three different forms; i.e. under three different null hypotheses:
+\begin{itemize}
+  \item $Y_t$ is a random walk: $\Delta Y_t = \delta Y_{t-1}+u_t$
+  \item $Y_t$ is a random walk with a drift: $\Delta Y_t = \beta_0 + \delta Y_{t-1} + u_t$
+  \item $Y_t$ is a random walk with a drift around a deterministic trend: $\Delta Y_t = \beta_0 + \beta_1\ t + \delta Y_{t-1} + u_t$
+    \subitem where $t$ is the time or trend variable. 
+\end{itemize}
+In each case the hypotheses are:
+\[
+\mathbb{H}_0: \delta = 0 \ \ \ , \ \ \ \mathbb{H}_1: \delta < 0.
+\]
+If the null is rejected it means that either:
+\begin{enumerate}
+  \item $Y_t$ is stationary with 0 mean in the case of random walk stochastic process,
+  \item $Y_t$ is stationary with nonzero mean in the case of random walk with a drift stochastic process,
+  \item $Y_t$ we can test for $\delta<0$ (i.e. no stochastic trend) and $\beta_0 \neq 0$ (i.e. existence of a deterministic trend) simultaneously using the $F$ test but using the critical values tabulated by Dickey and Fuller.
+\end{enumerate}
+  
+It is \underline{important} to note that the critical values of the tau test to test the hypothesis that $\delta=0$ are \textit{different} for each of the preceding three specifications of the DF test. 
+
+The steps for this test are as follows:
+\begin{enumerate}
+\item Estimate using OLS one of the three random walk stochastic processes (with/without drift or with drift around a deterministic trend)
+\item Divide the estimated coefficient of $Y_{t-1}$ in each case by its standard error to compute the tau $(\tau)$ statistic
+\item Look up the DF tables. If $|\tau|$ statistic exceeds the $|\tau|$ critical values then we reject the null hypothesis, in which case the time series is stationary. Otherwise, we fail to reject the null, in which case the time series is nonstationary.
+  \subitem In most cases the tau value will be negative. Therefore, alternatively, we can say that if the computed negative tau value is smaller than (i.e. more negative than) the critical tau value then we reject the null hypothesis, in which case the time series is stationary.
+\end{enumerate}
+\end{tcolorbox}
+
+In this question, we can run the test as follows:
+```{stata}
+quietly cd ..
+use Data/BoatRace.dta
+dfuller Winner
+dfuller Winner, drift
+dfuller Winner, trend
+```
+
+This tells us that in any of the specifications the stochastic process is stationary. 
+
+In conducting the DF test it was assumed that the error term $u_t$ were uncorrelated. In case they are correlated, Dickey and Fuller have developed the \textbf{augmented Dickey-Fuller (ADF) test}. 
+
+\begin{tcolorbox}[breakable, title=Stationarity Test 6: Augmented Dicky-Fuller (ADF) test, skin=enhancedlast]
+The ADF test is conducted by augmenting the preceding three equations by adding the lagged values of the dependent variable $\Delta Y_t$. So, for example, suppose we are using random walk with a drift around a deterministic trend equation. The ADF test then consists of estimating the following regression:
+\[
+\Delta Y_t = \beta_0 + \beta_1\ t + \delta\ Y_{t-1} + \sum_{i=1}^m\alpha_i\Delta Y_{t-i} + \varepsilon_t
+\]
+where $\varepsilon_t$ is a pure white noise error term and where $\Delta Y_{t-1} = (Y_{t-1}-Y_{t-2}), \Delta Y_{t-2} = (Y_{t-2}-Y_{t-3})$ etc. 
+\textbf{Note:} The number of lagged difference terms to include is often determined empirically, the idea being to include enough terms so that the error term is serially uncorrelated, which would allow us to obtain unbiased estimate of $\delta$.
+\end{tcolorbox}
+
+Lets try with 1 lag on the random walk without a drift or trend equation:
+
+```{stata}
+quietly cd ..
+use Data/BoatRace.dta
+dfuller Winner, lags(1) regress
+```
+
+Based on $Z(t)$ output, we can reject the null hypothesis at all common significance levels. The estimated $\delta= -0.616$ implies that $\rho = (1-0.616) = 0.384$. On the other hand, if we try this with 5 lags, we cannot reject the null hypothesis even at 10\% significance level.
+
+
+In R we can obtain the same results via the following:
+
+```{r eval=FALSE}
+# Basic Dickey-Fuller test (equivalent to Stata's dfuller y)
+df_test <- ur.df(boat_df$Winner, type = "none", lags = 0)
+summary(df_test)
+
+# With trend (equivalent to Stata's dfuller y, trend)
+df_trend_test <- ur.df(boat_df$Winner, type = "trend", lags = 0)
+summary(df_trend_test)
+
+# With drift/constant (equivalent to Stata's dfuller y, drift)
+df_drift_test <- ur.df(boat_df$Winner, type = "drift", lags = 0)
+summary(df_drift_test)
+
+# Augmented Dickey-Fuller with lags (equivalent to Stata's dfuller y, lags(1))
+adf_test <- ur.df(boat_df$Winner, type = "none", lags = 1)
+summary(adf_test)
+
+# With automatic lag selection (similar to Stata's dfuller y, lags(AIC))
+max_lags <- floor(12 * (length(boat_df$Winner)/100)^(1/4))  # Rule of thumb
+adf_auto <- ur.df(boat_df$Winner, type = "none", selectlags = "AIC", lags = max_lags)
+summary(adf_auto)
+```
+
+
+
+
+
+
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
+
+### (iii) Make a time series plot of the variable `WinTime` and briefly describe its behavior.
+\begin{description}
+\item[Answer:]
+\end{description}
+
+In STATA:
+
+```{stata eval = FALSE}
+quietly cd ..
+use Data/BoatRace.dta
+quietly tsset Year
+tsline WinTime
+```
+
+In R:
+
+```{r}
+ggplot(boat_df,
+       aes(x=Year, y=WinTime)) +
+  geom_line() +
+  theme_light()
+```
+
+It looks like there is a trend of decline in time, possibly bottoming out later in the series. We can check for stationarity looking at the autocorrelations:
+
+```{r}
+ggAcf(boat_df$WinTime) +
+  ggtitle("Autocorrelations of 'WinTime'") +
+  theme_light()
+```
+
+We can run a DF test using random walk with trend since there seems to be a downward trend.
+
+```{stata}
+quietly cd ..
+use Data/BoatRace.dta
+dfuller WinTime, trend regress
+```
+
+From the $Z(t)$ results we can reject the null hypothesis at all common significant levels and conclude that $\delta < 0$ and thus the stochastic process is stationary. $\delta = -1.07$ implies that $\rho = 1-1.07 = -0.07$. 
+
+
+
+
+
+
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
+
+### (iv) Note that `DWinTime` in your data set is obtained by taking the first differences of `WinTime`. Suppose that the data generating process for `WinTime` is given by the following:
+\[
+{WinTime}_t = \gamma + \delta\ Year_t + v_t
+\]
+\textbf{where $v_t$ are i.i.d. shocks. Derive the population autocorrelations $\rho_j,\ j=1,2,3,\dots$ for} `DWinTime`.
+\begin{description}
+\item[Answer:]
+\end{description}
+Since `DWinTime` is the first differences of `WinTime` it can be expressed as:
+\begin{align*}
+{DWinTime}_t 
+  &= \gamma + \delta\ Year_t + v_t - (\gamma + \delta\ Year_{t-1} + v_{t-1}) \\
+  &= \delta(\Delta\ {Year}_t) + \Delta v_t \\
+  &= \delta + \Delta v_t \ \ \ \text{since change in Year is always 1} 
+\end{align*}
+We can use this expression to derive the population autocorrelations:
+\[
+\rho_k = \frac{\gamma_k}{\gamma_0} = \frac{Cov({DWinTime}_t\ ,\ {DWinTime}_{t+k})}{Var({DWinTime}_t)} 
+\]
+To do so, first calculate the autocovariance function at lag k. Since $v_t$ are i.i.d. shocks, we can assume them to be white noise process with mean 0 and variance $\sigma_v^2$. This also means $Cov(v_t, v_s) = 0$ for $t\neq 0$. 
+
+To obtain $\gamma_k$ first calculate the mean of `DWinTime`:
+\begin{align*}
+\mathbb{E}({DWinTime}_t) 
+  &= \mathbb{E}(\delta + \Delta v_t) \\
+  &= \delta + \mathbb{E}(v_t - v_{t-1}) \\
+  &= \delta
+\end{align*}
+We can next obtain the variance of `DWinTime`, which is the same as autocovariance at lag 0:
+\begin{align*}
+\gamma_0 
+  &= Var(DWinTime) \\
+  &= Var(\delta + \Delta v_t) \\
+  &= Var(\Delta v_t) \\
+  &= Var(v_t - v_{t-1}) \\
+  &= Var(v_t) + Var(-v_{t-1}) \ \ \ \text{since $v_t$ and $v_{t-1}$ are independent} \\
+  &= \sigma_v^2 + \sigma_v^2 \\
+  &= 2\sigma_v^2
+\end{align*}
+Thus, `DWinTime` $\sim (\delta, 2\sigma_v^2)$.
+
+For lag 1, the autocovariance is:
+\begin{align*}
+\gamma_1 
+  &= Cov({DWinTime}_t\ ,\ {DWinTime}_{t+1}) \\
+  &= Cov(\delta + \Delta v_t\ ,\ \delta + \Delta v_{t+1}) \\
+  &= Cov(v_t - v_{t-1}\ ,\ v_{t+1} - v_t) \\
+  &= Cov(v_t\ ,\ v_{t+1}) - Cov(v_t\ ,\ v_t) - Cov(v_{t-1}\ ,\ v_{t+1}) + Cov(v_{t-1}\ ,\ v_t) \\
+  &= 0 - \sigma_v^2 - 0 + 0 \\
+  &= -\sigma_v^2.
+\end{align*}
+
+And for lag $k$ where $k>1$, the autocovariance is:
+\begin{align*}
+\gamma_k 
+  &= Cov({DWinTime}_t\ ,\ {DWinTime}_{t+k}) \\
+  &= Cov(v_t-v_{t-1}\ ,\ v_{t+k} - v_{t+k-1}) \\
+  &= Cov(v_t\ ,\ v_{t+k}) - Cov(v_t\ ,\ v_{t+k-1}) - Cov(v_{t-1}\ ,\ v_{t+k}) + Cov(C_{t-1, v_{t+k-1}}) \\
+  &= 0 - 0 - 0 + 0 \\
+  &= 0
+\end{align*}
+Using these, now we can calculate the autocorrelation function $\rho_k = \gamma_k / \gamma_0$:
+\begin{align*}
+\rho_0 &= \frac{\gamma_0}{\gamma_0} = 1 \\
+\rho_1 &= \frac{\gamma_1}{\gamma_0} = \frac{\sigma_v^2}{2\sigma_v^2}=-0.5 \\
+\rho_k &= \frac{\gamma_k}{\gamma_0} = \frac{0}{2\sigma_v^2} = 0 \ \ \ \text{for }k>1
+\end{align*}
+Therefore, the autocorrelation function for the first-differenced series ${DWinTime}_t$ is:
+\[
+\rho_k
+\begin{cases}
+1 & \text{if } k=0 \\
+-0.5 & \text{if } k=1 \\
+0 & \text {if } k>1
+\end{cases}
+\]
+This specific pattern of first lag autocorrelation of -0.5 and 0 thereafter is a signature characteristic of overdifferencing a time series. \textbf{Overdifferencing} refers to the the fact that if a trend series is a trend-stationary process but we treat it as a difference-stationary process. The reverse of this is called \textbf{underdifferencing}.
+
+\begin{itemize}
+  \item \textit{difference-stationary process}: This refers to the fact that if a time series has a unit root, the first differences of such time series are stationary. 
+  \item \textit{trend-stationary process}: The most straightforward way of making a time series with trendline stationary is to regress it on time and the residuals from this regression will be stationary.
+    \subitem That is, when we run the following regression
+    \[
+    Y_t = \beta_0 + \beta_1\ t + u_t
+    \]
+    the linearly \textbf{detrended time series}, $\hat{u}_t$
+    \[
+    \hat{u}_t = (Y_t - \hat{\beta}_0 - \hat{\beta}_1\ t)
+    \]
+    will be stationary.
+    \subitem On the other hand, the trend line may be nonlinear. For example, $Y_t = \beta_0 + \beta_1\ t + \beta_2\ t^2 + u_t$ is a quadratic series. The residuals from this will now be quadratically detrended time series.
+\end{itemize}
+
+Since we overdifferenced here, lets see if we can get trend-stationary process:
+
+
+```{stata}
+quietly cd ..
+use Data/BoatRace.dta
+reg WinTime t
+```
+and if we plot the residuals we will see that they are stationary.
+
+
+
+
+
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
+
+### (v) Generate the sample correlogram of `DWinTime`. Are your results expected?
+\begin{description}
+\item[Answer:]
+\end{description}
+```{r}
+ggAcf(boat_df$DWinTime) +
+  ggtitle("Autocorrelations of `DWinTime`") +
+  theme_light()
+```
+
+This confirms that $\rho_1 \approx -0.5$ which we would expect for $k=1$.
+
+
+
+
+
+\bigskip\bigskip\bigskip
+\hdashrule[0.5ex]{\textwidth}{1pt}{3mm}
+\bigskip\bigskip\bigskip
+
+
+
+
+## QUESTION 3
+
+### (i) Using data from the file Timeseries1.dta, estimate the following equations.
+\begin{align}
+C_t &= \rho + \psi Y_t + \varepsilon_t \label{eq:SQ3i1} \\
+C_t &= \alpha +\beta Y_t + \gamma Y_{t-1} + \lambda C_{t-1} + \varepsilon_t \label{eq:SQ3i2}
+\end{align}
+\textbf{where $C_t$ is the log of household consumption expenditure and $Y_t$ is the log of household disposable income at time $t$. Comment on your results.}
+\begin{description}
+\item[Answer:]
+\end{description}
+The first model provides an expression for the long run or equilibrium relationship between income and consumption
+\[
+{Consumption}_t = \theta\ {Income}_t^{\psi}
+\]
+where $\rho = \ln\theta$. Here, $\psi$ is the long-run elasticity of `Consumption` with respect to `Income`. When `Consumption` takes its equilibrium value with respect to `Income`, this equation holds. However, economic systems are rarely in equilibrium. 
+
+What we usually observe instead is a short-run disequilibrium relationship involving lagged values of both variables. In the second equation only first lags are included but in practice second or higher order lags can appear. This second equation implies that `Consumption` takes time to adjust fully to variations in `Income`. 
+
+We can start regressing the first, static model and then the second model. The first model is static because it is modeling a contemporaneous relationship between $C$ and $Y$. Usually, a static model is postulated when a change in $Y$ at time $t$ is believed to have an immediate effect on $C$. That is, $\Delta C_t = \psi Y_t$ when $\Delta \varepsilon_t = 0$. Static regression models are also used when we are interested in knowing the tradeoff between $C$ and $Y$. Though, here we would not expect a trade-off between consumption and income.
+
+Before we regress, lets see what the relationship between $C$ and $Y$ looks like.
+
+```{r}
+ts_df <- read_dta("../Data/Timeseries1.dta")
+ggplot(ts_df,
+       aes(x = Year)) +
+  geom_line(aes(y = C), linetype = "dashed") +
+  geom_line(aes(y = Y)) +
+  theme_light() +
+  labs(y = "log Consumption (- -) & log Income")
+```
+
+They both show a clear upwards trend and a very close relationship with each other. We can estimate that relationship using the first, static model: 
+```{r}
+lm1_SQ3i <- lm(C ~ Y, data = ts_df)
+```
+
+and in Stata
+
+```{stata}
+quietly cd ..
+use Data/Timeseries1.dta
+regress C Y
+```
+
+The equation does not suggest a tradeoff between $Y$ and $C$ since $\hat{\psi}>0$, which we would not have expected anyway. 
+
+Now notice that $R^2$ is extremely high at 99.8\% and so is the $t$-statistic for the coefficient of $Y$. This may be because they are strongly correlated or due to potential presence of \textbf{spurious regression}. 
+
+\begin{tcolorbox}[breakable, title=Spurious Regression, skin=enhancedlast]
+The nonsensical correlations were first discovered by Yule (1926)\footnote{Yule, G U (1926) "Why Do We Sometimes Get Nonsense Correlations Between Time Series? A Study in Sampling and the Nature of Time Series", \textit{Journal of the Royal Statistical Society, 89:1-64}} who showed that spurious correlations could persist in nonstationary time series even if the sample is very large. In a simulation study, Granger and Newbold (1974)\footnote{Granger C W J, and Newbold, P (1974) "Spurious Regressions in Econometrics" \textit{Journal of Econometrics" 2:111-120}} examined spurious relationships between two independent but non-stationary variables $X$ and $Y$ - both were generated by the random walk processes - and estimated the relationship $\hat{Y}_t = \hat{\alpha} + \hat{\beta}X_t$. They showed that a potential indicator of a spurious correlation is a low Durbin-Watson statistic combined with an acceptable $R^2$. That is, a good rule of thumb to suspect that the estimated regression is spurious is to check if $R^2>d$.
+
+Recall from Supervision 4 that the $d$ statistic is the ratio of the sum of squared differences between successive residuals to the RSS:
+\[
+DW = d = \frac{\displaystyle\sum_{i=2}^n(\hat{u}_t - \hat{u}_{t-1})^2}{\sum_{i=1}^n\hat{u_t}^2}
+\]
+\textit{Note}: the number of observations in the numerator of the $d$ statistic is one less than the denominator, i.e. $n-1$, because one observation is lost in taking successive differences.
+\end{tcolorbox}
+
+Let's obtain the $d$ statistic for this regression. For this, in R we use `durbinWatsonTest()` function from the `car` package, or `dwtest` from the `lmtest` package:
+
+```{r eval = !knitr::is_latex_output()}
+car::durbinWatsonTest(lm1_SQ3i) 
+# or
+dwtest(lm1_SQ3i)
+```
+
+The same calculation in STATA can be done via the `estat dwatson` command
+
+```{stata}
+quietly cd ..
+use Data/Timeseries1.dta
+quietly regress C Y
+quietly tsset Year
+estat dwatson
+```
+
+Which gives us a $d$ statistic of 0.3459 which is much lower than the $R^2$. So this could indicate a possibility of spurious correlation which, if so, would not mean that there may not be a relationship between $C$ and $Y$ but that the $R^2$ and $t$ statistic from this regression would be misleading and that the $t$ statistics would not be distributed as Student's $t$ distribution, meaning it can't be used for testing hypotheses about the parameters. 
+
+This can arise because the model we used assumes that the stochastic process is \textbf{integrated of order 0}, denoted as $I(0)$ but the individual variables are I(1).  We can check the correlograms to see if there are autocorrelations:
+
+```{r}
+plot1 <- ggAcf(ts_df$C) +
+  ggtitle("Autocorrelations of log Consumption") +
+  theme_light()
+plot2 <- ggAcf(ts_df$Y) +
+  ggtitle("Autocorrelations of log Income") +
+  theme_light()
+grid.arrange(plot1, plot2, ncol=2)
+```
+which shows that we have strong autocorrelations in both variables that go back a number of lags. They are both decaying to 0, albeit slowly, ao there may or may not be stationarity.
+
+On the other hand this can be a \textbf{cointegrating regression}. That is, the time series individually contain stochastic trend, i.e. $I(1)$ but the two series \textit{share the same common trend} so that the regression of one on the other will not be necessarily spurious. Economically speaking, two variables will be \textbf{cointegrated} if they have a long-term, or equilibrium, relationship between them. This explanation is more likely in this case. We can nevertheless check for cointegration.\footnote{For a good introduction to cointegration testing see Dickey D A, Jansen, D W, and Thornton D (1991) "A Primer on Cointegration with an Application to Money and Income" \textit{Economic Review}, Federal Reserve Bank of St Louis, March-April:59.} For this, we will perform \textbf{Engle-Granger (EG)} and \textbf{augmented Engle-Granger (AEG)} tests.\footnote{Engle, R F and Granger C W (1987) "Co-integration and Error Correction: Representation, Estimation, and Testing" \textit{Econometrica}, 55:251-276.}
+
+The first step in EG test is to perform a unit root test on the residuals of the regression:
+
+```{stata}
+quietly cd ..
+use Data/Timeseries1.dta
+quietly tsset Year
+quietly regress C Y
+predict e, residuals
+dfuller e, lags(0) 
+dfuller e, lags(1)
+```
+
+We cannot reject the null of unit root at 5\% but we can at 10\% so it appears that residuals from the regression are almost but not quite stationary at 5% level. It would be difficult to accept this conclusion, for economic theory suggests that there should be a stable relationship between these two variables. Interestingly, the residuals are stationary when we run the augmented DF (ADF) test with one lag. This suggests that the inclusion of lagged term helps to stabilize the residuals, indicating a potential relationship between the time series variables that is better captured with at least one lag. This implies that the model with the lagged term is more appropriate for testing cointegration as it accounts for the dynamic relationship between the variables more accurately.
+
+
+Lets now look at the second equation where we have the lagged terms. This model is called \textbf{autoregressive distributed lag (ARDL) model}.
+
+```{stata}
+quietly cd ..
+use Data/Timeseries1.dta
+quietly tsset Year
+regress C Y L.Y L.C
+predict e, residuals
+dfuller e, lags(0)
+```
+
+In this second equation we see that these residuals are now stationary. Even if we use ADF with several lags, the residuals are still stationary. 
+
+This result supports the idea that these two are cointegrated but `Consumption` takes time to adjust fully to variations in `Income`.
+
+
+
+
+
+
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
+
+### (ii) Estimate the following and interpret your results (and explain the significance of your results for the interpretation of equations (\ref{eq:SQ3i1}) and (\ref{eq:SQ3i2}) in part (i) on page \pageref{eq:SQ3i1}):
+\begin{align}
+\Delta Y_t &= \alpha_0 + \alpha_1Y_{t-1} + \varepsilon_t \label{eq:SQ3ii1} \\
+\Delta C_t &= \beta_0 + \beta_1C_{t-1} + \varepsilon_t \label{eq:SQ3ii2} \\
+\Delta C_t &= \gamma_0 + \gamma_1C_{t-1} + \gamma_2\Delta C_{t-1} + \varepsilon_t \label{eq:SQ3ii3}
+\end{align}
+\textbf{Verify your results using the appropriate test in Stata and explain why equation \ref{eq:SQ3ii3} is an improvement on \ref{eq:SQ3ii2} in this particular case (esp. see Thomas, Chapter 13 and 14).}
+
+\begin{description}
+\item[Answer:]
+The effect of nonstationarity can often be removed by first differencing. This is because even though the log of income and log of consumption exhibit upwards trend, this would not normally be the case for the annual change output. Since $C$ and $Y$ are logarithms of `Consumption` and `Income`, the first differences are the proportional rate of growth:
+\[
+\ln(Y_t) - \ln(Y_{t-1}) = \ln\Big(\frac{Y_t}{Y_{t-1}}\Big) \approx \frac{Y_t - Y_{t-1}}{Y_{t-1}}
+\]
+The proportionate or percentage growth rate is far more likely to remain roughly constant over time than is the absolute growth rate $Y_t - Y_{t-1}$. It follows that the equation in first differences, especially in logarithmic form, is likely to involve stationary variables only.
+
+As such, we are effecetively running a unit root (DF/ADF) test with these equations. Recall from Question 2(ii) Stationary Tests 4-6, we want to check if the lagged variable is different from 0. If it is not, then it is stationary. 
+\end{description}
+
+```{r}
+#Generate lagged variables and differences
+ts_df <- ts_df %>%
+  mutate(
+    Y_lag = lag(Y, 1, default=NA),
+    C_lag = lag(C, 1, default=NA),
+    DY = Y - Y_lag,
+    DC = C- C_lag,
+    DC_lag = lag(DC, 1, default = NA)
+         )
+# Run the three regressions
+lm1_SQ3ii <- lm(DY ~ Y_lag, data = ts_df)
+lm2_SQ3ii <- lm(DC ~ C_lag, data = ts_df)
+lm3_SQ3ii <- lm(DC ~ C_lag + DC_lag, data = ts_df)
+
+# Store models in a list with descriptive names
+models <- list(
+  "Eq (3)" = lm1_SQ3ii, 
+  "Eq (4)" = lm2_SQ3ii, 
+  "Eq (5)" = lm3_SQ3ii
+)
+
+# Create a coefficient map for nice variable names
+coef_map <- c(
+  "Y_lag" = "Y_lag", 
+  "C_lag" = "C_lag", 
+  "DC_lag" = "DC_lag", 
+  "(Intercept)" = "Constant"
+)
+
+# Generate the table with modelsummary
+modelsummary(models, 
+             coef_map = coef_map,
+             stars = TRUE,
+             title = "SQ3(ii) Regression Results",
+             gof_map = c("nobs", "r.squared", "adj.r.squared", "F"),
+             fmt = 5,  # 4 decimal places
+             output = "default")  # "default" for console output
+```
+
+Recall from Supervision 4, we can use Breusch-Godfrey (Lagrange Multiplier) Test to check for serial correlation
+
+```{stata}
+quietly cd ..
+use Data/Timeseries1.dta
+quietly tsset Year
+quietly generate DY = Y - Y[_n-1]
+quietly generate DC = C - L.C
+
+quietly regress DY L.Y
+bgodfrey
+
+quietly regress DC L.C
+bgodfrey
+
+quietly regress DC L.C L.DC
+bgodfrey
+```
+
+We see from the regression results that the first lags are not different from 0. Thus it appears that the first differencing is stationary. This also means the initial regression of equation (\ref{eq:SQ3i1}) produces inconsistent estimates. 
+
+When we check for serial correlation, it appears that only equation (\ref{eq:SQ3ii2}) is serially correlated. We can visually check for the autocorrelation using correlogram:
+
+```{r}
+ggAcf(ts_df$DC) +
+  ggtitle("Autocorrelations of log Consumption") +
+  theme_light()
+```
+
+There seems to be a statistically significant correlation with its first lag. This is why equation (\ref{eq:SQ3ii3}) is an improvement on (\ref{eq:SQ3ii2}). It takes into account the first lag of $\Delta C_t$ as well.
+
+We can also look at if after differencing these variables still exhibit upward trends:
+
+```{r}
+ggplot(ts_df,
+       aes(x = Year)) +
+  geom_line(aes(y = DC), linetype = "dashed", na.rm=TRUE) +
+  geom_line(aes(y = DY), na.rm=TRUE) +
+  theme_light() +
+  labs(y = "D log Consumption (- -) & D log Income")
+```
+
+The graphs shows that we no longer have any discernable trend.
+
+We can finally check if the differenced values are stationary using ADF test. If so, then $C$ and $Y$ are individually $I(1)$, supporting the cointegration argument.
+
+```{stata}
+quietly cd ..
+use Data/Timeseries1.dta
+quietly tsset Year
+quietly generate DY = Y - L.Y
+quietly generate DC = C - L.C
+
+dfuller DY, lag(0)
+dfuller DC, lag(0)
+```
+
+which confirms that both $C$ and $Y$ are $I(1)$ as $\Delta C_t$ and $\Delta Y_t$ are individually stationary.
+
+
+
+
+
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
+
+### (iii) Now estimate the following equation:
+\begin{equation}
+\Delta C_t = \alpha + \beta\ \Delta Y_t + (1-\lambda)(Y_{t-1}-C_{t-1}) + \varepsilon_t \label{eq:SQ3iii}
+\end{equation}
+\begin{description}
+\item[Answer:]
+\end{description}
+```{stata}
+quietly cd ..
+use Data/Timeseries1.dta
+quietly tsset Year
+quietly generate DY = Y - L.Y
+quietly generate DC = C - L.C
+quietly generate ECM = Y - C
+
+regress DC DY L.ECM
+```
+
+
+
+
+
+
+
+
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
+
+### (iv) Show that equation (\ref{eq:SQ3iii}) is a restricted version of equation (\ref{eq:SQ3i2}) on page \pageref{eq:SQ3i2} where the long-run elasticity is unity, and test this restriction using your results from (i) and (iii).
+\begin{description}
+\item[Answer:]
+The fact that equation (\ref{eq:SQ3iii}) is a restricted version of equation (\ref{eq:SQ3i2}) is demonstrated in the next part below.
+\end{description}
+To test whether the long-run elasticity is unity:
+
+```{stata}
+quietly cd ..
+use Data/Timeseries1.dta
+quietly tsset Year
+quietly generate DY = Y - L.Y
+quietly generate DC = C - L.C
+quietly generate ECM = Y - C
+
+quietly regress C Y L.Y L.C
+test Y + L.Y + L.C = 1
+```
+
+Thus we cannot reject the null hypothesis that the that the long-run elasticity is unity.
+
+
+
+
+
+
+
+
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
+
+### (v) Carefully explain the reasoning behind the formulation given in equation (\ref{eq:SQ3iii}), especially discussing the use of the error correction term ($Y_{t-1} - C_{t-1}$).
+\begin{description}
+\item[Answer:]
+In order to understand the reasoning behind equation (\ref{eq:SQ3iii}) we need to discuss \textbf{error correction mechanism}, or ECM. This was first used by Sargan (1964).\footnote{Sargan J D (1964) "Wages and Prices in the United Kingdom: A Study in Econometric Methodology" in K F Wallis and D F Hendry (eds.), \textit{Quantitative Economics and Econometric Analysis}, Basil Blackwell, Oxford, UK.} Suppose the long-run or equilibrium relationship between consumption and income is given by equation (\ref{eq:SQ3i1}) on page (\pageref{eq:SQ3i1}) where $\psi$ is long-run consumption elasticity. Recall in part (i) we said that economic systems are rarely in equilibrium. When $C$ takes on a different value to its equilibrium value with respect to $Y$, then we have \textit{disequilibrium error}:
+\[
+\text{disequilibrium error} = u_t = C_t - \rho - \psi Y_t
+\]
+which measures the extent of disequilibrium between the two variables. Thus it is 0 when $C$ and $Y$ are in equilibrium. By taking into account first-order lags, equation (\ref{eq:SQ3i2}) incorporates the idea that $C$ is not always at its equilibrium value relative to $Y$ and that it takes time to adjust full to variations in $Y$.
+
+This equation (\ref{eq:SQ3i2}) however involves levels of variables that may not be stationary. To address this we can first-difference it:
+\begin{align*}
+C_t - C_{t-1} 
+  &= \alpha + \beta Y_t + \gamma Y_{t-1} + \lambda C_{t-1} + \varepsilon_t - C_{t-1} \\
+  &= \alpha + \beta Y_t + \gamma Y_{t-1} + (\lambda - 1) C_{t-1} + \varepsilon_t 
+\end{align*}
+The next step involves a slight trick whereby we add and subtract $\beta Y_{t-1}$ from the right hand side so that we can also have an expression for $\Delta Y_t$:
+\begin{align*}
+\Delta C_t 
+  = \alpha + \beta Y_t - \beta Y_{t-1} + \beta Y_{t-1} + \gamma Y_{t-1} + (\lambda - 1) C_{t-1} + \varepsilon_t \\
+  = \alpha + \beta\ \Delta Y_t + \beta Y_{t-1} + \gamma Y_{t-1} + (\lambda - 1) C_{t-1} + \varepsilon_t \\
+  = \alpha + \beta\ \Delta Y_t + (\beta + \gamma) Y_{t-1} + (\lambda - 1) C_{t-1} + \varepsilon_t
+\end{align*}
+Notice that for this to match equation (\ref{eq:SQ3iii}) on page \pageref{eq:SQ3iii}, we need to have $\beta + \gamma = 1 - \lambda$ because if that is the case then we have:
+\begin{align*}
+\Delta C_t 
+  = \alpha + \beta\ \Delta Y_t + (1 - \lambda) Y_{t-1} + (\lambda - 1) C_{t-1} + \varepsilon_t \\
+  = \alpha + \beta\ \Delta Y_t + (1 - \lambda) Y_{t-1} - (1 - \lambda) C_{t-1} + \varepsilon_t \\
+  = \alpha + \beta\ \Delta Y_t + (1 - \lambda) (Y_{t-1} - C_{t-1}) + \varepsilon_t.
+\end{align*}
+This restricted version therefore means that $\beta + \gamma + \lambda = 1$. This equation (\ref{eq:SQ3iii}) way of expressing equation (\ref{eq:SQ3i2}) can be interpreted in an interesting new way. Equation (\ref{eq:SQ3i2}) is the short-run disequilibrium relationship. Accordingly, the term in parenthesis in equation (\ref{eq:SQ3iii}), $(Y_{t-1} - C_{t-1})$ is the disequilibrium error from period $t-1$, or the error correction term. Therefore, this equation states that the current change in $C$ depends both on the change in $Y$ as well as on the extent of disequilibrium error, or the equilibrium error correction term. If this correction term is 0, then the model is in equilibrium. If it is nonzero, then the model is out of equilibrium. 
+
+Suppose $\Delta Y_t = 0$ and the error correction term, $(Y_{t-1} - C_{t-1})$, is negative. This means $C_{t-1}$ is above its equilibrium value of $\alpha + \beta Y_{t-1}$. Since $(1-\lambda)$ is expected to be positive, the term $(1-\lambda)(Y_{t-1} - C_{t-1})$ is negative and therefore $\Delta C_t$ will be negative to restore the equilibrium. That is, if $C_t$ is above its equilibrium value, it will start falling in the next period to correct the disequilibrium error. This is why this mechanism is called Error Correcting Mechanism (ECM).
+
+Similarly, if $(Y_{t-1} - C_{t-1})$ is positive while $\Delta Y_t = 0$ - i.e. $C_t$ is below its equilibrium value - then $(1-\lambda)(Y_{t-1} - C_{t-1})$ will also be positive, which will cause $\Delta C_t$ to be positive, leading $C_t$ to rise in period $t$. 
+
+Thus, the absolute value of $(1-\lambda)$ determines how quickly the equilibrium is restored. From the regression results in part (iii) above we see that $C$ adjusts to $Y$ with a lag: only about 13.7\% of the discrepancy between long-term and short-term $C$ is corrected within one time period. From the same regression result we see that the short-run consumption elasticity is about 0.75. From the regression of the first equation we also know that the long-run consumption elasticity is about 0.99.
+\end{description}
+
+
+
+
+
+
+
+
+
+\bigskip\bigskip
+***
+\bigskip\bigskip
+
+### (vi) Plot the error correction term used to estimate equation (\ref{eq:SQ3iii}) on page \pageref{eq:SQ3iii} and the residuals from your estimate of equation (\ref{eq:SQ3i1}) on page \pageref{eq:SQ3i1} over time. What is the relationship between the two series? Perform unit root tests on both series and compare the results. Discuss the significance of these results - especially how these results might be used in situations where the long-run elasticity is not unity. (You might also estimate equation (\ref{eq:SQ3iii}) again but this time using errors from equation (\ref{eq:SQ3i1}) lagged by one year, instead of the error correction term).
+\begin{description}
+\item[Answer:]
+To plot the error correction term and the residuals from the first equation in R we need to first create new variables in our data frame for the residuals and the error correction term.
+\end{description}
+
+in STATA:
+```{stata eval = FALSE}
+quietly cd ..
+use Data/BoatRace.dta
+quietly tsset Year
+reg C Y
+predict res, residuals
+gen ECT = L.Y - L.C
+tsline ECT res
+```
+
+and in R:
+
+```{r}
+ts_df <- ts_df %>%
+  mutate(
+    ECT = Y_lag - C_lag,
+    eq1resid = residuals(lm1_SQ3i)
+  )
+
+ggplot(ts_df,
+       aes(x = Year)) +
+  geom_line(aes(y = eq1resid), linetype = "dashed", na.rm=TRUE) +
+  geom_line(aes(y = ECT), na.rm=TRUE) +
+  theme_light() +
+  labs(y = "eq (1) resid (- -) vs. eq (6) ECT")
+```
+
+The ECM from equation (\ref{eq:SQ3iii}) and the residuals from equation (\ref{eq:SQ3i1}) are strongly negatively correlated, though lagged by 1 period. To see why this is the case, recall that the residuals of equation (\ref{eq:SQ3i1}) is expressed as:
+\begin{align*}
+\varepsilon_t 
+  &= C_t - \rho - \psi Y_t \\
+  &= -(\psi Y_t - C_t)-\rho 
+\end{align*}
+where, $\psi$ in this model is the long un elasticity. If it is assumed to be unitary, then the residuals are:
+\[
+\varepsilon_t = -(Y_t - C_t) - \rho
+\]
+which means
+\begin{align*}
+\varepsilon_{t-1} 
+  &= -(Y_{t-1}-C_{t-1})-\rho \\
+  &= -{ECM}-\rho \\
+\varepsilon_{t-1}+\rho &= -(Y_{t-1}-C_{t-1})  
+\end{align*}
+
+This means if we add $\rho$ to the residuals and then multiply by -1 and  we should get ECM with 1 lag. The intercept in the first model was not statistically different from 0. Lets plot this:
+
+```{r}
+ts_df <- ts_df %>%
+  mutate(
+    neg_lag_eq1resid = -(lag(residuals(lm1_SQ3i),1))
+  )
+
+ggplot(ts_df,
+       aes(x = Year)) +
+  geom_line(aes(y = neg_lag_eq1resid), linetype = "dashed", na.rm=TRUE) +
+  geom_line(aes(y = ECT), na.rm=TRUE) +
+  theme_light() +
+  labs(y = "eq (1) -resid (- -) vs. eq (6) ECT")
+```
+
+So multiplying the lagged residuals by -1 closely tracks the ECM though not identically. 
+
+Next, lets run unit root tests on both series.
+
+```{stata}
+quietly cd ..
+use Data/Timeseries1.dta
+quietly tsset Year
+quietly regress C Y
+predict e, residuals
+dfuller e, lags(1)
+
+quietly generate ECT = Y - C
+dfuller ECT, lags(1)
+```
+
+Thus we reject the null that there is a unit root in the residuals of first model and/or in the ECM even at 1% level. Both are stationary with 1 lags.
+
+In order to understand the relationship between these two and how it can be used in situations where the long-run elasticity is not unity, lets reproduce the two equations here and develop an understanding of their components.
+\begin{enumerate}
+  \item Long run relations: $C_t = \rho + \psi Y_t + \varepsilon_t$
+  \item Error correction mechanism: $\Delta C_t = \alpha + \beta\ \Delta Y_t + (1-\lambda)(Y_{t-1}-C_{t-1}) + \varepsilon_t$
+\end{enumerate}
+where
+\begin{itemize}
+  \item the residuals from the long-run relationship are: $\varepsilon_t = C_t - \rho - \psi Y_t$
+  \item the error correction term in the ECM is: $(Y_{t-1}-C_{t-1})$
+\end{itemize}
+The key insight is that these terms are related but not identical. To see the relationship, substitute long run equation for $C_t$ in the error correction term:
+\begin{align*}
+(Y_{t-1} - C_{t-1})
+  &= Y_{t-1} - \rho - \psi Y_{t-1} - \varepsilon_{t-1} \\
+  &= (1-\psi) Y_{t-1} - \rho - \varepsilon_{t-1} 
+\end{align*}
+Now we can check for the behaviors with respect to the long-run elasticity:
+\begin{itemize}
+  \item If unity elasticity, $\psi=1$, and no constant term, $\rho =0$, then $Y_t = C_t - \varepsilon_t$, and in the case of no errors: $Y_t = C_t$.
+    \subitem Under these conditions, the error correction term would be the negative of the lagged residuals $-\varepsilon_{t-1}$ since $(Y_t - C_t) = (1-1)Y_{t-1} - 0 - \varepsilon_{t-1}$.
+  \item When $\psi = 1$ and $\rho \neq 0$ the error correction term becomes $Y_{t-1} = C_{t-1} = - \rho - \varepsilon_t$. This introduces a constant shift to the error correction process.
+    \subitem If $\rho >0$, there is a consistent negative bias in the error correction term
+    \subitem If $\rho <0$, therei s a consistent positive bias in the error correction term
+  \item When $\psi \neq 0$ and $\rho =0$ the error correction term becomes $Y_{t-1} = C_{t-1} = (1-\psi)Y_{t-1} - \varepsilon_t$.
+    \subitem Here $(1-\psi)Y_t$ means the error correction term now depends on the absolute level of income, not just on deviations from the equilibrium, i.e. disequilibrium error.
+    \subitem If $\psi < 1$ then $(1-\psi)$ is positive and higher income levels contribute positively to the error correction term
+    \subitem If $\psi > 1$ then $(1-\psi)$ is negative and higher income levels contribute negatively to the error correction term
+    \subitem The further $\psi$ is from 1, the larger the influence of income level on the error correction process
+  \item If $\psi \neq 0$ and $\rho \neq 0$ then the error term contains all three components: $Y_{t-1} = C_{t-1} = (1-\psi)Y_{t-1} - \rho - \varepsilon_t$. This creates a complex adjustment process that depends on:
+    \subitem the income level, scaled by how far $\psi$ is from 1
+    \subitem A constant shift based on $-\rho$
+    \subitem the disequilibrium error
+\end{itemize}
+This complexity has some important implications:
+\begin{enumerate}
+\item \textit{misspecification concerns}: Using $(Y_t - C_t)$ as the error correction term when $\psi\neq 0$ or $\rho\neq 0$ could lead to biased estimates of adjustment speeds and inccorect inferences about the dynamics.
+\item \textit{parameter interpretation}: The coefficient $(1-\lambda)$ on this complex error correction term does not purely represent the adjustment speed anymore, as it is applied to multiple components. To see this, substitute in the error correction term in the ECM:
+\[
+\Delta C_t = \alpha + \beta\ \Delta Y_t + (1-\lambda)(1-\psi)(Y_{t-1} - \rho - \varepsilon_{t-1}) + \varepsilon_t
+\]
+which shows that $(1-\lambda)$ multiplies three different terms: the income level effect $Y_{t-1}$, the constant term $\rho$, and the disequilibrium error $\varepsilon_{t-1}$. This means, $(1-\lambda)$ simultaneously controls (i) how quickly deviations are corrected, (ii) how much the income level itself affects consumption changes, (iii) how much the constant term affects consumption changes. Because it is scaling other effects, we can no longer say that $(1-\lambda)$ purely represents adjustment speed. Finally, this ECM implicitly forces the adjusment speed for all components to be identical, which may not reflect the true dynamics.
+\end{enumerate}
+If we want to incorporate non-unity elasticity into the ECM, we can also modify the error correction term and use the errors from equation (\ref{eq:SQ3i1}) lagged by one year, $\varepsilon_{t-1} = C_{t-1} - \rho - \psi Y_{t-1}$:
+\[
+\Delta C_t = \alpha + \beta\ \Delta Y_t + (1-\lambda)(C_{t-1} - \rho - \psi Y_{t-1}) + \varepsilon_t
+\]
+This way, we have:
+\begin{itemize}
+\item $(1-\lambda)$ represents the speed of adjustment
+\item $(C_{t-1} - \rho - \psi Y_{t-1})$ is the deviation from the long run equilibrium, i.e. disequilibrium error
+\item $\psi$ is the non-unity elasticity parameter.
+\end{itemize}
+This formulation directly connect the ECM to the long-run relationship while allowing for non-unity elasticity. It ensures that consumption converges to $C_t = \rho + \psi Y_t$ in the long run while capturing short run dynamics through $\beta \Delta Y_t$.
+
+To derive this expression, begin with the autoregressive distributed lag (ARDL) model of equation (\ref{eq:SQ3i2}) on page (\ref{eq:SQ3i2}) and subtract $C_{t-1}$ from both sides:
+\begin{align*}
+C_t &= \alpha +\beta Y_t + \gamma Y_{t-1} + \lambda C_{t-1} + \varepsilon_t \\
+C_t - C_{t-1} &= \alpha +\beta Y_t + \gamma Y_{t-1} + (\lambda-1) C_{t-1} + \varepsilon_t
+\end{align*}
+if we then add and subtract $\beta Y_{t-1}$ we have:
+\begin{align*}
+\Delta C_t 
+  &= \alpha + \beta (Y_t - Y_{t-1} + Y_{t-1}) + \gamma Y_{t-1} + (\lambda - 1) C_{t-1} + \varepsilon_t \\
+  &= \alpha + \beta\ \Delta Y_{t-1} + (\beta + \gamma) Y_{t-1} + (\lambda - 1) C_{t-1} + \varepsilon_t 
+\end{align*}
+Now notice that mathematically, for a stable system $|\lambda|<1$ is required. This is because it is the coefficient of the lagged dependent variable. So, for simplification, consider $C_t = \lambda C_{t-1} +$ other terms. As we repeatedly substitute we get $C_t = \lambda^nC){t-n} +$ accumulated terms. As $n$ increases, the term $\lambda^n C_{t-n}$ represents how shocks from the distant past $(C_{t-n})$ affect the present. If $|\lambda|<1$ then past shocks eventually die out and the system converges to a stable equilibrium. That is, consumption eventually returns to an equilibrium relationship with income after any shock. If $|\lambda|=1$ then past shocks persist indefinitely and we have a unit root process whereby the system has no equilibrium point. That is, shocks accumulate and the series doesn't revert to any mean. This would mean, consumption never fully adjusts to shocks and temporary disruptions have permanent effects. If $|\lambda|>1$ then past shocks get amplified over time and small deviations grow explosively resulting in a system that diverges without a bound. This means consumption moves further and further away from any equilibrium relationship with income, which is economically implausible. 
+
+For stability, therefore, $|\lambda|<1$ is required which means $(\lambda - 1) < 0$. Set $-\eta = (\lambda - 1)$ so that we have a positive value for $\eta$ for stability. $\eta$ represents the speed of adjustment - how quickly consumption moves back towards equilibrium after a shock. So $\delta>0$ ensures that deviations from equilibrium are corrected rather than amplified.
+
+Similarly, we can link the income coefficients $(\beta + \gamma)$ to the long run elasticity parameter. Consider what happens in long run equilibrium where $C_t = C_{t-1} = C$ and $Y_t = Y_{t-1} = Y$. The ARDL model, i.e. equation (\ref{eq:SQ3i2}), becomes $C = \alpha + \beta Y + \gamma Y + \lambda C$. Solving for $C$, we have $C(1-\lambda) = \alpha + (\beta + \gamma) Y$ or $C = \frac{\alpha}{1-\lambda} + \frac{\beta + \gamma}{1-\lambda} Y$. For this to match the long run relationship $C=\rho + \psi Y$, we need $\frac{\beta + \gamma}{1-\lambda} = \psi$. Since we defined $\eta = -(\lambda-1)$ this expression becomes $\frac{\beta + \gamma}{\eta} = \psi$ or $(\beta + \gamma) = \eta\psi$. This ensures that the dynamic model converges exactly to our specified long-run relationship with the correct elasticity parameter.
+
+We also need the constant term $\frac{\alpha}{1-\lambda}$ to be consistent with the long run relationship. This means, $\frac{\alpha}{\eta}=\rho$ or $\alpha = \eta\rho$. 
+
+These three restrictions ensure that:
+\begin{itemize}
+  \item the system is stable and returns to equilibrium after shocks,
+  \item the long run relationship between income and consumption has the correct elasticity, $\psi$,
+  \item the long run relationship has the correct intercept, $\rho$.
+\end{itemize}
+
+We then apply these restrictions to the ARDL model:
+\begin{align*}
+\Delta C_t 
+  &= \alpha + \beta\ \Delta Y_{t-1} + (\beta + \gamma) Y_{t-1} + (\lambda - 1) C_{t-1} + \varepsilon_t \\
+  &= \eta\rho + \beta\ \Delta Y_{t-1} + \eta\psi\ Y_{t-1} - \eta\ C_{t-1} + \varepsilon_t \\
+  &= \eta\rho + \beta\ \Delta Y_{t-1} - \eta(C_{t-1} - \psi\ Y_{t-1}) + \varepsilon_t \\
+  &= \beta\ \Delta Y_{t-1} - \eta(C_{t-1} - \rho - \psi Y_{t-1}) + \varepsilon_t
+\end{align*}
+We can estimate this in two ways:
+\begin{enumerate}
+  \item We can either estimate the model
+  \[
+  \Delta C_t = \alpha + \beta\ \Delta Y_t + \eta\ u_{t-1} + \varepsilon_t
+  \]
+  where $u_{t-1} = C_{t-1} - \rho - \psi Y_{t-1}$. We know from the regression results of equation (\ref{eq:SQ3i1}) that $\rho$ is not statistically different from 0 and $\psi = 0.985157$ with 95\% CI = [0.9746304, 0.9956836]. Therefore, $u_{t-1} = C_{t-1} - 0.985157\ Y_{t-1}$.
+  \item Alternatively, we can estimate the following model
+  \[
+  \Delta C_t = \alpha + \beta\ \Delta Y_t + \eta\ C_{t-1} - \eta\ \rho - \eta\ \psi\ Y_{t-1} + \varepsilon_t
+  \]
+  Since $\rho$ is statistically not different from 0 and if we denote $\zeta = -\eta\psi$. Then this expression becomes:
+  \[
+  \Delta C_t = \alpha + \beta\ \Delta Y_t + \eta\ C_{t-1} + \zeta\ Y_{t-1} + \varepsilon_t
+  \]
+\end{enumerate}
+
+In R: 
+
+```{r eval = !knitr::is_latex_output()}
+ts_df <- ts_df %>%
+  mutate(
+    eq1resid_lag = lag(eq1resid, 1, default=NA)
+  )
+lm1_SQ3vi <- lm(DC ~ DY + eq1resid_lag, data = ts_df)
+lm2_SQ3vi <- lm(DC ~ DY + C_lag + Y_lag, data = ts_df)
+
+summary(lm1_SQ3vi)
+summary(lm2_SQ3vi)
+
+# obtain psi
+-lm2_SQ3vi$coefficients[4]/lm2_SQ3vi$coefficients[3]
+# check if psi is different than 1
+car::linearHypothesis(lm2_SQ3vi, "Y_lag + C_lag = 0")
+```
+
+and in Stata:
+
+```{stata}
+quietly cd ..
+use Data/Timeseries1.dta
+quietly tsset Year
+quietly regress C Y
+predict u, residuals
+
+quietly generate DY = Y - L.Y
+quietly generate DC = C - L.C
+
+regress DC DY L.u
+regress DC DY L.C L.Y
+/* obtain psi */
+display -_b[L.Y]/_b[L.C]
+/*check if psi is different than 1 */
+lincom _b[L.Y] + _b[L.C]
+```
+
+which gives us:
+\begin{itemize}
+  \item $\alpha \sim 0$. Thus the short run autonomous change in consumption is around 0 to 0.006 (the latter is just significantly different from 0 at 5\%). This represents the trend or drift component in consumption growth and measures the constant change in consumption that occurs regardless of income changes. Since it is either 0 or tiny little bit positive, it suggests that consumption tends to remain unchanged or grows tiny little bit over time even when income is unchanged which could reflect changing preferences, technology, or other structural factors.
+  \item $\beta \sim 0.74$. Thus, the short run marginal propensity to consume, i.e. the immediate impact of income changes on consumption is around 0.74. In other words it reflects that not its entirety but only part of income changes are consumed immediately. 
+  \item $-\eta = (1-\lambda) = -0.014$ shows the speed of adjustment to equilibrium. In the ECM of equation (\ref{eq:SQ3iii}) this would be positive, and in the ECM of the alternative, more conventional, specification here it would be negative. Thus, this result tells us that about 1.4\% of disequilibrium is corrected each period. 
+    \subitem The half life of any deviation can be calculated as $\ln(0.5)/\ln(1+\eta) = -49.8563$
+  \item $\psi = -\zeta / \eta = -.1400042 / -.140483 = 0.99659163$ which is the long run income elasticity of consumption that measures the proportional relationship between income and consumption in the long run. When we test if it is different than 1, we cannot reject that null. Thus a 1\% increase in income leads to about 1\% increase in consumption in the long run, meaning a constant savings rate since consumption increases proportionally with income in the long run.
+  \item $\rho = 0$. This measures the long run autonomous consumption. It represents the baseline level of consumption that exists even when income is zero. It could reflect subsistence consumption, consumption from wealth, or social safety nets, and thus usually positive since some minimal consumption is necessary for survival. In this question it is 0. In logs, it affects the proportion of income consumed at different income levels.
+\end{itemize}
+Usually we would expect long-run MPC (i.e. $\psi$) > short-run MPC (i.e. $\beta$) as households adjust consumption patterns over time. Full adjustment time is approximately 3/(1-$\lambda$) periods. Also note that temporary income change mainly affects consumption by $\beta$ and permanent income change eventually affects consumption by $\psi$. 
+
+These parameters are central to testing economic theories such as the "Permanent Income Hypothesis", "Absolute Income Hypothesis", and "Relative Income Hypothesis" each of which makes different predictions about these coefficients' values.
+  
+
+
+
+
