@@ -36,7 +36,7 @@ options(scipen = 999, digits = 6)
 
 \textbf{Notes are based on the following:}
 \begin{description}
-\item Hardy (1993), \textit{Regression with Dummy Variables}, Sage University Paper series on Quantitative Applications in the Social Sciences, 07-093, Newbury Park, CA: Sage
+\item Hardy, M A (1993), \textit{Regression with Dummy Variables}, Sage University Paper series on Quantitative Applications in the Social Sciences, 07-093, Newbury Park, CA: Sage
 \item Halvorsen, R, and Palmquist, R (1980) \textit{Interpretation of dummy variables in semilogarithmic equations}, American Economic Review 70:474-475. \end{description}
 
 \bigskip
