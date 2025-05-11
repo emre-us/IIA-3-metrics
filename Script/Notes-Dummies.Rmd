@@ -378,7 +378,7 @@ se: {}   & (0.056)  &    & (0.115)            &       & (0.036)            &    
          &          & {}+{} & 0.301\ \text{leftlab}&{}-{}& 0.006\ \text{lefteduc} &{}+{}& 0.013\ \text{leftdur} & & \\
          &          &       & (0.104)              &     & (0.006)                &     & (0.002) & & \\[8pt]
 R_7^2: {} & 0.42489 \\
-Mean RSS: {} & 0.23654  
+\text{Mean RSS}: {} & 0.23654  
 \end{alignat*}
 Then, if we want to find the expected income differential between left-handed and right handed workers, then
 \[
