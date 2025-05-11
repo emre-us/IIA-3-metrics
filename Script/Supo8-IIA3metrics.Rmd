@@ -710,7 +710,7 @@ Since `DWinTime` is the first differences of `WinTime` it can be expressed as:
 \end{align*}
 We can use this expression to derive the population autocorrelations:
 \[
-\rho_k = \frac{\gamma_k}{\gamma_0} = \frac{Cov({DWinTime}_t\ ,\ {DWinTime}_{t+k})}{Var({DWinTime}_t)} 
+\rho_k = \frac{\gamma_k}{\gamma_0} = \frac{Cov({DWinTime}_t\ ,\ {DWinTime}_{t-k})}{\sqrt{Var({DWinTime}_t)\ ,\ Var(DWinTime_{t-k})}} = \frac{Cov({DWinTime}_t\ ,\ {DWinTime}_{t-k})}{Var({DWinTime}_t)}
 \]
 To do so, first calculate the autocovariance function at lag k. Since $v_t$ are i.i.d. shocks, we can assume them to be white noise process with mean 0 and variance $\sigma_v^2$. This also means $Cov(v_t, v_s) = 0$ for $t\neq 0$. 
 
